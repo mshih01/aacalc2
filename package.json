@@ -1,30 +1,33 @@
 {
-    "name": "aacalc2",
-    "version": "1.0.0",
-    "description": "Axis and Allies probability calculator",
-    "keywords": [
-        "axis",
-        "allies"
-    ],
-    "homepage": "https://github.com/mshih01/aacalc2",
-    "bugs": {
-        "url": "https://github.com/mshih01/aacalc2/issues"
-    },
-    "author": "Mitchell Shih <mitchell_shih@yahoo.com> (https://github.com/mshih01)",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/mshih01/aacalc2.git"
-    },
-    "files": [
-        "dist"
-    ],
-    "type": "module",
-    "license": "MIT",
-    "devDependencies": {
-        "typescript": "^5.8.3"
-    },
-    "scripts": {
-        "build": "tsc"
-
-    }
+  "name": "aacalc2",
+  "version": "1.0.0",
+  "description": "Axis and Allies probability calculator",
+  "keywords": [
+    "axis",
+    "allies"
+  ],
+  "homepage": "https://github.com/mshih01/aacalc2",
+  "bugs": {
+    "url": "https://github.com/mshih01/aacalc2/issues"
+  },
+  "author": "Mitchell Shih <mitchell_shih@yahoo.com> (https://github.com/mshih01)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mshih01/aacalc2.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "prettier": "^3.5.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "ci": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write ."
+  }
 }
