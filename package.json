@@ -28,6 +28,7 @@
     "build": "tsc",
     "ci": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "check-format": "prettier --check ."
   }
 }
