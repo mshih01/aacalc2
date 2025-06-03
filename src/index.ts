@@ -1,4 +1,3 @@
-import exp from 'constants';
 
 export { sbrExternal } from './external.js';
 export { multiwaveExternal } from './external.js';
