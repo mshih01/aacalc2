@@ -1,6 +1,6 @@
 {
   "name": "aacalc2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Axis and Allies probability calculator",
   "keywords": [
     "axis",
@@ -37,10 +37,8 @@
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
     "test": "vitest run",
     "dev": "vitest",
-        "local-release": "changeset version && changeset publish",    
-        "prepublishOnly": "npm run ci"
-
-
+    "local-release": "changeset version && changeset publish",
+    "prepublishOnly": "npm run ci"
   },
   "dependencies": {
     "heap-js": "^2.6.0",
