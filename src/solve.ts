@@ -801,7 +801,13 @@ class naval_problem {
   M: number;
   debug_level: number = 0;
   verbose_level: number = 0;
-  P_1d: number[] = [];
+  P_1d: number[] = []; // probability of state i, j
+  E_1d: number[] = []; // expected value of state i, j
+  accumulate: number = 0; // accumulated expected value
+  base_attnode: naval_unit_graph_node | undefined = undefined;
+  base_defnode: naval_unit_graph_node | undefined = undefined;
+  base_attcost: number = 0;
+  base_defcost: number = 0;
   nonavalproblem: naval_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
   prune_threshold: number = -1;
@@ -833,6 +839,20 @@ class naval_problem {
   setP(i: number, j: number, val: number) {
     const ii = this.getIndex(i, j);
     this.P_1d[ii] = val;
+  }
+  getiE(ii: number): number {
+    return this.E_1d[ii];
+  }
+  setiE(ii: number, val: number) {
+    this.E_1d[ii] = val;
+  }
+  getE(i: number, j: number): number {
+    const ii = this.getIndex(i, j);
+    return this.E_1d[ii];
+  }
+  setE(i: number, j: number, val: number) {
+    const ii = this.getIndex(i, j);
+    this.E_1d[ii] = val;
   }
   set_prune_threshold(pt: number, ept: number, rpt: number) {
     this.prune_threshold = pt;
@@ -1411,18 +1431,40 @@ function solve_one_naval_state(
   numBombard: number,
   do_retreat_only: boolean,
   disable_retreat: boolean,
+  onNextState: (
+    problem: naval_problem,
+    ii: number,
+    prob: number,
+    n: number,
+    m: number,
+  ) => void = (problem, ii, prob, n: number, m: number) => {
+    problem.setiP(ii, problem.getiP(ii) + prob);
+  },
+  onInitState: (problem: naval_problem, n: number, m: number) => number = (
+    problem,
+    n,
+    m,
+  ) => problem.getP(n, m),
+  onExitState: (problem: naval_problem, n: number, m: number) => void = (
+    problem,
+    n,
+    m,
+  ) => {},
 ) {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
 
   if (attnode.N == 0 || defnode.N == 0) {
+    onExitState(problem, N, M);
     return;
   }
 
   //console.log(N, M, "solve_one_naval");
-  const p_init = problem.getP(N, M);
+  //const p_init = problem.getP(N, M);
+  const p_init = onInitState(problem, N, M);
 
   if (p_init == 0) {
+    onExitState(problem, N, M);
     return;
   }
   if (!disable_retreat && problem.retreat_threshold > 0) {
@@ -1437,11 +1479,14 @@ function solve_one_naval_state(
           const n = attnode.next_retreat_amphibious.index;
           const m = defnode.index;
           const ii = problem.getIndex(n, m);
-          problem.setiP(ii, problem.getiP(ii) + p_init);
+          onNextState(problem, ii, p_init, n, m);
+          //problem.setiP(ii, problem.getiP(ii) + p_init);
           problem.setP(N, M, 0);
+          onExitState(problem, N, M);
           return;
         }
       } else {
+        onExitState(problem, N, M);
         return;
       }
     }
@@ -1449,6 +1494,7 @@ function solve_one_naval_state(
 
   if (p_init < problem.prune_threshold) {
     problem.setP(N, M, 0);
+    onExitState(problem, N, M);
     return;
   }
 
@@ -1485,19 +1531,26 @@ function solve_one_naval_state(
       m = defnode.next_submerge.index;
     }
     const ii = problem.getIndex(n, m);
-    problem.setiP(ii, problem.getiP(ii) + p_init);
+
+    onNextState(problem, ii, p_init, n, m);
+    //problem.setiP(ii, problem.getiP(ii) + p_init);
+
     problem.setP(N, M, 0);
+    onExitState(problem, N, M);
     return;
   }
   if (defnode.next_remove_noncombat != undefined) {
     const n = attnode.index;
     const m = defnode.next_remove_noncombat.index;
     const ii = problem.getIndex(n, m);
-    problem.setiP(ii, problem.getiP(ii) + p_init);
+    onNextState(problem, ii, p_init, n, m);
+    //problem.setiP(ii, problem.getiP(ii) + p_init);
     problem.setP(N, M, 0);
+    onExitState(problem, N, M);
     return;
   }
   if (do_retreat_only) {
+    onExitState(problem, N, M);
     return;
   }
 
@@ -1528,9 +1581,11 @@ function solve_one_naval_state(
 
   // subs vs. planes.
   if (N1 > 0 && N2 == 0 && N3 == 0 && M1 == 0 && M2 > 0 && M3 == 0) {
+    onExitState(problem, N, M);
     return;
   }
   if (M1 > 0 && M2 == 0 && M3 == 0 && N1 == 0 && N2 > 0 && N3 == 0) {
+    onExitState(problem, N, M);
     return;
   }
   // attacker all subs
@@ -1651,7 +1706,8 @@ function solve_one_naval_state(
         //let nn = remove_navalhits2(attnode, j + numBombard);
         const n = curr_attnode.index;
         const ii = problem.getIndex(n, m);
-        problem.setiP(ii, problem.getiP(ii) + prob);
+        onNextState(problem, ii, prob, n, m);
+        //problem.setiP(ii, problem.getiP(ii) + prob);
         curr_attnode = curr_attnode.next_navalhit;
       }
       curr_defnode = curr_defnode.next_navalhit;
@@ -1682,7 +1738,8 @@ function solve_one_naval_state(
             const n = att_remove_subhits_function(attnode, j1);
             const p2 = p1 * def_sub.get_prob_table(M1, j1);
             const ii = problem.getIndex(n, m);
-            problem.setiP(ii, problem.getiP(ii) + p2);
+            onNextState(problem, ii, p2, n, m);
+            //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
       } else if (N2 > 0 && M2 > 0) {
@@ -1699,7 +1756,8 @@ function solve_one_naval_state(
             const n = att_remove_planehits_function(attnode, false, j2);
             const p2 = p1 * def_air.get_prob_table(M2, j2);
             const ii = problem.getIndex(n, m);
-            problem.setiP(ii, problem.getiP(ii) + p2);
+            onNextState(problem, ii, p2, n, m);
+            //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
       } else {
@@ -1739,6 +1797,7 @@ function solve_one_naval_state(
       const maxp = r * (maxV1 * maxV2 * maxV3 * maxV4 * maxV5 * maxV6);
       if (maxp < problem.early_prune_threshold) {
         problem.setP(N, M, 0);
+        onExitState(problem, N, M);
         return;
       }
     }
@@ -1850,7 +1909,8 @@ function solve_one_naval_state(
                   j + def_sub_unconstrained_hits,
                 );
                 const ii = problem.getIndex(n, m);
-                problem.setiP(ii, problem.getiP(ii) + p2);
+                onNextState(problem, ii, p2, n, m);
+                //problem.setiP(ii, problem.getiP(ii) + p2);
               }
             }
           } else if (att_destroyer) {
@@ -1884,7 +1944,8 @@ function solve_one_naval_state(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m);
-                  problem.setiP(ii, problem.getiP(ii) + p5);
+                  onNextState(problem, ii, p5, n3, m);
+                  //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
             }
@@ -1919,7 +1980,8 @@ function solve_one_naval_state(
                     i3 + att_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n, m3);
-                  problem.setiP(ii, problem.getiP(ii) + p5);
+                  onNextState(problem, ii, p5, n, m3);
+                  //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
             }
@@ -1966,7 +2028,8 @@ function solve_one_naval_state(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m3);
-                  problem.setiP(ii, problem.getiP(ii) + p5);
+                  onNextState(problem, ii, p5, n3, m3);
+                  //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
             }
@@ -1978,6 +2041,7 @@ function solve_one_naval_state(
   if (!allow_same_state) {
     problem.setP(N, M, 0);
   }
+  onExitState(problem, N, M);
 }
 
 function solve_one_state(
@@ -3096,6 +3160,63 @@ function solveAA(myprob: problem, numAA: number): aacalc_output {
   return output;
 }
 
+function compute_expected_value(problem: naval_problem): void {
+  problem.E_1d = [];
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      problem.setE(i, j, 0.0);
+    }
+  }
+
+  for (i = N - 1; i >= 0; i--) {
+    for (j = M - 1; j >= 0; j--) {
+      // for each state... compute the expected IPC profit E(i, j)
+      // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
+      // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
+      solve_one_naval_state(
+        problem,
+        i,
+        j,
+        false,
+        0,
+        false,
+        false,
+        (problem, ii, prob, n: number, m: number) => {
+          const attnode = problem.att_data.nodeArr[n];
+          const defnode = problem.def_data.nodeArr[m];
+
+          const attloss = problem.base_attcost - attnode.cost;
+          const defloss = problem.base_defcost - defnode.cost;
+          const deltacost = defloss - attloss;
+          const expected_value = problem.getiE(ii);
+          problem.accumulate += (deltacost + expected_value) * prob;
+        },
+        (problem, n: number, m: number) => {
+          problem.accumulate = 0;
+          problem.base_attcost = problem.att_data.nodeArr[n].cost;
+          problem.base_defcost = problem.def_data.nodeArr[m].cost;
+          return 1;
+        },
+        (problem, n: number, m: number) => {
+          if (is_terminal_state(problem, n, m, false)) {
+            problem.accumulate = 0;
+          }
+          problem.setE(n, m, problem.accumulate);
+        },
+      );
+    }
+  }
+
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      console.log(`result:  E[%d][%d] = %d`, i, j, problem.getE(i, j));
+    }
+  }
+}
+
 function solve_sub(problem: naval_problem) {
   //debugger;
   problem.P_1d = [];
@@ -3107,6 +3228,11 @@ function solve_sub(problem: naval_problem) {
       problem.setP(i, j, 0.0);
     }
   }
+
+  //// test the expected value code
+  // console.time('compute_expected_value');
+  // compute_expected_value(problem);
+  // console.timeEnd('compute_expected_value');
   if (problem.nonavalproblem != undefined) {
     problem.nonavalproblem.P_1d = [];
     const N = problem.nonavalproblem.att_data.nodeArr.length;
