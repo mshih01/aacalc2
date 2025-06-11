@@ -21,7 +21,7 @@ const input: MultiwaveInput = {
       },
       defense: {
         units: {
-          inf: 4,
+          inf: 5,
           art: 2,
           arm: 1,
           aa: 1,
@@ -46,9 +46,13 @@ const input: MultiwaveInput = {
   is_naval: false,
   in_progress: false,
   num_runs: 1,
-  verbose_level: 3,
+  verbose_level: 0,
   diceMode: 'standard',
 };
 
 let output = multiwaveExternal(input);
 console.log(output, 'multiwaveExternal expected profit output');
+console.log(
+  output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
+  'expected profit',
+);

@@ -3224,12 +3224,17 @@ function compute_expected_value(problem: naval_problem): void {
         (problem, ii, prob, n: number, m: number) => {
           const attnode = problem.att_data.nodeArr[n];
           const defnode = problem.def_data.nodeArr[m];
-
-          const attloss = problem.base_attcost - attnode.cost;
-          const defloss = problem.base_defcost - defnode.cost;
-          const deltacost = defloss - attloss;
-          const expected_value = problem.getiE(ii);
-          problem.accumulate += (deltacost + expected_value) * prob;
+          if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+            const attloss = problem.base_attcost - attnode.cost;
+            const defloss = problem.base_defcost - defnode.cost;
+            const deltacost = defloss - attloss;
+            const expected_value = problem.getiE(ii);
+            const ev =
+              expected_value > problem.retreat_expected_ipc_profit_threshold
+                ? expected_value
+                : 0;
+            problem.accumulate += (deltacost + ev) * prob;
+          }
         },
         (problem, n: number, m: number) => {
           problem.accumulate = 0;
@@ -3247,9 +3252,11 @@ function compute_expected_value(problem: naval_problem): void {
     }
   }
 
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < M; j++) {
-      console.log(`result:  E[%d][%d] = %d`, i, j, problem.getE(i, j));
+  if (problem.verbose_level > 2) {
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < M; j++) {
+        console.log(`result:  EV[%d][%d] = %d`, i, j, problem.getE(i, j));
+      }
     }
   }
 }
