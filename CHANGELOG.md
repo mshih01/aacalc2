@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.3
+
+### Patch Changes
+
+- f84699d: add retreat_expected_ipc_profit_threshold
+
 ## 1.0.2
 
 ### Patch Changes
