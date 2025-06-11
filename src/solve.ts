@@ -819,6 +819,7 @@ class naval_problem {
   strafe_do_num_check: boolean = false;
   strafe_do_attpower_check: boolean = false;
   strafe_attpower_threshold: number = 0;
+  retreat_expected_ipc_profit_threshold?: number;
   attmap: Map<string, number>;
   defmap: Map<string, number>;
   attmap2: Map<string, number>;
@@ -862,6 +863,12 @@ class naval_problem {
   isEarlyRetreat() {
     return this.att_data.submerge_sub || this.def_data.submerge_sub;
   }
+  hasRetreatCondition() {
+    return (
+      this.retreat_threshold > 0 ||
+      this.retreat_expected_ipc_profit_threshold !== undefined
+    );
+  }
   hasNonCombat() {
     return (
       count_units(this.def_data.unit_str, 'T') > 0 ||
@@ -886,6 +893,7 @@ class naval_problem {
     def_cas: casualty_1d[] | undefined = undefined,
     is_nonaval: boolean = false,
     diceMode: DiceMode = 'standard',
+    retreat_expected_ipc_profit_threshold?: number,
   ) {
     this.um = um;
     this.verbose_level = verbose_level;
@@ -898,7 +906,8 @@ class naval_problem {
       const numBombard = count_units(att_str, 'B') + count_units(att_str, 'C');
       max_def_hits += numBombard;
     }
-
+    this.retreat_expected_ipc_profit_threshold =
+      retreat_expected_ipc_profit_threshold;
     this.diceMode = diceMode;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
@@ -1249,8 +1258,9 @@ function is_terminal_state(
   N: number,
   M: number,
   debug: boolean,
+  disable_retreat: boolean = false,
 ): boolean {
-  const out = is_terminal_state_helper(problem, N, M);
+  const out = is_terminal_state_helper(problem, N, M, disable_retreat);
   if (debug) {
     if (!out) {
       const attnode = problem.att_data.nodeArr[N];
@@ -1267,27 +1277,55 @@ function is_terminal_state(
   return out;
 }
 
-function is_terminal_state_helper(
+function has_retreat_condition(problem: naval_problem): boolean {
+  if (problem.retreat_threshold > 0) {
+    return true;
+  }
+  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+    return true;
+  }
+  return false;
+}
+function is_retreat_state(
   problem: naval_problem,
   N: number,
   M: number,
 ): boolean {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
-  if (attnode.N == 0 || defnode.N == 0) {
-    return true;
-  }
   if (problem.retreat_threshold > 0) {
     if (attnode.N <= problem.retreat_threshold) {
-      if (problem.is_amphibious) {
-        if (attnode.next_retreat_amphibious == undefined && attnode.N == 0) {
-          return true;
-        }
-        return false;
-      }
       return true;
     }
   }
+  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+    if (problem.getE(N, M) < problem.retreat_expected_ipc_profit_threshold) {
+      return true;
+    }
+  }
+  return false;
+}
+function is_terminal_state_helper(
+  problem: naval_problem,
+  N: number,
+  M: number,
+  disable_retreat: boolean = false,
+): boolean {
+  const attnode = problem.att_data.nodeArr[N];
+  const defnode = problem.def_data.nodeArr[M];
+  if (attnode.N == 0 || defnode.N == 0) {
+    return true;
+  }
+  if (!disable_retreat && is_retreat_state(problem, N, M)) {
+    if (problem.is_amphibious) {
+      if (attnode.next_retreat_amphibious == undefined && attnode.N == 0) {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   const N1 = attnode.num_subs;
   const N2 = attnode.num_air;
   const N3 = attnode.num_naval;
@@ -1305,6 +1343,7 @@ function is_terminal_state_helper(
 
 function get_terminal_state_prob(
   problem: naval_problem,
+  disable_retreat: boolean = false,
   debug: boolean = false,
 ): number {
   const N = problem.att_data.nodeArr.length;
@@ -1315,7 +1354,7 @@ function get_terminal_state_prob(
     for (let j = 0; j < M; j++) {
       const p = problem.getP(i, j);
       if (p > 0) {
-        if (is_terminal_state(problem, i, j, debug)) {
+        if (is_terminal_state(problem, i, j, debug, disable_retreat)) {
           prob += p;
         }
       }
@@ -1467,28 +1506,26 @@ function solve_one_naval_state(
     onExitState(problem, N, M);
     return;
   }
-  if (!disable_retreat && problem.retreat_threshold > 0) {
-    if (attnode.N <= problem.retreat_threshold) {
-      if (problem.is_amphibious) {
-        if (
-          attnode.N > 0 &&
-          defnode.N > 0 &&
-          attnode.retreat.length == 0 &&
-          attnode.next_retreat_amphibious != undefined
-        ) {
-          const n = attnode.next_retreat_amphibious.index;
-          const m = defnode.index;
-          const ii = problem.getIndex(n, m);
-          onNextState(problem, ii, p_init, n, m);
-          //problem.setiP(ii, problem.getiP(ii) + p_init);
-          problem.setP(N, M, 0);
-          onExitState(problem, N, M);
-          return;
-        }
-      } else {
+  if (!disable_retreat && is_retreat_state(problem, N, M)) {
+    if (problem.is_amphibious) {
+      if (
+        attnode.N > 0 &&
+        defnode.N > 0 &&
+        attnode.retreat.length == 0 &&
+        attnode.next_retreat_amphibious != undefined
+      ) {
+        const n = attnode.next_retreat_amphibious.index;
+        const m = defnode.index;
+        const ii = problem.getIndex(n, m);
+        onNextState(problem, ii, p_init, n, m);
+        //problem.setiP(ii, problem.getiP(ii) + p_init);
+        problem.setP(N, M, 0);
         onExitState(problem, N, M);
         return;
       }
+    } else {
+      onExitState(problem, N, M);
+      return;
     }
   }
 
@@ -3201,7 +3238,7 @@ function compute_expected_value(problem: naval_problem): void {
           return 1;
         },
         (problem, n: number, m: number) => {
-          if (is_terminal_state(problem, n, m, false)) {
+          if (is_terminal_state(problem, n, m, false, false)) {
             problem.accumulate = 0;
           }
           problem.setE(n, m, problem.accumulate);
@@ -3229,10 +3266,12 @@ function solve_sub(problem: naval_problem) {
     }
   }
 
-  //// test the expected value code
-  // console.time('compute_expected_value');
-  // compute_expected_value(problem);
-  // console.timeEnd('compute_expected_value');
+  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+    console.time('compute_expected_value');
+    compute_expected_value(problem);
+    console.timeEnd('compute_expected_value');
+  }
+
   if (problem.nonavalproblem != undefined) {
     problem.nonavalproblem.P_1d = [];
     const N = problem.nonavalproblem.att_data.nodeArr.length;
@@ -3321,23 +3360,21 @@ function solve_sub(problem: naval_problem) {
     }
   }
 
-  const p1 = get_terminal_state_prob(problem, false); // probability that the starting state is already terminal
+  const p1 = get_terminal_state_prob(problem, true, false); // probability that the starting state is already terminal
   // naval bombard
 
   let didBombard = false;
-  if (!problem.is_naval) {
-    const numBombard =
-      count_units(problem.att_data.unit_str, 'B') +
-      count_units(problem.att_data.unit_str, 'C');
-
-    if (numBombard > 0) {
-      for (i = N - 1; i >= 0; i--) {
-        for (j = M - 1; j >= 0; j--) {
-          solve_one_naval_state(problem, i, j, true, numBombard, false, false);
-        }
+  const numBombard = !problem.is_naval
+    ? count_units(problem.att_data.unit_str, 'B') +
+      count_units(problem.att_data.unit_str, 'C')
+    : 0;
+  if (numBombard > 0 || problem.hasRetreatCondition()) {
+    for (i = N - 1; i >= 0; i--) {
+      for (j = M - 1; j >= 0; j--) {
+        solve_one_naval_state(problem, i, j, true, numBombard, false, true);
       }
-      didBombard = true;
     }
+    didBombard = true;
   }
 
   if (problem.rounds > 0) {
@@ -3359,7 +3396,7 @@ function solve_sub(problem: naval_problem) {
           }
         }
       }
-      const p = get_terminal_state_prob(problem, false);
+      const p = get_terminal_state_prob(problem, false, false);
       prob_ends.push(p + p0);
       if (problem.verbose_level > 2) {
         console.log(prob_ends, 'prob ends');
@@ -3371,7 +3408,7 @@ function solve_sub(problem: naval_problem) {
           do_early_retreat(problem, i, j);
         }
       }
-      const p = get_terminal_state_prob(problem, false);
+      const p = get_terminal_state_prob(problem, false, false);
       prob_ends[prob_ends.length - 1] = p + p0;
     }
     for (let ii = 0; ii < rounds; ii++) {
@@ -3393,7 +3430,7 @@ function solve_sub(problem: naval_problem) {
       }
       const enable_debug = false;
       const debug = enable_debug && prob_ends.length == 8;
-      const p = get_terminal_state_prob(problem, debug);
+      const p = get_terminal_state_prob(problem, false, debug);
       prob_ends.push(p + p0);
       if (debug) {
         console.log(ii, 'round', prob_ends);
@@ -3421,7 +3458,7 @@ function solve_sub(problem: naval_problem) {
           retreat_one_naval_state(problem, i, j);
         }
       }
-      const p = get_terminal_state_prob(problem);
+      const p = get_terminal_state_prob(problem, false, false);
       prob_ends[prob_ends.length - 1] = p + p0;
       // evaluate infinite rounds -- with retreat disabled. -- remaining attackers are not allowed to retreat.
       for (let ii = 0; ii < 100; ii++) {
@@ -3430,7 +3467,7 @@ function solve_sub(problem: naval_problem) {
             solve_one_naval_state(problem, i, j, true, 0, false, true);
           }
         }
-        const p = get_terminal_state_prob(problem);
+        const p = get_terminal_state_prob(problem, false, false);
         prob_ends.push(p + p0);
         if (p == prob_ends[prob_ends.length - 2]) {
           break;
@@ -4542,6 +4579,7 @@ export interface wave_input {
   def_dest_last: boolean;
   is_crash_fighters: boolean;
   retreat_threshold: number;
+  retreat_expected_ipc_profit_threshold?: number;
   rounds: number;
 }
 
@@ -4682,6 +4720,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           defend_add_reinforce,
           false,
           input.diceMode,
+          wave.retreat_expected_ipc_profit_threshold,
         ),
       );
       const myprob = probArr[i];

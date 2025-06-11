@@ -114,6 +114,7 @@ export interface WaveInput {
   is_crash_fighters: boolean;
   rounds: number; // -1 means all rounds
   retreat_threshold: number; // retreat if <= number of units remaining.
+  retreat_expected_ipc_profit_threshold?: number; // retreat if expected ipc profit is less than this value.
 }
 
 export interface MultiwaveInput {
@@ -200,6 +201,8 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       is_crash_fighters: wave.is_crash_fighters,
       rounds: wave.rounds,
       retreat_threshold: wave.retreat_threshold,
+      retreat_expected_ipc_profit_threshold:
+        wave.retreat_expected_ipc_profit_threshold,
     };
 
     wavearr.push(internal_wave);

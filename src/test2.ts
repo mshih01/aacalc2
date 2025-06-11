@@ -199,7 +199,9 @@ function run4(argc: number, argv: string[]) {
   };
 
   console.log(JSON.stringify(input, null, 4));
+  console.time('multiwaveExternal');
   const output = multiwaveExternal(input);
+  console.timeEnd('multiwaveExternal');
   console.log(JSON.stringify(input, null, 4));
   console.log(JSON.stringify(output, null, 4));
 }
