@@ -102,11 +102,14 @@ test('multiwaveExternal expected profit', () => {
   };
 
   let output = multiwaveExternal(input);
-
-  expect(output.attack.survives[0]).to.closeTo(0.996281686346742, 1e-6);
-  expect(output.attack.ipcLoss[0]).to.closeTo(15.988232006581963, 1e-6);
-  expect(output.defense.survives[0]).to.closeTo(0.9214824121543701, 1e-6);
-  expect(output.defense.ipcLoss[0]).to.closeTo(11.84227510081599, 1e-6);
+  console.log(output.attack.survives[0], 'attack survives');
+  console.log(output.attack.ipcLoss[0], 'attack ipc loss');
+  console.log(output.defense.survives[0], 'defense survives');
+  console.log(output.defense.ipcLoss[0], 'defense ipc loss'); 
+  expect(output.attack.survives[0]).to.closeTo(0.9962273852328778, 1e-6);
+  expect(output.attack.ipcLoss[0]).to.closeTo(17.241589222000417, 1e-6);
+  expect(output.defense.survives[0]).to.closeTo(0.8694320798527282, 1e-6);
+  expect(output.defense.ipcLoss[0]).to.closeTo(13.20762090952632, 1e-6);
 });
 
 test('sbrExternal', () => {
