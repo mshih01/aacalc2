@@ -102,7 +102,7 @@ test('multiwaveExternal expected profit', () => {
   };
 
   let output = multiwaveExternal(input);
-    
+
   expect(output.attack.survives[0]).to.closeTo(0.996281686346742, 1e-6);
   expect(output.attack.ipcLoss[0]).to.closeTo(15.988232006581963, 1e-6);
   expect(output.defense.survives[0]).to.closeTo(0.9214824121543701, 1e-6);
