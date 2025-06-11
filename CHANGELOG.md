@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.4
+
+### Patch Changes
+
+- d881f73: consider the effect of retreat in EV computation
+
 ## 1.0.3
 
 ### Patch Changes
