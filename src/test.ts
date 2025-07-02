@@ -47,7 +47,6 @@ function run3(argc: number, argv: string[]) {
   const attackers = argv[i++];
   const defenders = argv[i++];
 
-  //const strafe_threshold = parseFloat(argv[i++]);
   i++;
   const num_runs = Math.max(parseInt(argv[i++]), 1);
 
@@ -203,7 +202,6 @@ function run2(argc: number, argv: string[]) {
   console.log(`in_progress = ${in_progress}`);
   console.log(`attackers = ${attackers}`);
   console.log(`defenders = ${defenders}`);
-  console.log(`strafe_threshold = ${strafe_threshold}`);
   console.log(`retreat_threshold = ${retreat_threshold}`);
   console.log(debug);
 
@@ -222,11 +220,6 @@ function run2(argc: number, argv: string[]) {
     num_runs: num_runs,
     diceMode: 'standard',
     retreat_threshold: retreat_threshold,
-    strafe_threshold: -1,
-    strafe_attpower_threshold: 0,
-    strafe_num_threshold: 0,
-    strafe_do_attpower_check: false,
-    strafe_do_num_check: false,
     verbose_level: verbose_level,
   };
   console.log('input', input);

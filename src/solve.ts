@@ -814,12 +814,8 @@ class naval_problem {
   early_prune_threshold: number = -1;
   report_prune_threshold: number = -1;
   retreat_threshold: number = 0;
-  strafe_threshold: number = -1;
-  strafe_num_threshold: number = 0;
-  strafe_do_num_check: boolean = false;
-  strafe_do_attpower_check: boolean = false;
-  strafe_attpower_threshold: number = 0;
   retreat_expected_ipc_profit_threshold?: number;
+  retreat_strafe_threshold?: number;
   attmap: Map<string, number>;
   defmap: Map<string, number>;
   attmap2: Map<string, number>;
@@ -866,7 +862,8 @@ class naval_problem {
   hasRetreatCondition() {
     return (
       this.retreat_threshold > 0 ||
-      this.retreat_expected_ipc_profit_threshold !== undefined
+      this.retreat_expected_ipc_profit_threshold !== undefined ||
+      this.retreat_strafe_threshold !== undefined
     );
   }
   hasNonCombat() {
@@ -894,6 +891,7 @@ class naval_problem {
     is_nonaval: boolean = false,
     diceMode: DiceMode = 'standard',
     retreat_expected_ipc_profit_threshold?: number,
+    retreat_strafe_threshold?: number,
   ) {
     this.um = um;
     this.verbose_level = verbose_level;
@@ -908,6 +906,7 @@ class naval_problem {
     }
     this.retreat_expected_ipc_profit_threshold =
       retreat_expected_ipc_profit_threshold;
+    this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.diceMode = diceMode;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
@@ -1054,11 +1053,6 @@ class problem {
   report_prune_threshold: number = -1;
   early_prune_threshold: number = -1;
   retreat_threshold: number = 0;
-  strafe_threshold: number = -1;
-  strafe_num_threshold: number = 0;
-  strafe_do_num_threshold: boolean = false;
-  strafe_do_attpower_check: boolean = false;
-  strafe_attpower_threshold: number = 0;
   getIndex(i: number, j: number): number {
     return i * this.def_data.tbl_size + j;
   }
@@ -1284,6 +1278,9 @@ function has_retreat_condition(problem: naval_problem): boolean {
   if (problem.retreat_expected_ipc_profit_threshold != undefined) {
     return true;
   }
+  if (problem.retreat_strafe_threshold != undefined) {
+    return true;
+  }
   return false;
 }
 function is_retreat_state(
@@ -1300,6 +1297,15 @@ function is_retreat_state(
   }
   if (problem.retreat_expected_ipc_profit_threshold != undefined) {
     if (problem.getE(N, M) < problem.retreat_expected_ipc_profit_threshold) {
+      return true;
+    }
+  }
+  if (
+    problem.retreat_strafe_threshold != undefined &&
+    attnode.nosub_group != undefined
+  ) {
+    const pgt = attnode.nosub_group.pgreater[attnode.N][defnode.N];
+    if (pgt > problem.retreat_strafe_threshold) {
       return true;
     }
   }
@@ -3230,7 +3236,7 @@ function compute_expected_value(problem: naval_problem): void {
             const deltacost = defloss - attloss;
             const expected_value = problem.getiE(ii);
             const ev =
-              expected_value > problem.retreat_expected_ipc_profit_threshold
+              expected_value >= problem.retreat_expected_ipc_profit_threshold
                 ? expected_value
                 : 0;
             problem.accumulate += (deltacost + ev) * prob;
@@ -4393,11 +4399,6 @@ export interface aacalc_input {
   def_submerge_sub: boolean;
   num_runs: number;
   retreat_threshold: number;
-  strafe_threshold: number;
-  strafe_attpower_threshold: number;
-  strafe_num_threshold: number;
-  strafe_do_num_check: boolean;
-  strafe_do_attpower_check: boolean;
   verbose_level: number;
 }
 
@@ -4587,6 +4588,7 @@ export interface wave_input {
   is_crash_fighters: boolean;
   retreat_threshold: number;
   retreat_expected_ipc_profit_threshold?: number;
+  retreat_strafe_threshold?: number;
   rounds: number;
 }
 
@@ -4728,6 +4730,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           false,
           input.diceMode,
           wave.retreat_expected_ipc_profit_threshold,
+          wave.retreat_strafe_threshold,
         ),
       );
       const myprob = probArr[i];

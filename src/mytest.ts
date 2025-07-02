@@ -37,7 +37,8 @@ const input: MultiwaveInput = {
       is_crash_fighters: false,
       rounds: 100,
       retreat_threshold: 0,
-      retreat_expected_ipc_profit_threshold: 0,
+      retreat_expected_ipc_profit_threshold: 0, // optional
+      //retreat_strafe_threshold: 0.05, // optional
     },
   ],
   debug: false,
@@ -46,7 +47,7 @@ const input: MultiwaveInput = {
   is_naval: false,
   in_progress: false,
   num_runs: 1,
-  verbose_level: 0,
+  verbose_level: 3,
   diceMode: 'standard',
 };
 
