@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.6
+
+### Patch Changes
+
+- e579173: add retreat_strafe_threshold?
+
 ## 1.0.5
 
 ### Patch Changes
