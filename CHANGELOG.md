@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.10
+
+### Patch Changes
+
+- 6faaeae: support is_deadzone constraint -- handled in both IPC cost, verbose cost sorting, and EV computation
+
 ## 1.0.9
 
 ### Patch Changes
