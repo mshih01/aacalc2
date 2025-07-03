@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.8
+
+### Patch Changes
+
+- 4df9759: sortMode
+
 ## 1.0.7
 
 ### Patch Changes
