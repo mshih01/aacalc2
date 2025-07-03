@@ -2412,7 +2412,12 @@ function collect_results(
         const attcascost = NN_base - att_cost;
         const defcascost = MM_base - def_cost;
         const cost2 = -defcascost + attcascost;
-        const cost3 = parent_prob.sortMode == 'unit_count' ? cost : cost2;
+        const dzcost =
+          problem.is_deadzone && problem.def_data.nodeArr[j].N == 0
+            ? problem.att_data.nodeArr[i].deadzone_cost
+            : 0;
+        const cost3 =
+          parent_prob.sortMode == 'unit_count' ? cost : cost2 + dzcost;
 
         /*
                 if (do_strafe) {
@@ -2785,6 +2790,10 @@ function print_general_results(
         def.length == 0
       ) {
         takes += p;
+        if (baseproblem.is_deadzone) {
+          const attnode = baseproblem.att_data.nodeArr[result.i];
+          totalattloss += attnode.deadzone_cost * p;
+        }
       }
       if (baseproblem.verbose_level > 2) {
         //console.log(`result:  P[%d][%d] ${red_att} vs. ${red_def} = ${p} cumm(${result.cumm}) rcumm(${result.rcumm}) (${result.cost})`, result.i, result.j);
