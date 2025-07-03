@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.9
+
+### Patch Changes
+
+- 436e8ae: sortMode
+
 ## 1.0.8
 
 ### Patch Changes
