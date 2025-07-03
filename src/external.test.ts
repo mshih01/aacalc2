@@ -46,6 +46,7 @@ test('multiwaveExternal', () => {
     num_runs: 1,
     verbose_level: 0,
     diceMode: 'standard',
+    sortMode: 'unit_count',
   };
 
   let output = multiwaveExternal(input);
@@ -99,6 +100,7 @@ test('multiwaveExternal expected profit', () => {
     num_runs: 1,
     verbose_level: 0,
     diceMode: 'standard',
+    sortMode: 'unit_count',
   };
 
   let output = multiwaveExternal(input);

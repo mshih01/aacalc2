@@ -196,6 +196,7 @@ function run4(argc: number, argv: string[]) {
     num_runs: 1,
     verbose_level: verbose_level,
     diceMode: diceArr[diceMode],
+    sortMode: 'unit_count',
   };
 
   console.log(JSON.stringify(input, null, 4));

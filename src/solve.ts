@@ -6,6 +6,8 @@ const epsilon: number = 1e-9;
 
 export type DiceMode = 'standard' | 'lowluck' | 'biased';
 
+export type SortMode = 'unit_count' | 'ipc_cost';
+
 class unit_group_manager {
   unit_group_arr: unit_group[];
   mymap: Map<string, number>;
@@ -797,6 +799,7 @@ class naval_problem {
   rounds: number = -1;
   average_rounds: number = -1;
   diceMode: DiceMode = 'standard';
+  sortMode: SortMode = 'unit_count';
   N: number;
   M: number;
   debug_level: number = 0;
@@ -890,6 +893,7 @@ class naval_problem {
     def_cas: casualty_1d[] | undefined = undefined,
     is_nonaval: boolean = false,
     diceMode: DiceMode = 'standard',
+    sortMode: SortMode = 'unit_count',
     retreat_expected_ipc_profit_threshold?: number,
     retreat_strafe_threshold?: number,
   ) {
@@ -908,6 +912,7 @@ class naval_problem {
       retreat_expected_ipc_profit_threshold;
     this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.diceMode = diceMode;
+    this.sortMode = sortMode;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
     this.is_crash_fighters = is_crash_fighters;
@@ -984,6 +989,7 @@ class naval_problem {
           undefined,
           true,
           this.diceMode,
+          this.sortMode,
         );
         if (this.nonavalproblem != undefined) {
           for (let i = 0; i < this.att_data.nodeArr.length; i++) {
@@ -2519,6 +2525,12 @@ function collect_naval_results(
         const j2 =
           problem.def_data.nodeArr[j].N - problem.def_data.nodeArr[j].numBB;
         const cost = j2 - i2 + (def_cost - att_cost) / max_cost;
+
+        const attcascost = NN_base - att_cost;
+        const defcascost = MM_base - def_cost;
+        const cost2 = -defcascost + attcascost;
+        const cost3 = parent_prob.sortMode == 'unit_count' ? cost : cost2;
+
         /*
                 if (do_strafe) {
                     int attcas = NN - i;
@@ -2532,7 +2544,7 @@ function collect_naval_results(
                     }
                 }
 */
-        const data = new result_data_t(index, i, j, cost, p);
+        const data = new result_data_t(index, i, j, cost3, p);
         resultArr.push(data);
       }
     }
@@ -4596,6 +4608,7 @@ export interface multiwave_input {
   wave_info: wave_input[];
   debug: boolean;
   diceMode: DiceMode;
+  sortMode: SortMode;
   prune_threshold: number;
   report_prune_threshold: number;
   is_naval: boolean;
@@ -4729,6 +4742,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           defend_add_reinforce,
           false,
           input.diceMode,
+          input.sortMode,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_strafe_threshold,
         ),

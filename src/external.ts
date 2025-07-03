@@ -1,6 +1,7 @@
 import {
   unit_manager,
   type DiceMode,
+  type SortMode,
   apply_ool,
   type multiwave_input,
   type wave_input,
@@ -128,6 +129,7 @@ export interface MultiwaveInput {
   num_runs: number;
   verbose_level: number;
   diceMode: DiceMode;
+  sortMode: SortMode;
 }
 
 export interface SbrInput {
@@ -219,6 +221,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     is_naval: input.is_naval,
     in_progress: input.in_progress,
     diceMode: input.diceMode,
+    sortMode: input.sortMode,
     num_runs: input.num_runs,
   };
 

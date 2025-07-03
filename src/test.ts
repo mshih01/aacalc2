@@ -155,6 +155,7 @@ function run3(argc: number, argv: string[]) {
     is_naval: isnaval > 0,
     in_progress: in_progress,
     diceMode: diceMode,
+    sortMode: 'unit_count',
     num_runs: num_runs,
     verbose_level: verbose_level,
   };
@@ -194,7 +195,7 @@ function run2(argc: number, argv: string[]) {
   }
   const verbose_level = parseInt(argv[i++]);
 
-  console.time('Execution Time');
+  console.time('execution time');
   console.log(`debug = ${debug}`);
   console.log(`report_prune_threshold = ${report_prune_threshold}`);
   console.log(`prune_threshold = ${prune_threshold}`);

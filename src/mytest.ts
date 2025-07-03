@@ -49,6 +49,7 @@ const input: MultiwaveInput = {
   num_runs: 1,
   verbose_level: 3,
   diceMode: 'standard',
+  sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
 };
 
 let output = multiwaveExternal(input);
