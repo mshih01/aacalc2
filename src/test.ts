@@ -151,6 +151,7 @@ function run3(argc: number, argv: string[]) {
     in_progress: in_progress,
     diceMode: diceMode,
     sortMode: 'unit_count',
+    is_deadzone: false,
     num_runs: num_runs,
     verbose_level: verbose_level,
   };

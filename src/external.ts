@@ -130,6 +130,7 @@ export interface MultiwaveInput {
   verbose_level: number;
   diceMode: DiceMode;
   sortMode?: SortMode;
+  is_deadzone?: boolean;
 }
 
 export interface SbrInput {
@@ -220,6 +221,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     report_prune_threshold: input.report_prune_threshold,
     is_naval: input.is_naval,
     in_progress: input.in_progress,
+    is_deadzone: input.is_deadzone ?? false, // default to false if not provided
     diceMode: input.diceMode,
     sortMode: input.sortMode == undefined ? 'unit_count' : input.sortMode,
     num_runs: input.num_runs,

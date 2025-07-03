@@ -658,6 +658,7 @@ class general_unit_graph_node {
   num_naval: number;
   num_dest: number;
   cost: number;
+  deadzone_cost: number; // land units taking territories in a deadzone.
   dlast: boolean = false;
   index: number = 0;
   next_aahit: general_unit_graph_node | undefined = undefined;
@@ -696,6 +697,7 @@ class general_unit_graph_node {
     this.numBB = count_units(this.unit_str, 'E');
     this.num_dest = count_units(this.unit_str, 'D');
     this.cost = get_cost_from_str(um, unit_str, '');
+    this.deadzone_cost = get_deadzone_cost_from_str(um, unit_str, '');
     if (is_nonaval) {
       if (this.num_naval == 0) {
         this.cost += this.num_subs * 1000;
@@ -810,17 +812,19 @@ class general_problem {
   average_rounds: number = -1;
   diceMode: DiceMode = 'standard';
   sortMode: SortMode = 'unit_count';
+  is_deadzone: boolean = false; // deadzone attack
   N: number;
   M: number;
   debug_level: number = 0;
   verbose_level: number = 0;
   P_1d: number[] = []; // probability of state i, j
+
+  // EV related variables
   E_1d: number[] = []; // expected value of state i, j
   accumulate: number = 0; // accumulated expected value
-  base_attnode: general_unit_graph_node | undefined = undefined;
-  base_defnode: general_unit_graph_node | undefined = undefined;
   base_attcost: number = 0;
   base_defcost: number = 0;
+
   nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
   prune_threshold: number = -1;
@@ -904,6 +908,7 @@ class general_problem {
     is_nonaval: boolean = false,
     diceMode: DiceMode = 'standard',
     sortMode: SortMode = 'unit_count',
+    is_deadzone: boolean = false,
     retreat_expected_ipc_profit_threshold?: number,
     retreat_strafe_threshold?: number,
   ) {
@@ -923,6 +928,7 @@ class general_problem {
     this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
+    this.is_deadzone = is_deadzone;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
     this.is_crash_fighters = is_crash_fighters;
@@ -2303,6 +2309,24 @@ export function get_cost_from_str(
   return cost;
 }
 
+export function get_deadzone_cost_from_str(
+  um: unit_manager,
+  s: string,
+  retreat: string = '',
+): number {
+  let cost = 0;
+  let i;
+  for (i = 0; i < s.length; i++) {
+    const ch = s.charAt(i);
+    const stat = um.get_stat(ch);
+    if (!isLand(um, ch)) {
+      continue;
+    }
+    cost += stat.cost - (stat.def / 6) * 3; // cost of the unit + chance of unit hitting * cost of inf
+  }
+  return cost;
+}
+
 function get_cost_remain(
   um: unit_manager,
   group: unit_group,
@@ -2694,6 +2718,7 @@ function print_general_results(
 
   // accumulate attacker and defender maps.
   const att_map: Map<number, number> = new Map();
+  const att_retreat_map: Map<number, number> = new Map(); // for retreating units
   const def_map: Map<number, number> = new Map();
 
   let totalattloss = 0;
@@ -2735,11 +2760,21 @@ function print_general_results(
     } else {
       def_map.set(result.j, d_p + p);
     }
-    const a_p = att_map.get(result.i);
-    if (a_p == undefined) {
-      att_map.set(result.i, p);
+    // separate attackers into retreat and survives catetories
+    if (def.length > 0) {
+      const a_p = att_retreat_map.get(result.i);
+      if (a_p == undefined) {
+        att_retreat_map.set(result.i, p);
+      } else {
+        att_retreat_map.set(result.i, a_p + p);
+      }
     } else {
-      att_map.set(result.i, a_p + p);
+      const a_p = att_map.get(result.i);
+      if (a_p == undefined) {
+        att_map.set(result.i, p);
+      } else {
+        att_map.set(result.i, a_p + p);
+      }
     }
     if (p > 0) {
       totalattloss += att_naval_cost.cost * p;
@@ -2793,6 +2828,27 @@ function print_general_results(
     const cas: casualty_1d = {
       remain: att,
       retreat: retreat_att,
+      casualty: att_cas,
+      prob: p,
+    };
+    att_cas_1d.push(cas);
+  }
+  for (const [i, p] of att_retreat_map) {
+    //console.log(i, p, "i, p");
+    const [att, retreat_att] = get_general_group_string(
+      baseproblem.um,
+      baseproblem.att_data,
+      i,
+    );
+    const att_naval_cost = get_general_cost(
+      baseproblem,
+      baseproblem.att_data,
+      i,
+    );
+    const att_cas = att_naval_cost.casualty;
+    const cas: casualty_1d = {
+      remain: '',
+      retreat: retreat_att + att,
       casualty: att_cas,
       prob: p,
     };
@@ -2901,7 +2957,7 @@ function compute_expected_value(problem: general_problem): void {
   }
 }
 
-function solve_sub(problem: general_problem) {
+function solve_general(problem: general_problem) {
   //debugger;
   problem.P_1d = [];
   const N = problem.att_data.nodeArr.length;
@@ -4107,6 +4163,7 @@ export interface multiwave_input {
   report_prune_threshold: number;
   is_naval: boolean;
   in_progress: boolean;
+  is_deadzone: boolean;
   num_runs: number;
   verbose_level: number;
 }
@@ -4242,6 +4299,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           false,
           input.diceMode,
           input.sortMode,
+          input.is_deadzone,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_strafe_threshold,
         ),
@@ -4255,7 +4313,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
       const problemArr: general_problem[] = [];
       problemArr.push(myprob);
       //console.log(myprob);
-      solve_sub(myprob);
+      solve_general(myprob);
 
       const result_data: result_data_t[] = [];
       collect_results(myprob, problemArr, 0, result_data);
