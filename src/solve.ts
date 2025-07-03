@@ -457,6 +457,7 @@ export class unit_manager {
   }
 }
 
+// a group of units with fixed order of loss.
 export class unit_group {
   diceMode: DiceMode;
   unit_str: string;
@@ -641,7 +642,14 @@ export class unit_group {
   }
 }
 
-class naval_unit_graph_node {
+// graph node -- to support random order of loss.
+// compute/store all possible next state transitions.
+//      - casualties (air hit, naval hit, sub hit)
+//      - remove non-combat fighters without other defendewrs (e.g. AA's, transports)
+//      - retreat non-amphibious units
+//      - submerge subs
+//      - crash fighters
+class general_unit_graph_node {
   unit_str: string;
   retreat: string = '';
   N: number;
@@ -652,17 +660,17 @@ class naval_unit_graph_node {
   cost: number;
   dlast: boolean = false;
   index: number = 0;
-  next_aahit: naval_unit_graph_node | undefined = undefined;
-  next_subhit: naval_unit_graph_node | undefined = undefined;
-  next_airhit: naval_unit_graph_node | undefined = undefined;
-  next_navalhit!: naval_unit_graph_node;
-  next_dlast_subhit: naval_unit_graph_node | undefined = undefined;
-  next_dlast_airhit: naval_unit_graph_node | undefined = undefined;
-  next_dlast_navalhit: naval_unit_graph_node | undefined = undefined;
-  next_submerge: naval_unit_graph_node | undefined = undefined;
-  next_retreat_amphibious: naval_unit_graph_node | undefined = undefined;
-  next_crash_fighters: naval_unit_graph_node | undefined = undefined;
-  next_remove_noncombat: naval_unit_graph_node | undefined = undefined;
+  next_aahit: general_unit_graph_node | undefined = undefined;
+  next_subhit: general_unit_graph_node | undefined = undefined;
+  next_airhit: general_unit_graph_node | undefined = undefined;
+  next_navalhit!: general_unit_graph_node;
+  next_dlast_subhit: general_unit_graph_node | undefined = undefined;
+  next_dlast_airhit: general_unit_graph_node | undefined = undefined;
+  next_dlast_navalhit: general_unit_graph_node | undefined = undefined;
+  next_submerge: general_unit_graph_node | undefined = undefined;
+  next_retreat_amphibious: general_unit_graph_node | undefined = undefined;
+  next_crash_fighters: general_unit_graph_node | undefined = undefined;
+  next_remove_noncombat: general_unit_graph_node | undefined = undefined;
   naaArr: number[] = [];
   nsubArr: number[] = [];
   nairArr: number[] = [];
@@ -696,7 +704,8 @@ class naval_unit_graph_node {
   }
 }
 
-class naval_unit_group {
+// a group of units with random order of loss possible
+class general_unit_group {
   um: unit_manager;
   unit_str: string = '';
   diceMode: DiceMode;
@@ -714,7 +723,7 @@ class naval_unit_group {
   air_group: unit_group;
   dlast_group: unit_group | undefined;
 
-  nodeArr: naval_unit_graph_node[] = [];
+  nodeArr: general_unit_graph_node[] = [];
 
   constructor(
     um: unit_manager,
@@ -786,12 +795,13 @@ class naval_unit_group {
   }
 }
 
-class naval_problem {
+// General problem -- supports random order of loss cases
+class general_problem {
   um: unit_manager;
   is_naval: boolean;
   prob: number = 0;
-  att_data: naval_unit_group;
-  def_data: naval_unit_group;
+  att_data: general_unit_group;
+  def_data: general_unit_group;
   is_nonaval: boolean;
   is_retreat: boolean; // rounds > 0 || retreat_threshold
   is_amphibious: boolean; // attacker has amphibious units... and is_retreat
@@ -807,11 +817,11 @@ class naval_problem {
   P_1d: number[] = []; // probability of state i, j
   E_1d: number[] = []; // expected value of state i, j
   accumulate: number = 0; // accumulated expected value
-  base_attnode: naval_unit_graph_node | undefined = undefined;
-  base_defnode: naval_unit_graph_node | undefined = undefined;
+  base_attnode: general_unit_graph_node | undefined = undefined;
+  base_defnode: general_unit_graph_node | undefined = undefined;
   base_attcost: number = 0;
   base_defcost: number = 0;
-  nonavalproblem: naval_problem | undefined = undefined;
+  nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
   prune_threshold: number = -1;
   early_prune_threshold: number = -1;
@@ -918,7 +928,7 @@ class naval_problem {
     this.is_crash_fighters = is_crash_fighters;
     this.rounds = rounds;
     this.is_amphibious = this.is_retreat && hasAmphibious(um, att_str);
-    this.att_data = new naval_unit_group(
+    this.att_data = new general_unit_group(
       um,
       att_str,
       0,
@@ -933,7 +943,7 @@ class naval_problem {
       diceMode,
     );
     //console.log(this.att_data, `att`);
-    this.def_data = new naval_unit_group(
+    this.def_data = new general_unit_group(
       um,
       def_str,
       1,
@@ -972,7 +982,7 @@ class naval_problem {
           this.att_data.sub_group.unit_str + this.att_data.air_group.unit_str;
         const def =
           this.def_data.sub_group.unit_str + this.def_data.air_group.unit_str;
-        this.nonavalproblem = new naval_problem(
+        this.nonavalproblem = new general_problem(
           this.verbose_level,
           um,
           att,
@@ -1115,8 +1125,8 @@ class unit_stat {
 }
 
 function hasDestroyer(
-  group: naval_unit_group,
-  node: naval_unit_graph_node,
+  group: general_unit_group,
+  node: general_unit_graph_node,
 ): boolean {
   const v1 = node.num_dest > 0;
   /*
@@ -1129,7 +1139,7 @@ function hasDestroyer(
 }
 
 /*
-function hasDestroyerOrig( group : naval_unit_group, node : naval_unit_graph_node) : boolean {
+function hasDestroyerOrig( group : general_unit_group, node : general_unit_graph_node) : boolean {
 	if (node.dlast) {
 		return node.num_naval > 0;
 	}
@@ -1140,12 +1150,12 @@ function hasDestroyerOrig( group : naval_unit_group, node : naval_unit_graph_nod
 }
 */
 
-function remove_subhits2(node: naval_unit_graph_node, hits: number): number {
+function remove_subhits2(node: general_unit_graph_node, hits: number): number {
   const n = hits;
   return node.nsubArr[n];
 }
 function remove_aahits(
-  group: naval_unit_group,
+  group: general_unit_group,
   hits: number,
   index: number,
 ): number {
@@ -1155,7 +1165,7 @@ function remove_aahits(
 }
 
 function remove_dlast_subhits2(
-  node: naval_unit_graph_node,
+  node: general_unit_graph_node,
   hits: number,
 ): number {
   const n = hits;
@@ -1163,7 +1173,7 @@ function remove_dlast_subhits2(
 }
 
 function remove_planehits2(
-  node: naval_unit_graph_node,
+  node: general_unit_graph_node,
   hasDest: boolean,
   hits: number,
 ): number {
@@ -1176,7 +1186,7 @@ function remove_planehits2(
 }
 
 function remove_dlast_planehits2(
-  node: naval_unit_graph_node,
+  node: general_unit_graph_node,
   hasDest: boolean,
   hits: number,
 ): number {
@@ -1188,13 +1198,16 @@ function remove_dlast_planehits2(
   }
 }
 
-function remove_navalhits2(node: naval_unit_graph_node, hits: number): number {
+function remove_navalhits2(
+  node: general_unit_graph_node,
+  hits: number,
+): number {
   const n = hits;
   return node.nnavalArr[n];
 }
 
 function remove_dlast_navalhits2(
-  node: naval_unit_graph_node,
+  node: general_unit_graph_node,
   hits: number,
 ): number {
   const n = hits;
@@ -1202,7 +1215,7 @@ function remove_dlast_navalhits2(
 }
 
 function is_terminal_state(
-  problem: naval_problem,
+  problem: general_problem,
   N: number,
   M: number,
   debug: boolean,
@@ -1225,7 +1238,7 @@ function is_terminal_state(
   return out;
 }
 
-function has_retreat_condition(problem: naval_problem): boolean {
+function has_retreat_condition(problem: general_problem): boolean {
   if (problem.retreat_threshold > 0) {
     return true;
   }
@@ -1238,7 +1251,7 @@ function has_retreat_condition(problem: naval_problem): boolean {
   return false;
 }
 function is_retreat_state(
-  problem: naval_problem,
+  problem: general_problem,
   N: number,
   M: number,
 ): boolean {
@@ -1266,7 +1279,7 @@ function is_retreat_state(
   return false;
 }
 function is_terminal_state_helper(
-  problem: naval_problem,
+  problem: general_problem,
   N: number,
   M: number,
   disable_retreat: boolean = false,
@@ -1302,7 +1315,7 @@ function is_terminal_state_helper(
 }
 
 function get_terminal_state_prob(
-  problem: naval_problem,
+  problem: general_problem,
   disable_retreat: boolean = false,
   debug: boolean = false,
 ): number {
@@ -1325,7 +1338,11 @@ function get_terminal_state_prob(
 
 // if attackers and defenders exist.
 // 1.  remove move the remaining non-amphibous attackers to retreat state.
-function retreat_one_naval_state(problem: naval_problem, N: number, M: number) {
+function retreat_one_naval_state(
+  problem: general_problem,
+  N: number,
+  M: number,
+) {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
 
@@ -1350,7 +1367,7 @@ function retreat_one_naval_state(problem: naval_problem, N: number, M: number) {
   }
 }
 
-function do_crash_fighters(problem: naval_problem) {
+function do_crash_fighters(problem: general_problem) {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
   for (let i = 0; i < N; i++) {
@@ -1372,7 +1389,7 @@ function do_crash_fighters(problem: naval_problem) {
   }
 }
 
-function do_early_retreat(problem: naval_problem, N: number, M: number) {
+function do_early_retreat(problem: general_problem, N: number, M: number) {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
   if (attnode.N == 0 || defnode.N == 0) {
@@ -1422,8 +1439,9 @@ function do_early_retreat(problem: naval_problem, N: number, M: number) {
   }
 }
 
-function solve_one_naval_state(
-  problem: naval_problem,
+// iterate all possible next states -- and update the probabilities
+function solve_one_general_state(
+  problem: general_problem,
   N: number,
   M: number,
   allow_same_state: boolean,
@@ -1431,7 +1449,7 @@ function solve_one_naval_state(
   do_retreat_only: boolean,
   disable_retreat: boolean,
   onNextState: (
-    problem: naval_problem,
+    problem: general_problem,
     ii: number,
     prob: number,
     n: number,
@@ -1439,12 +1457,12 @@ function solve_one_naval_state(
   ) => void = (problem, ii, prob, n: number, m: number) => {
     problem.setiP(ii, problem.getiP(ii) + prob);
   },
-  onInitState: (problem: naval_problem, n: number, m: number) => number = (
+  onInitState: (problem: general_problem, n: number, m: number) => number = (
     problem,
     n,
     m,
   ) => problem.getP(n, m),
-  onExitState: (problem: naval_problem, n: number, m: number) => void = (
+  onExitState: (problem: general_problem, n: number, m: number) => void = (
     problem,
     n,
     m,
@@ -2300,9 +2318,9 @@ function get_cost_remain(
   return cost;
 }
 
-function get_naval_cost_remain(
+function get_general_cost_remain(
   um: unit_manager,
-  group: naval_unit_group,
+  group: general_unit_group,
   ii: number,
 ): number {
   const node = group.nodeArr[ii];
@@ -2327,9 +2345,9 @@ function get_naval_cost_remain(
   }
 }
 
-function collect_naval_results(
-  parent_prob: naval_problem,
-  problemArr: naval_problem[],
+function collect_results(
+  parent_prob: general_problem,
+  problemArr: general_problem[],
   index: number,
   resultArr: result_data_t[],
 ): result_data_t[] {
@@ -2340,12 +2358,12 @@ function collect_naval_results(
 
   let att_cost, def_cost;
 
-  const NN_base = get_naval_cost_remain(
+  const NN_base = get_general_cost_remain(
     parent_prob.um,
     parent_prob.att_data,
     0,
   );
-  const MM_base = get_naval_cost_remain(
+  const MM_base = get_general_cost_remain(
     parent_prob.um,
     parent_prob.def_data,
     0,
@@ -2359,8 +2377,8 @@ function collect_naval_results(
         problem.getP(i, j),
       );
       if (p > 0) {
-        att_cost = get_naval_cost_remain(problem.um, problem.att_data, i);
-        def_cost = get_naval_cost_remain(problem.um, problem.def_data, j);
+        att_cost = get_general_cost_remain(problem.um, problem.att_data, i);
+        def_cost = get_general_cost_remain(problem.um, problem.def_data, j);
         const i2 =
           problem.att_data.nodeArr[i].N - problem.att_data.nodeArr[i].numBB;
         const j2 =
@@ -2424,9 +2442,9 @@ function get_group_string(
   return out;
 }
 
-function get_naval_group_string(
+function get_general_group_string(
   um: unit_manager,
-  group: naval_unit_group,
+  group: general_unit_group,
   sz: number,
 ): [string, string] {
   let out = '';
@@ -2531,9 +2549,9 @@ interface naval_cost {
   cost: number;
   casualty: string;
 }
-function get_naval_cost(
-  problem: naval_problem,
-  group: naval_unit_group,
+function get_general_cost(
+  problem: general_problem,
+  group: general_unit_group,
   ii: number,
 ): naval_cost {
   let skipBombard = false;
@@ -2584,9 +2602,9 @@ function get_naval_cost(
   return { cost: cost, casualty: casualty };
 }
 
-function print_naval_results(
-  baseproblem: naval_problem,
-  problemArr: naval_problem[],
+function print_general_results(
+  baseproblem: general_problem,
+  problemArr: general_problem[],
   resultArr: result_data_t[],
   doMerge: boolean = true,
 ): aacalc_output {
@@ -2617,12 +2635,12 @@ function print_naval_results(
   let red_att_cas: string;
   let red_def_cas: string;
 
-  [att, retreat_att] = get_naval_group_string(
+  [att, retreat_att] = get_general_group_string(
     baseproblem.um,
     baseproblem.att_data,
     0,
   );
-  [def, retreat_def] = get_naval_group_string(
+  [def, retreat_def] = get_general_group_string(
     baseproblem.um,
     baseproblem.def_data,
     0,
@@ -2646,7 +2664,7 @@ function print_naval_results(
     sum += p;
     result.cumm = sum;
     if (
-      get_naval_cost_remain(
+      get_general_cost_remain(
         baseproblem.um,
         problemArr[result.problem_index].att_data,
         result.i,
@@ -2655,7 +2673,7 @@ function print_naval_results(
       attsurvive += p;
     }
     if (
-      get_naval_cost_remain(
+      get_general_cost_remain(
         baseproblem.um,
         problemArr[result.problem_index].def_data,
         result.j,
@@ -2684,12 +2702,12 @@ function print_naval_results(
   for (let ii = 0; ii < mergedArr.length; ii++) {
     const result = mergedArr[ii];
     const problem = problemArr[result.problem_index];
-    [att, retreat_att] = get_naval_group_string(
+    [att, retreat_att] = get_general_group_string(
       problem.um,
       problem.att_data,
       result.i,
     );
-    [def, retreat_def] = get_naval_group_string(
+    [def, retreat_def] = get_general_group_string(
       problem.um,
       problem.def_data,
       result.j,
@@ -2698,8 +2716,16 @@ function print_naval_results(
     const red_retreat_def = get_reduced_group_string(retreat_def);
     red_att = get_reduced_group_string(att);
     red_def = get_reduced_group_string(def);
-    const att_naval_cost = get_naval_cost(problem, problem.att_data, result.i);
-    const def_naval_cost = get_naval_cost(problem, problem.def_data, result.j);
+    const att_naval_cost = get_general_cost(
+      problem,
+      problem.att_data,
+      result.i,
+    );
+    const def_naval_cost = get_general_cost(
+      problem,
+      problem.def_data,
+      result.j,
+    );
     red_att_cas = get_reduced_group_string(att_naval_cost.casualty);
     red_def_cas = get_reduced_group_string(def_naval_cost.casualty);
     const p = report_filter(problem.report_prune_threshold, result.p);
@@ -2753,12 +2779,16 @@ function print_naval_results(
 
   for (const [i, p] of att_map) {
     //console.log(i, p, "i, p");
-    const [att, retreat_att] = get_naval_group_string(
+    const [att, retreat_att] = get_general_group_string(
       baseproblem.um,
       baseproblem.att_data,
       i,
     );
-    const att_naval_cost = get_naval_cost(baseproblem, baseproblem.att_data, i);
+    const att_naval_cost = get_general_cost(
+      baseproblem,
+      baseproblem.att_data,
+      i,
+    );
     const att_cas = att_naval_cost.casualty;
     const cas: casualty_1d = {
       remain: att,
@@ -2772,12 +2802,16 @@ function print_naval_results(
 
   for (const [j, p] of def_map) {
     //console.log(j, p, "j, p");
-    const [def, retreat_def] = get_naval_group_string(
+    const [def, retreat_def] = get_general_group_string(
       baseproblem.um,
       baseproblem.def_data,
       j,
     );
-    const def_naval_cost = get_naval_cost(baseproblem, baseproblem.def_data, j);
+    const def_naval_cost = get_general_cost(
+      baseproblem,
+      baseproblem.def_data,
+      j,
+    );
     const def_cas = def_naval_cost.casualty;
     const cas: casualty_1d = {
       remain: def,
@@ -2803,7 +2837,7 @@ function print_naval_results(
   return output;
 }
 
-function compute_expected_value(problem: naval_problem): void {
+function compute_expected_value(problem: general_problem): void {
   problem.E_1d = [];
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
@@ -2819,7 +2853,7 @@ function compute_expected_value(problem: naval_problem): void {
       // for each state... compute the expected IPC profit E(i, j)
       // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
       // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
-      solve_one_naval_state(
+      solve_one_general_state(
         problem,
         i,
         j,
@@ -2867,7 +2901,7 @@ function compute_expected_value(problem: naval_problem): void {
   }
 }
 
-function solve_sub(problem: naval_problem) {
+function solve_sub(problem: general_problem) {
   //debugger;
   problem.P_1d = [];
   const N = problem.att_data.nodeArr.length;
@@ -2984,7 +3018,7 @@ function solve_sub(problem: naval_problem) {
   if (numBombard > 0 || problem.hasRetreatCondition()) {
     for (i = N - 1; i >= 0; i--) {
       for (j = M - 1; j >= 0; j--) {
-        solve_one_naval_state(problem, i, j, true, numBombard, false, true);
+        solve_one_general_state(problem, i, j, true, numBombard, false, true);
       }
     }
     didBombard = true;
@@ -3005,7 +3039,7 @@ function solve_sub(problem: naval_problem) {
       if (needs_early_retreat) {
         for (i = N - 1; i >= 0; i--) {
           for (j = M - 1; j >= 0; j--) {
-            solve_one_naval_state(problem, i, j, true, 0, true, false);
+            solve_one_general_state(problem, i, j, true, 0, true, false);
           }
         }
       }
@@ -3031,13 +3065,13 @@ function solve_sub(problem: naval_problem) {
       }
       for (i = N - 1; i >= 0; i--) {
         for (j = M - 1; j >= 0; j--) {
-          solve_one_naval_state(problem, i, j, true, 0, false, false);
+          solve_one_general_state(problem, i, j, true, 0, false, false);
         }
       }
       if (needs_early_retreat) {
         for (i = N - 1; i >= 0; i--) {
           for (j = M - 1; j >= 0; j--) {
-            solve_one_naval_state(problem, i, j, true, 0, true, false);
+            solve_one_general_state(problem, i, j, true, 0, true, false);
           }
         }
       }
@@ -3077,7 +3111,7 @@ function solve_sub(problem: naval_problem) {
       for (let ii = 0; ii < 100; ii++) {
         for (i = N - 1; i >= 0; i--) {
           for (j = M - 1; j >= 0; j--) {
-            solve_one_naval_state(problem, i, j, true, 0, false, true);
+            solve_one_general_state(problem, i, j, true, 0, false, true);
           }
         }
         const p = get_terminal_state_prob(problem, false, false);
@@ -3106,7 +3140,7 @@ function solve_sub(problem: naval_problem) {
   } else {
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
-        solve_one_naval_state(problem, i, j, false, 0, false, false);
+        solve_one_general_state(problem, i, j, false, 0, false, false);
       }
     }
   }
@@ -3126,7 +3160,7 @@ function solve_sub(problem: naval_problem) {
 
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
-        solve_one_naval_state(
+        solve_one_general_state(
           problem.nonavalproblem,
           i,
           j,
@@ -3171,7 +3205,7 @@ function make_node_key(s: string, retreat: string) {
 }
 
 function compute_remove_hits(
-  naval_group: naval_unit_group,
+  naval_group: general_unit_group,
   max_remove_hits: number,
   numAA: number,
   cas: casualty_1d[] | undefined,
@@ -3188,7 +3222,7 @@ function compute_remove_hits(
   const s = naval_group.unit_str;
   //printf ("%s", s);
   //console.log(naval_group);
-  let node = new naval_unit_graph_node(
+  let node = new general_unit_graph_node(
     naval_group.um,
     s,
     '',
@@ -3196,11 +3230,11 @@ function compute_remove_hits(
   );
   node.dlast = false;
 
-  const nodeVec: naval_unit_graph_node[] = [];
-  const mymap: Map<string, naval_unit_graph_node> = new Map();
+  const nodeVec: general_unit_graph_node[] = [];
+  const mymap: Map<string, general_unit_graph_node> = new Map();
   //const q : number[] = [];
   // information to uniquely identify a node
-  const mycompare = (a: naval_unit_graph_node, b: naval_unit_graph_node) =>
+  const mycompare = (a: general_unit_graph_node, b: general_unit_graph_node) =>
     b.cost - a.cost;
   const myheap = new Heap(mycompare);
   mymap.set(make_node_key(s, ''), node);
@@ -3225,7 +3259,7 @@ function compute_remove_hits(
         let cas;
         [att_str, cas] = remove_one_plane(naval_group.um, att_str);
         att_cas += cas;
-        nnode = new naval_unit_graph_node(
+        nnode = new general_unit_graph_node(
           naval_group.um,
           att_str,
           '',
@@ -3246,7 +3280,7 @@ function compute_remove_hits(
       const key = make_node_key(s, '');
       const ii = mymap.get(key);
       if (ii == undefined) {
-        const newnode = new naval_unit_graph_node(
+        const newnode = new general_unit_graph_node(
           naval_group.um,
           s,
           '',
@@ -3288,12 +3322,12 @@ function compute_remove_hits(
     // unconstrained next:  remove last unit
     const s = node.unit_str.substring(0, node.unit_str.length - 1);
 
-    let newnode: naval_unit_graph_node;
+    let newnode: general_unit_graph_node;
 
     const key = make_node_key(s, node.retreat);
     const ii = mymap.get(key);
     if (ii == undefined) {
-      newnode = new naval_unit_graph_node(
+      newnode = new general_unit_graph_node(
         naval_group.um,
         s,
         node.retreat,
@@ -3317,11 +3351,11 @@ function compute_remove_hits(
       node.next_subhit = newnode;
     } else {
       const s2 = remove_one_notplane(naval_group.um, node.unit_str, false);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3344,11 +3378,11 @@ function compute_remove_hits(
       node.next_airhit = newnode;
     } else {
       const s2 = remove_one_notsub(naval_group.um, node.unit_str, false);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3390,11 +3424,11 @@ function compute_remove_hits(
       //console.log ("here");
       // next naval
       const s2 = remove_one_notdestroyer(naval_group.um, node.unit_str);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3417,11 +3451,11 @@ function compute_remove_hits(
     ) {
       // next air
       const s2 = remove_one_notsub(naval_group.um, node.unit_str, true);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3444,11 +3478,11 @@ function compute_remove_hits(
     ) {
       // next sub
       const s2 = remove_one_notplane(naval_group.um, node.unit_str, true);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3472,11 +3506,11 @@ function compute_remove_hits(
       const retreat_subs_output = retreat_subs(naval_group.um, node.unit_str);
       const s2 = retreat_subs_output.s;
       const subs = retreat_subs_output.subs;
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, subs);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           subs,
@@ -3503,11 +3537,11 @@ function compute_remove_hits(
       );
       //if (true || hasAmphibious (naval_group.um, s2)) {
       {
-        let node2: naval_unit_graph_node;
+        let node2: general_unit_graph_node;
         const key = make_node_key(s2, amphibious);
         const ii = mymap.get(key);
         if (ii == undefined) {
-          node2 = new naval_unit_graph_node(
+          node2 = new general_unit_graph_node(
             naval_group.um,
             s2,
             amphibious,
@@ -3530,11 +3564,11 @@ function compute_remove_hits(
     }
     if (naval_group.is_crash_fighters) {
       const s2 = crash_fighters(naval_group.um, node.unit_str);
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3560,11 +3594,11 @@ function compute_remove_hits(
       is_only_aa_remain(naval_group.um, node.unit_str)
     ) {
       const s2 = '';
-      let node2: naval_unit_graph_node;
+      let node2: general_unit_graph_node;
       const key = make_node_key(s2, node.retreat);
       const ii = mymap.get(key);
       if (ii == undefined) {
-        node2 = new naval_unit_graph_node(
+        node2 = new general_unit_graph_node(
           naval_group.um,
           s2,
           node.retreat,
@@ -3598,8 +3632,8 @@ function compute_remove_hits(
     // compute nextsub array
     node.nsubArr = [];
 
-    let prev: naval_unit_graph_node | undefined = undefined;
-    let node2: naval_unit_graph_node | undefined;
+    let prev: general_unit_graph_node | undefined = undefined;
+    let node2: general_unit_graph_node | undefined;
     for (
       node2 = node;
       node2 != undefined && node2 != prev;
@@ -3745,8 +3779,8 @@ function compute_remove_hits(
     node = naval_group.nodeArr[0];
     // compute nextsub array
     node.naaArr = [];
-    let prev: naval_unit_graph_node | undefined = undefined;
-    let node2: naval_unit_graph_node | undefined;
+    let prev: general_unit_graph_node | undefined = undefined;
+    let node2: general_unit_graph_node | undefined;
     for (
       node2 = node;
       node2 != undefined && node2 != prev;
@@ -4082,20 +4116,25 @@ export interface multiwave_output {
   output: aacalc_output[];
 }
 
-function collect_and_print_results(problem: naval_problem) {
-  const problemArr: naval_problem[] = [];
+function collect_and_print_results(problem: general_problem) {
+  const problemArr: general_problem[] = [];
   problemArr.push(problem);
   const result_data: result_data_t[] = [];
-  collect_naval_results(problem, problemArr, 0, result_data);
+  collect_results(problem, problemArr, 0, result_data);
   let skipMerge = problem.is_retreat;
   skipMerge = true;
-  const out = print_naval_results(problem, problemArr, result_data, !skipMerge);
+  const out = print_general_results(
+    problem,
+    problemArr,
+    result_data,
+    !skipMerge,
+  );
   console.log(out);
 }
 
 export function multiwave(input: multiwave_input): multiwave_output {
   const umarr: unit_manager[] = [];
-  const probArr: naval_problem[] = [];
+  const probArr: general_problem[] = [];
   //let um = new unit_manager();
   //let um2 = new unit_manager();
   //let um3 = new unit_manager();
@@ -4185,7 +4224,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
         }
       }
       probArr.push(
-        new naval_problem(
+        new general_problem(
           input.verbose_level,
           um,
           attackers_internal,
@@ -4213,19 +4252,19 @@ export function multiwave(input: multiwave_input): multiwave_output {
         input.prune_threshold / 10,
         input.report_prune_threshold,
       );
-      const problemArr: naval_problem[] = [];
+      const problemArr: general_problem[] = [];
       problemArr.push(myprob);
       //console.log(myprob);
       solve_sub(myprob);
 
       const result_data: result_data_t[] = [];
-      collect_naval_results(myprob, problemArr, 0, result_data);
+      collect_results(myprob, problemArr, 0, result_data);
       let skipMerge = myprob.is_retreat;
       skipMerge = true;
       if (input.verbose_level > 2) {
         console.log(skipMerge, 'skipMerge');
       }
-      const out = print_naval_results(
+      const out = print_general_results(
         myprob,
         problemArr,
         result_data,
