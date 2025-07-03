@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.7
+
+### Patch Changes
+
+- cdb9164: add sortMode... by default -- sort by unit_count first -- then IPC as tiebreak. Optionally -- sort by IPC
+
 ## 1.0.6
 
 ### Patch Changes
