@@ -98,7 +98,7 @@ test('multiwaveExternal expected profit', () => {
     is_naval: false,
     in_progress: false,
     num_runs: 1,
-    verbose_level: 0,
+    verbose_level: 3,
     diceMode: 'standard',
     sortMode: 'unit_count',
   };
@@ -108,6 +108,7 @@ test('multiwaveExternal expected profit', () => {
   console.log(output.attack.ipcLoss[0], 'attack ipc loss');
   console.log(output.defense.survives[0], 'defense survives');
   console.log(output.defense.ipcLoss[0], 'defense ipc loss');
+  console.log(input);
   expect(output.attack.survives[0]).to.closeTo(0.9962273852328778, 1e-6);
   expect(output.attack.ipcLoss[0]).to.closeTo(17.241589222000417, 1e-6);
   expect(output.defense.survives[0]).to.closeTo(0.8694320798527282, 1e-6);

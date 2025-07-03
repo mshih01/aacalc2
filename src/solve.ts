@@ -819,6 +819,9 @@ class general_problem {
   verbose_level: number = 0;
   P_1d: number[] = []; // probability of state i, j
 
+  is_retreat_state_initialized: boolean = false; // is retreat state initialized
+  R_1d: boolean[] = []; // is i, j retreat state
+
   // EV related variables
   E_1d: number[] = []; // expected value of state i, j
   accumulate: number = 0; // accumulated expected value
@@ -867,6 +870,20 @@ class general_problem {
   setE(i: number, j: number, val: number) {
     const ii = this.getIndex(i, j);
     this.E_1d[ii] = val;
+  }
+  getRetreat(i: number, j: number): boolean {
+    const ii = this.getIndex(i, j);
+    return this.R_1d[ii];
+  }
+  getiRetreat(ii: number): boolean {
+    return this.R_1d[ii];
+  }
+  setRetreat(i: number, j: number, val: boolean) {
+    const ii = this.getIndex(i, j);
+    this.R_1d[ii] = val;
+  }
+  setiRetreat(ii: number, val: boolean) {
+    this.R_1d[ii] = val;
   }
   set_prune_threshold(pt: number, ept: number, rpt: number) {
     this.prune_threshold = pt;
@@ -1263,16 +1280,27 @@ function is_retreat_state(
 ): boolean {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
+  if (problem.getRetreat(N, M)) {
+    return true;
+  }
+  if (problem.is_retreat_state_initialized) {
+    return false;
+  }
   if (problem.retreat_threshold > 0) {
     if (attnode.N <= problem.retreat_threshold) {
       return true;
     }
   }
-  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+  /*
+  if (
+    !disable_retreat_ipc &&
+    problem.retreat_expected_ipc_profit_threshold != undefined
+  ) {
     if (problem.getE(N, M) < problem.retreat_expected_ipc_profit_threshold) {
       return true;
     }
   }
+    */
   if (
     problem.retreat_strafe_threshold != undefined &&
     attnode.nosub_group != undefined
@@ -2902,6 +2930,26 @@ function print_general_results(
   return output;
 }
 
+function compute_retreat_state(problem: general_problem): void {
+  problem.R_1d = [];
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      problem.setRetreat(i, j, false);
+    }
+  }
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      const is_retreat = is_retreat_state(problem, i, j);
+      if (is_retreat) {
+        problem.setRetreat(i, j, true);
+      }
+    }
+  }
+}
+
 function compute_expected_value(problem: general_problem): void {
   problem.E_1d = [];
   const N = problem.att_data.nodeArr.length;
@@ -2934,11 +2982,13 @@ function compute_expected_value(problem: general_problem): void {
             const defloss = problem.base_defcost - defnode.cost;
             const deltacost = defloss - attloss;
             const expected_value = problem.getiE(ii);
+            /*
             const ev =
               expected_value >= problem.retreat_expected_ipc_profit_threshold
                 ? expected_value
                 : 0;
-            problem.accumulate += (deltacost + ev) * prob;
+                */
+            problem.accumulate += (deltacost + expected_value) * prob;
           }
         },
         (problem, n: number, m: number) => {
@@ -2950,8 +3000,21 @@ function compute_expected_value(problem: general_problem): void {
         (problem, n: number, m: number) => {
           if (is_terminal_state(problem, n, m, false, false)) {
             problem.accumulate = 0;
+            if (problem.is_deadzone && problem.def_data.nodeArr[m].N == 0) {
+              problem.accumulate -= problem.att_data.nodeArr[n].deadzone_cost;
+            }
+            problem.setE(n, m, problem.accumulate);
+          } else {
+            const is_retreat =
+              problem.retreat_expected_ipc_profit_threshold != undefined &&
+              problem.accumulate <
+                problem.retreat_expected_ipc_profit_threshold;
+            const ev = !is_retreat ? problem.accumulate : 0;
+            if (is_retreat) {
+              problem.setRetreat(n, m, true);
+            }
+            problem.setE(n, m, ev);
           }
-          problem.setE(n, m, problem.accumulate);
         },
       );
     }
@@ -2977,12 +3040,15 @@ function solve_general(problem: general_problem) {
       problem.setP(i, j, 0.0);
     }
   }
+  problem.is_retreat_state_initialized = false;
+  compute_retreat_state(problem);
 
   if (problem.retreat_expected_ipc_profit_threshold != undefined) {
     console.time('compute_expected_value');
     compute_expected_value(problem);
     console.timeEnd('compute_expected_value');
   }
+  problem.is_retreat_state_initialized = true;
 
   if (problem.nonavalproblem != undefined) {
     problem.nonavalproblem.P_1d = [];
