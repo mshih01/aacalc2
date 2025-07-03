@@ -44,6 +44,7 @@ in_progress: false,
 num_runs: 1,
 verbose_level: 0,
 diceMode: 'standard',
+sortMode: 'unit_count',
 };
 
 let output = multiwaveExternal(input);

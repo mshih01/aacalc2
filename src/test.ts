@@ -5,8 +5,6 @@ import {
   type multiwave_input,
   type wave_input,
   multiwave,
-  type aacalc_input,
-  aacalc,
 } from './solve.js';
 
 const rl = readline.createInterface({
@@ -26,9 +24,6 @@ rl.once('close', () => {
   console.log('done');
   const mode = parseInt(argv[0]);
   switch (mode) {
-    case 0:
-      run2(argc, argv);
-      break;
     case 1:
       run3(argc, argv);
       break;
@@ -165,72 +160,6 @@ function run3(argc: number, argv: string[]) {
   const output = multiwave(input);
 
   console.log('output', JSON.stringify(output, null, 4));
-
-  console.timeEnd('Execution Time');
-}
-
-function run2(argc: number, argv: string[]) {
-  let i = 1;
-  const debug = parseInt(argv[i++]);
-  const report_prune_threshold = parseFloat(argv[i++]);
-  const prune_threshold = parseFloat(argv[i++]);
-  const isnaval = parseInt(argv[i++]);
-  const attackers = argv[i++];
-  const defenders = argv[i++];
-
-  const strafe_threshold = parseFloat(argv[i++]);
-  const num_runs = Math.max(parseInt(argv[i++]), 1);
-  const retreat_threshold = parseInt(argv[i++]);
-  const in_progress = parseInt(argv[i++]) > 0;
-
-  let att_destroyer_last = 0;
-  let def_destroyer_last = 0;
-  let att_submerge = 0;
-  let def_submerge = 0;
-  if (isnaval > 0) {
-    att_destroyer_last = Math.max(parseInt(argv[i++]), 0);
-    att_submerge = Math.max(parseInt(argv[i++]), 0);
-    def_destroyer_last = Math.max(parseInt(argv[i++]), 0);
-    def_submerge = Math.max(parseInt(argv[i++]), 0);
-  }
-  const verbose_level = parseInt(argv[i++]);
-
-  console.time('execution time');
-  console.log(`debug = ${debug}`);
-  console.log(`report_prune_threshold = ${report_prune_threshold}`);
-  console.log(`prune_threshold = ${prune_threshold}`);
-  console.log(`isnaval = ${isnaval}`);
-  console.log(`in_progress = ${in_progress}`);
-  console.log(`attackers = ${attackers}`);
-  console.log(`defenders = ${defenders}`);
-  console.log(`retreat_threshold = ${retreat_threshold}`);
-  console.log(debug);
-
-  const input: aacalc_input = {
-    attacker: attackers,
-    defender: defenders,
-    debug: debug > 0,
-    prune_threshold: prune_threshold,
-    report_prune_threshold: report_prune_threshold,
-    is_naval: isnaval > 0,
-    is_in_progress: in_progress,
-    att_destroyer_last: att_destroyer_last > 0,
-    def_destroyer_last: def_destroyer_last > 0,
-    att_submerge_sub: att_submerge > 0,
-    def_submerge_sub: def_submerge > 0,
-    num_runs: num_runs,
-    diceMode: 'standard',
-    retreat_threshold: retreat_threshold,
-    verbose_level: verbose_level,
-  };
-  console.log('input', input);
-
-  const output = aacalc(input);
-
-  console.log('output', JSON.stringify(output, null, 4));
-  console.log('casualtiesInfo', JSON.stringify(output.casualtiesInfo, null, 4));
-  console.log('att_cas', JSON.stringify(output.att_cas, null, 4));
-  console.log('def_cas', JSON.stringify(output.def_cas, null, 4));
 
   console.timeEnd('Execution Time');
 }
