@@ -657,6 +657,7 @@ class general_unit_graph_node {
   num_air: number;
   num_naval: number;
   num_dest: number;
+  hasLand: boolean = false; // true if unit_str has land units.
   cost: number;
   deadzone_cost: number; // land units taking territories in a deadzone.
   dlast: boolean = false;
@@ -698,6 +699,7 @@ class general_unit_graph_node {
     this.num_dest = count_units(this.unit_str, 'D');
     this.cost = get_cost_from_str(um, unit_str, '');
     this.deadzone_cost = get_deadzone_cost_from_str(um, unit_str, '');
+    this.hasLand = hasLand(um, unit_str);
     if (is_nonaval) {
       if (this.num_naval == 0) {
         this.cost += this.num_subs * 1000;
@@ -2449,7 +2451,7 @@ function collect_results(
             : 0;
         const takes =
           problem.def_data.nodeArr[j].N == 0 &&
-          hasLand(problem.um, problem.att_data.nodeArr[i].unit_str);
+          problem.att_data.nodeArr[i].hasLand;
         const territoryValue = takes ? problem.territory_value : 0;
         const cost3 =
           parent_prob.sortMode == 'unit_count'
@@ -3013,6 +3015,11 @@ function compute_expected_value(problem: general_problem): void {
             problem.accumulate = 0;
             if (problem.is_deadzone && problem.def_data.nodeArr[m].N == 0) {
               problem.accumulate -= problem.att_data.nodeArr[n].deadzone_cost;
+            }
+            if (problem.def_data.nodeArr[m].N == 0) {
+              if (problem.att_data.nodeArr[n].hasLand) {
+                problem.accumulate += problem.territory_value;
+              }
             }
             problem.setE(n, m, problem.accumulate);
           } else {
