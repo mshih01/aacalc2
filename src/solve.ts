@@ -813,6 +813,7 @@ class general_problem {
   diceMode: DiceMode = 'standard';
   sortMode: SortMode = 'unit_count';
   is_deadzone: boolean = false; // deadzone attack
+  territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
   N: number;
   M: number;
   debug_level: number = 0;
@@ -926,6 +927,7 @@ class general_problem {
     diceMode: DiceMode = 'standard',
     sortMode: SortMode = 'unit_count',
     is_deadzone: boolean = false,
+    territory_value: number = 0,
     retreat_expected_ipc_profit_threshold?: number,
     retreat_strafe_threshold?: number,
   ) {
@@ -946,6 +948,7 @@ class general_problem {
     this.diceMode = diceMode;
     this.sortMode = sortMode;
     this.is_deadzone = is_deadzone;
+    this.territory_value = territory_value;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
     this.is_crash_fighters = is_crash_fighters;
@@ -2444,8 +2447,14 @@ function collect_results(
           problem.is_deadzone && problem.def_data.nodeArr[j].N == 0
             ? problem.att_data.nodeArr[i].deadzone_cost
             : 0;
+        const takes =
+          problem.def_data.nodeArr[j].N == 0 &&
+          hasLand(problem.um, problem.att_data.nodeArr[i].unit_str);
+        const territoryValue = takes ? problem.territory_value : 0;
         const cost3 =
-          parent_prob.sortMode == 'unit_count' ? cost : cost2 + dzcost;
+          parent_prob.sortMode == 'unit_count'
+            ? cost
+            : cost2 + dzcost - territoryValue;
 
         /*
                 if (do_strafe) {
@@ -2543,6 +2552,7 @@ function get_reduced_group_string(input: string): string {
 export function get_external_unit_str(um : unit_manager, input : string) :
 		string
 {
+// stat
 	let map : Map<string, number> = new Map();
 
 	for (var char of input) {
@@ -2818,6 +2828,7 @@ function print_general_results(
         def.length == 0
       ) {
         takes += p;
+        totalattloss -= problem.territory_value * p;
         if (baseproblem.is_deadzone) {
           const attnode = baseproblem.att_data.nodeArr[result.i];
           totalattloss += attnode.deadzone_cost * p;
@@ -3334,7 +3345,7 @@ function solve_general(problem: general_problem) {
 function make_node_key(s: string, retreat: string) {
   return s + ';' + retreat;
 }
-
+// compute all possible sub-states (and all possible casualties from every state).
 function compute_remove_hits(
   naval_group: general_unit_group,
   max_remove_hits: number,
@@ -3666,7 +3677,7 @@ function compute_remove_hits(
         naval_group.um,
         node.unit_str,
       );
-      //if (true || hasAmphibious (naval_group.um, s2)) {
+      //if (true || hasAmphibious (naval_group.um, s2))
       {
         let node2: general_unit_graph_node;
         const key = make_node_key(s2, amphibious);
@@ -3749,7 +3760,7 @@ function compute_remove_hits(
       }
       node.next_remove_noncombat = node2;
     }
-  }
+  } // end of while heap loop
 
   //console.log("done queue");
   naval_group.nodeArr = nodeVec;
@@ -4239,6 +4250,7 @@ export interface multiwave_input {
   is_naval: boolean;
   in_progress: boolean;
   is_deadzone: boolean;
+  territory_value: number;
   num_runs: number;
   verbose_level: number;
 }
@@ -4375,6 +4387,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.diceMode,
           input.sortMode,
           input.is_deadzone,
+          input.territory_value,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_strafe_threshold,
         ),

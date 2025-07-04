@@ -131,6 +131,7 @@ export interface MultiwaveInput {
   diceMode: DiceMode;
   sortMode?: SortMode;
   is_deadzone?: boolean;
+  territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
 }
 
 export interface SbrInput {
@@ -222,6 +223,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     is_naval: input.is_naval,
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
+    territory_value: input.territory_value ?? 0, // default to 0 if not provided
     diceMode: input.diceMode,
     sortMode: input.sortMode == undefined ? 'unit_count' : input.sortMode,
     num_runs: input.num_runs,

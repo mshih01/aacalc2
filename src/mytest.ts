@@ -51,6 +51,7 @@ const input: MultiwaveInput = {
   diceMode: 'standard',
   sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
   is_deadzone: true, // optional, default is false
+  territory_value: 0, // optional, default is 0
 };
 
 let output = multiwaveExternal(input);
