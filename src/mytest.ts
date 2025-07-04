@@ -6,57 +6,104 @@ import {
   type SbrInput,
 } from './index.js';
 
-const input: MultiwaveInput = {
-  wave_info: [
-    {
-      attack: {
-        units: {
-          inf: 3,
-          arm: 2,
-          fig: 3,
-        },
-        ool: ['inf', 'art', 'arm', 'fig', 'bom'],
-        takes: 0,
-        aaLast: false,
-      },
-      defense: {
-        units: {
-          inf: 5,
-          art: 2,
-          arm: 1,
-          aa: 1,
-        },
-        ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
-        takes: 0,
-        aaLast: false,
-      },
-      att_submerge: false,
-      def_submerge: false,
-      att_dest_last: false,
-      def_dest_last: false,
-      is_crash_fighters: false,
-      rounds: 100,
-      retreat_threshold: 0,
-      retreat_expected_ipc_profit_threshold: 0, // optional
-      //retreat_strafe_threshold: 0.05, // optional
-    },
-  ],
-  debug: false,
-  prune_threshold: 1e-12,
-  report_prune_threshold: 1e-12,
-  is_naval: false,
-  in_progress: false,
-  num_runs: 1,
-  verbose_level: 3,
-  diceMode: 'standard',
-  sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
-  is_deadzone: true, // optional, default is false
-  territory_value: 0, // optional, default is 0
-};
+let out = [];
+//              no retreat, 1 round, EV based, EV based with strafe, strafe without EV
+let retreats = [undefined, undefined, 0, 0, undefined];
+let rounds = [100, 1, 100, 100, 100];
+let strafes = [undefined, undefined, undefined, 0.05, 0.05];
 
-let output = multiwaveExternal(input);
-console.log(output, 'multiwaveExternal expected profit output');
-console.log(
-  output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
-  'expected profit',
-);
+type Setting = [
+  string,
+  number | undefined,
+  number,
+  number | undefined,
+  boolean,
+  number,
+];
+
+let inputSettings: Setting[] = [
+  ['no retreat', undefined, 100, undefined, false, 0], // no retreat  (A)
+  ['1 round', undefined, 1, undefined, false, 0], // 1 round (B)
+  ['EV based retreat', 0, 100, undefined, false, 0], // EV based retreat (C)
+  ['EV retreat + strafe', 0, 100, 0.05, false, 0], // EV based retreat + strafe (D)
+  ['strafe only', undefined, 100, 0.05, false, 0], // strafe (E)
+  ['DZ + no retreat', undefined, 100, undefined, true, 0], // no retreat  (A)
+  ['DZ + 1 round', undefined, 1, undefined, true, 0], // 1 round (B)
+  ['DZ + EV based retreat', 0, 100, undefined, true, 0], // EV based retreat (C)
+  ['DZ + EV retreat + strafe', 0, 100, 0.05, true, 0], // EV based retreat + strafe (D)
+  ['DZ + strafe only', undefined, 100, 0.05, true, 0], // strafe (E)
+  ['DZ + terrValue + no retreat', undefined, 100, undefined, true, -5], // no retreat  (A)
+  ['DZ + terrValue + 1 round', undefined, 1, undefined, true, -5], // 1 round (B)
+  ['DZ + terrValue + EV based retreat', 0, 100, undefined, true, -5], // EV based retreat (C)
+  ['DZ + terrValue + EV retreat + strafe', 0, 100, 0.05, true, -5], // EV based retreat + strafe (D)
+  ['DZ + terrValue + strafe only', undefined, 100, 0.05, true, -5], // strafe (E)
+];
+
+for (let i = 0; i < inputSettings.length; i++) {
+  let setting = inputSettings[i];
+  let [description, retreat, round, strafe, is_deadzone, territory_value] =
+    setting;
+
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 11,
+            art: 2,
+            arm: 1,
+            fig: 2,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 7,
+            art: 1,
+            arm: 5,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 3,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    territory_value: territory_value, // optional, default is 0
+  };
+
+  let output = multiwaveExternal(input);
+  console.log(output, description);
+
+  let o = [
+    description,
+    output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
+    output.defense.ipcLoss[0],
+    output.attack.ipcLoss[0],
+    output.takesTerritory[0],
+  ];
+  out.push(o);
+}
+
+console.log(out);
