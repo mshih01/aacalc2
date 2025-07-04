@@ -13,12 +13,12 @@ let rounds = [100, 1, 100, 100, 100];
 let strafes = [undefined, undefined, undefined, 0.05, 0.05];
 
 type Setting = [
-  string,               // description
-  number | undefined,   // retreat threshold
-  number,              // rounds, required 
-  number | undefined,   // strafe threshold
-  boolean,        // is deadzone
-  number,            // territory value
+  string, // description
+  number | undefined, // retreat threshold
+  number, // rounds, required
+  number | undefined, // strafe threshold
+  boolean, // is deadzone
+  number, // territory value
 ];
 
 let inputSettings: Setting[] = [
