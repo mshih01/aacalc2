@@ -2963,6 +2963,7 @@ function compute_retreat_state(problem: general_problem): void {
   }
 }
 
+// compute EV for all possible substates
 function compute_expected_value(problem: general_problem): void {
   problem.E_1d = [];
   const N = problem.att_data.nodeArr.length;
@@ -3011,15 +3012,15 @@ function compute_expected_value(problem: general_problem): void {
           return 1;
         },
         (problem, n: number, m: number) => {
+          const attnode = problem.att_data.nodeArr[n];
+          const defnode = problem.def_data.nodeArr[m];
           if (is_terminal_state(problem, n, m, false, false)) {
             problem.accumulate = 0;
-            if (problem.is_deadzone && problem.def_data.nodeArr[m].N == 0) {
-              problem.accumulate -= problem.att_data.nodeArr[n].deadzone_cost;
+            if (problem.is_deadzone && defnode.N == 0) {
+              problem.accumulate -= attnode.deadzone_cost;
             }
-            if (problem.def_data.nodeArr[m].N == 0) {
-              if (problem.att_data.nodeArr[n].hasLand) {
-                problem.accumulate += problem.territory_value;
-              }
+            if (defnode.N == 0 && attnode.hasLand) {
+              problem.accumulate += problem.territory_value;
             }
             problem.setE(n, m, problem.accumulate);
           } else {
