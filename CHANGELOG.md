@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.11
+
+### Patch Changes
+
+- 544c339: add territory_value
+
 ## 1.0.10
 
 ### Patch Changes
