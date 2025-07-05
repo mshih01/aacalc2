@@ -39,12 +39,13 @@ let inputSettings: Setting[] = [
   ['DZ + terrValue + strafe only', undefined, 100, 0.05, true, -5], // strafe (E)
 ];
 
+console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
   let setting = inputSettings[i];
   let [description, retreat, round, strafe, is_deadzone, territory_value] =
     setting;
 
-  const input: MultiwaveInput = {
+  const input2: MultiwaveInput = {
     wave_info: [
       {
         attack: {
@@ -92,6 +93,55 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
   };
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 100,
+            art: 35,
+            arm: 0,
+            fig: 10,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 100,
+            art: 10,
+            arm: 10,
+            fig: 10,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 10,
+    verbose_level: 3,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    territory_value: territory_value, // optional, default is 0
+  };
 
   let output = multiwaveExternal(input);
   console.log(output, description);
@@ -106,4 +156,5 @@ for (let i = 0; i < inputSettings.length; i++) {
   out.push(o);
 }
 
+console.profileEnd('multiwaveExternal');
 console.log(out);
