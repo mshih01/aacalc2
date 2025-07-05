@@ -21,7 +21,7 @@ type Setting = [
   number, // territory value
 ];
 
-let inputSettings: Setting[] = [
+let inputSettings2: Setting[] = [
   ['no retreat', undefined, 100, undefined, false, 0], // no retreat  (A)
   ['1 round', undefined, 1, undefined, false, 0], // 1 round (B)
   ['EV based retreat', 0, 100, undefined, false, 0], // EV based retreat (C)
@@ -37,6 +37,10 @@ let inputSettings: Setting[] = [
   ['DZ + terrValue + EV based retreat', 0, 100, undefined, true, -5], // EV based retreat (C)
   ['DZ + terrValue + EV retreat + strafe', 0, 100, 0.05, true, -5], // EV based retreat + strafe (D)
   ['DZ + terrValue + strafe only', undefined, 100, 0.05, true, -5], // strafe (E)
+];
+
+let inputSettings: Setting[] = [
+  ['no retreat', undefined, 100, undefined, false, 0], // no retreat  (A)
 ];
 
 console.profile('multiwaveExternal');
@@ -135,7 +139,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     report_prune_threshold: 1e-12,
     is_naval: false,
     in_progress: false,
-    num_runs: 10,
+    num_runs: 1,
     verbose_level: 3,
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'

@@ -2963,6 +2963,24 @@ function compute_retreat_state(problem: general_problem): void {
   }
 }
 
+function print_retreat_state(problem: general_problem): void {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+  if (problem.verbose_level > 2) {
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < M; j++) {
+        console.log(
+          `result:  is_retreat_state[%d][%d] = %d`,
+          i,
+          j,
+          problem.getRetreat(i, j),
+        );
+      }
+    }
+  }
+}
+
 // compute EV for all possible substates
 function compute_expected_value(problem: general_problem): void {
   problem.E_1d = [];
@@ -3068,6 +3086,7 @@ function solve_general(problem: general_problem) {
     console.timeEnd('compute_expected_value');
   }
   problem.is_retreat_state_initialized = true;
+  print_retreat_state(problem);
 
   if (problem.nonavalproblem != undefined) {
     problem.nonavalproblem.P_1d = [];
