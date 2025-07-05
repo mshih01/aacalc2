@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.12
+
+### Patch Changes
+
+- 4299c41: add debug for is_retreat_state
+
 ## 1.0.11
 
 ### Patch Changes
