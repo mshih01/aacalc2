@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.13
+
+### Patch Changes
+
+- f8b94a2: bugfix -- rounds terminates incorrectly in round 2 due to probEnds[i] == probEnds[i-1] in the early iteration (no terminal states)
+
 ## 1.0.12
 
 ### Patch Changes
