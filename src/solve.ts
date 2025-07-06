@@ -3253,7 +3253,7 @@ function solve_general(problem: general_problem) {
         collect_and_print_results(problem);
       }
       if (p > 0) {
-        if (p + p0 == prob_ends[ii - 1]) {
+        if (ii > 10 && p + p0 == prob_ends[ii - 1]) {
           if (problem.verbose_level > 2) {
             console.timeEnd(label);
           }

@@ -40,7 +40,12 @@ let inputSettings2: Setting[] = [
 ];
 
 let inputSettings: Setting[] = [
-  ['no retreat', undefined, 100, undefined, false, 0], // no retreat  (A)
+  ['no retreat 100 rounds', undefined, 100, undefined, false, 0], // no retreat  (A)
+  ['no retreat 0 rounds ', undefined, 0, undefined, false, 0], // no retreat  (A)
+  ['no retreat 100 rounds run2', undefined, 100, undefined, false, 0], // no retreat  (A)
+  ['no retreat 0 rounds run2', undefined, 0, undefined, false, 0], // no retreat  (A)
+  ['no retreat 100 rounds run3', undefined, 100, undefined, false, 0], // no retreat  (A)
+  ['no retreat 0 rounds run3', undefined, 0, undefined, false, 0], // no retreat  (A)
 ];
 
 console.profile('multiwaveExternal');
@@ -102,9 +107,9 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 100,
-            art: 35,
-            arm: 0,
+            inf: 200,
+            art: 40,
+            arm: 10,
             fig: 10,
           },
           ool: ['inf', 'art', 'arm', 'fig', 'bom'],
@@ -113,11 +118,11 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 100,
-            art: 10,
+            inf: 200,
+            art: 0,
             arm: 10,
             fig: 10,
-            aa: 0,
+            aa: 3,
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
           takes: 0,
@@ -140,7 +145,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_naval: false,
     in_progress: false,
     num_runs: 1,
-    verbose_level: 3,
+    verbose_level: 0,
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
