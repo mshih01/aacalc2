@@ -3038,6 +3038,32 @@ function compute_expected_value(problem: general_problem): void {
       // for each state... compute the expected IPC profit E(i, j)
       // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
       // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
+
+      function onNextState_EV(
+        problem: general_problem,
+        ii: number,
+        prob: number,
+        n: number,
+        m: number,
+        num_rounds: number,
+      ): void {
+        const attnode = problem.att_data.nodeArr[n];
+        const defnode = problem.def_data.nodeArr[m];
+        if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+          const attloss = problem.base_attcost - attnode.cost;
+          const defloss = problem.base_defcost - defnode.cost;
+          const deltacost = defloss - attloss;
+          const expected_value = problem.getiE(ii);
+          /*
+            const ev =
+              expected_value >= problem.retreat_expected_ipc_profit_threshold
+                ? expected_value
+                : 0;
+                */
+          problem.accumulate += (deltacost + expected_value) * prob;
+        }
+      }
+
       solve_one_general_state(
         problem,
         i,
@@ -3115,6 +3141,20 @@ function do_roundless_eval(
   const M = problem.def_data.nodeArr.length;
   let i, j;
 
+  function onNextState_roundless(
+    problem: general_problem,
+    ii: number,
+    prob: number,
+    n: number,
+    m: number,
+    num_rounds: number,
+  ): void {
+    problem.setiP(ii, problem.getiP(ii) + prob);
+    const erounds =
+      problem.getiERound(ii) + prob * (problem.init_rounds + num_rounds);
+    problem.setiERound(ii, erounds);
+  }
+
   console.log('doing roundless eval with init_rounds', init_rounds);
   problem.ERound_1d = [];
   // initialize expected rounds for each state
@@ -3136,12 +3176,7 @@ function do_roundless_eval(
         0,
         false,
         false,
-        (problem, ii, prob, n: number, m: number, num_rounds: number) => {
-          problem.setiP(ii, problem.getiP(ii) + prob);
-          const erounds =
-            problem.getiERound(ii) + prob * (problem.init_rounds + num_rounds);
-          problem.setiERound(ii, erounds);
-        },
+        onNextState_roundless,
         (problem, n: number, m: number) => {
           const p_init = problem.getP(n, m);
           if (p_init == 0) {

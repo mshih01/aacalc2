@@ -85,11 +85,23 @@ let inputSettings2: Setting[] = [
 let inputSettings: Setting[] = [
   ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
   ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
+  ['EV retreat', 0, 0, undefined, false, 0, true], // no retreat  (A)
+  ['EV retreat + strafe', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
+  ['EV retreat + strafe', undefined, 0, 0.05, false, 0, false], // no retreat  (A)
+  ['EV retreat', 0, 100, undefined, false, 0, false], // no retreat  (A)
+  ['no retreat', undefined, 0, undefined, false, 0, true], // no retreat  (A)
+  ['EV retreat', 0, 0, undefined, false, 0, true], // no retreat  (A)
+  ['EV retreat + strafe', 0, 0, 0.05, false, 0, true], // no retreat  (A)
+  ['1 round', undefined, 1, undefined, false, 0, true], // no retreat  (A)
 ];
+
+/*
+let inputSettings: Setting[] = [];
+
+for (let i = 0; i < 20; i++) {
+  inputSettings.push(inputSettings4[0]);
+}
+*/
 
 console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
