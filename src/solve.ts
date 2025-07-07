@@ -3072,23 +3072,7 @@ function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
-        (problem, ii, prob, n: number, m: number, num_rounds: number) => {
-          const attnode = problem.att_data.nodeArr[n];
-          const defnode = problem.def_data.nodeArr[m];
-          if (problem.retreat_expected_ipc_profit_threshold != undefined) {
-            const attloss = problem.base_attcost - attnode.cost;
-            const defloss = problem.base_defcost - defnode.cost;
-            const deltacost = defloss - attloss;
-            const expected_value = problem.getiE(ii);
-            /*
-            const ev =
-              expected_value >= problem.retreat_expected_ipc_profit_threshold
-                ? expected_value
-                : 0;
-                */
-            problem.accumulate += (deltacost + expected_value) * prob;
-          }
-        },
+        onNextState_EV,
         (problem, n: number, m: number) => {
           problem.accumulate = 0;
           problem.base_attcost = problem.att_data.nodeArr[n].cost;
