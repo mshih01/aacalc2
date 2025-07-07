@@ -3115,6 +3115,7 @@ function do_roundless_eval(
   const M = problem.def_data.nodeArr.length;
   let i, j;
 
+  console.log('doing roundless eval with init_rounds', init_rounds);
   problem.ERound_1d = [];
   // initialize expected rounds for each state
   for (i = 0; i < N; i++) {
@@ -3127,9 +3128,6 @@ function do_roundless_eval(
 
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
-      // for each state... compute the expected IPC profit E(i, j)
-      // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
-      // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
       solve_one_general_state(
         problem,
         i,
