@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.16
+
+### Patch Changes
+
+- b366f08: roundless eval runtime
+
 ## 1.0.15
 
 ### Patch Changes
