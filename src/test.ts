@@ -153,6 +153,7 @@ function run3(argc: number, argv: string[]) {
     sortMode: 'unit_count',
     is_deadzone: false,
     territory_value: 0, // default to 0 if not provided
+    do_roundless_eval: false,
     num_runs: num_runs,
     verbose_level: verbose_level,
   };

@@ -799,6 +799,13 @@ class general_unit_group {
   }
 }
 
+type state_data = [
+  number /*probability*/,
+  number /*expected value*/,
+  boolean /*is retreat*/,
+  number /*rounds*/,
+];
+
 // General problem -- supports random order of loss cases
 class general_problem {
   um: unit_manager;
@@ -816,12 +823,15 @@ class general_problem {
   sortMode: SortMode = 'unit_count';
   is_deadzone: boolean = false; // deadzone attack
   territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
+  do_roundless_eval: boolean = false; // do roundless evaluation
   N: number;
   M: number;
   debug_level: number = 0;
   verbose_level: number = 0;
+
   P_1d: number[] = []; // probability of state i, j
 
+  // retreat state
   is_retreat_state_initialized: boolean = false; // is retreat state initialized
   R_1d: boolean[] = []; // is i, j retreat state
 
@@ -830,6 +840,10 @@ class general_problem {
   accumulate: number = 0; // accumulated expected value
   base_attcost: number = 0;
   base_defcost: number = 0;
+
+  // average rounds related variabless
+  ERound_1d: number[] = []; // rounds of state i, j
+  init_rounds: number = 0; // on init state -- incoming rounds.  ERound_1d[i, j] / p_init;
 
   nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
@@ -873,6 +887,20 @@ class general_problem {
   setE(i: number, j: number, val: number) {
     const ii = this.getIndex(i, j);
     this.E_1d[ii] = val;
+  }
+  getiERound(ii: number): number {
+    return this.ERound_1d[ii];
+  }
+  setiERound(ii: number, val: number) {
+    this.ERound_1d[ii] = val;
+  }
+  getERound(i: number, j: number): number {
+    const ii = this.getIndex(i, j);
+    return this.ERound_1d[ii];
+  }
+  setERound(i: number, j: number, val: number) {
+    const ii = this.getIndex(i, j);
+    this.ERound_1d[ii] = val;
   }
   getRetreat(i: number, j: number): boolean {
     const ii = this.getIndex(i, j);
@@ -930,6 +958,7 @@ class general_problem {
     sortMode: SortMode = 'unit_count',
     is_deadzone: boolean = false,
     territory_value: number = 0,
+    do_roundless_eval: boolean = false,
     retreat_expected_ipc_profit_threshold?: number,
     retreat_strafe_threshold?: number,
   ) {
@@ -951,6 +980,7 @@ class general_problem {
     this.sortMode = sortMode;
     this.is_deadzone = is_deadzone;
     this.territory_value = territory_value;
+    this.do_roundless_eval = do_roundless_eval;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
     this.is_crash_fighters = is_crash_fighters;
@@ -1028,6 +1058,11 @@ class general_problem {
           true,
           this.diceMode,
           this.sortMode,
+          this.is_deadzone,
+          this.territory_value,
+          this.do_roundless_eval,
+          this.retreat_expected_ipc_profit_threshold,
+          this.retreat_strafe_threshold,
         );
         if (this.nonavalproblem != undefined) {
           for (let i = 0; i < this.att_data.nodeArr.length; i++) {
@@ -1493,6 +1528,7 @@ function solve_one_general_state(
     prob: number,
     n: number,
     m: number,
+    num_rounds: number, // incremental number of rounds
   ) => void = (problem, ii, prob, n: number, m: number) => {
     problem.setiP(ii, problem.getiP(ii) + prob);
   },
@@ -1534,7 +1570,7 @@ function solve_one_general_state(
         const n = attnode.next_retreat_amphibious.index;
         const m = defnode.index;
         const ii = problem.getIndex(n, m);
-        onNextState(problem, ii, p_init, n, m);
+        onNextState(problem, ii, p_init, n, m, 0);
         //problem.setiP(ii, problem.getiP(ii) + p_init);
         problem.setP(N, M, 0);
         onExitState(problem, N, M);
@@ -1586,7 +1622,7 @@ function solve_one_general_state(
     }
     const ii = problem.getIndex(n, m);
 
-    onNextState(problem, ii, p_init, n, m);
+    onNextState(problem, ii, p_init, n, m, 0);
     //problem.setiP(ii, problem.getiP(ii) + p_init);
 
     problem.setP(N, M, 0);
@@ -1597,7 +1633,7 @@ function solve_one_general_state(
     const n = attnode.index;
     const m = defnode.next_remove_noncombat.index;
     const ii = problem.getIndex(n, m);
-    onNextState(problem, ii, p_init, n, m);
+    onNextState(problem, ii, p_init, n, m, 0);
     //problem.setiP(ii, problem.getiP(ii) + p_init);
     problem.setP(N, M, 0);
     onExitState(problem, N, M);
@@ -1685,7 +1721,8 @@ function solve_one_general_state(
     P0 += p;
   }
 
-  let r = p_init / (1 - P0);
+  const r2 = 1 / (1 - P0);
+  let r = p_init * r2;
   if (allow_same_state) {
     r = p_init;
   }
@@ -1739,7 +1776,8 @@ function solve_one_general_state(
     const MMM = M2 + M3;
     const P0 =
       att_nosub.get_prob_table(NNN, 0) * def_nosub.get_prob_table(MMM, 0);
-    let r = (p_init * 1) / (1 - P0);
+    const r2 = 1 / (1 - P0);
+    let r = p_init * r2;
     if (allow_same_state) {
       r = p_init;
     }
@@ -1760,7 +1798,7 @@ function solve_one_general_state(
         //let nn = remove_navalhits2(attnode, j + numBombard);
         const n = curr_attnode.index;
         const ii = problem.getIndex(n, m);
-        onNextState(problem, ii, prob, n, m);
+        onNextState(problem, ii, prob, n, m, r2);
         //problem.setiP(ii, problem.getiP(ii) + prob);
         curr_attnode = curr_attnode.next_navalhit;
       }
@@ -1781,7 +1819,8 @@ function solve_one_general_state(
       if (N1 > 0 && M1 > 0) {
         const P0 =
           att_sub.get_prob_table(N1, 0) * def_sub.get_prob_table(M1, 0);
-        let r = (p_init * 1) / (1 - P0);
+        const r2 = 1 / (1 - P0);
+        let r = p_init * r2;
         if (allow_same_state) {
           r = p_init;
         }
@@ -1792,14 +1831,15 @@ function solve_one_general_state(
             const n = att_remove_subhits_function(attnode, j1);
             const p2 = p1 * def_sub.get_prob_table(M1, j1);
             const ii = problem.getIndex(n, m);
-            onNextState(problem, ii, p2, n, m);
+            onNextState(problem, ii, p2, n, m, r2);
             //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
       } else if (N2 > 0 && M2 > 0) {
         const P0 =
           att_air.get_prob_table(N2, 0) * def_air.get_prob_table(M2, 0);
-        let r = (p_init * 1) / (1 - P0);
+        const r2 = 1 / (1 - P0);
+        let r = p_init * r2;
         if (allow_same_state) {
           r = p_init;
         }
@@ -1810,7 +1850,7 @@ function solve_one_general_state(
             const n = att_remove_planehits_function(attnode, false, j2);
             const p2 = p1 * def_air.get_prob_table(M2, j2);
             const ii = problem.getIndex(n, m);
-            onNextState(problem, ii, p2, n, m);
+            onNextState(problem, ii, p2, n, m, r2);
             //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
@@ -1963,7 +2003,7 @@ function solve_one_general_state(
                   j + def_sub_unconstrained_hits,
                 );
                 const ii = problem.getIndex(n, m);
-                onNextState(problem, ii, p2, n, m);
+                onNextState(problem, ii, p2, n, m, r2);
                 //problem.setiP(ii, problem.getiP(ii) + p2);
               }
             }
@@ -1998,7 +2038,7 @@ function solve_one_general_state(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m);
-                  onNextState(problem, ii, p5, n3, m);
+                  onNextState(problem, ii, p5, n3, m, r2);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
@@ -2034,7 +2074,7 @@ function solve_one_general_state(
                     i3 + att_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n, m3);
-                  onNextState(problem, ii, p5, n, m3);
+                  onNextState(problem, ii, p5, n, m3, r2);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
@@ -2082,7 +2122,7 @@ function solve_one_general_state(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m3);
-                  onNextState(problem, ii, p5, n3, m3);
+                  onNextState(problem, ii, p5, n3, m3, r2);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
@@ -3006,7 +3046,7 @@ function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
-        (problem, ii, prob, n: number, m: number) => {
+        (problem, ii, prob, n: number, m: number, num_rounds: number) => {
           const attnode = problem.att_data.nodeArr[n];
           const defnode = problem.def_data.nodeArr[m];
           if (problem.retreat_expected_ipc_profit_threshold != undefined) {
@@ -3064,6 +3104,84 @@ function compute_expected_value(problem: general_problem): void {
       }
     }
   }
+}
+
+// roundless evaluation... while analytically computing average rounds.
+function do_roundless_eval(
+  problem: general_problem,
+  init_rounds: number,
+): void {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+
+  problem.ERound_1d = [];
+  // initialize expected rounds for each state
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      const ii = problem.getIndex(i, j);
+      const p = problem.getiP(ii);
+      problem.setERound(i, j, p * init_rounds);
+    }
+  }
+
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      // for each state... compute the expected IPC profit E(i, j)
+      // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
+      // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
+      solve_one_general_state(
+        problem,
+        i,
+        j,
+        false,
+        0,
+        false,
+        false,
+        (problem, ii, prob, n: number, m: number, num_rounds: number) => {
+          problem.setiP(ii, problem.getiP(ii) + prob);
+          const erounds =
+            problem.getiERound(ii) + prob * (problem.init_rounds + num_rounds);
+          problem.setiERound(ii, erounds);
+        },
+        (problem, n: number, m: number) => {
+          const p_init = problem.getP(n, m);
+          if (p_init == 0) {
+            problem.init_rounds = 0;
+            return p_init;
+          }
+          problem.init_rounds = problem.getERound(n, m) / p_init;
+          return p_init;
+        },
+        (problem, n: number, m: number) => {
+          if (problem.getP(n, m) == 0) {
+            problem.setERound(n, m, 0.0);
+          }
+        },
+      );
+    }
+  }
+
+  let sum = 0.0;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      sum += problem.getERound(i, j);
+    }
+  }
+  problem.average_rounds = sum;
+
+  if (problem.verbose_level > 2) {
+    console.log(sum, 'average rounds');
+  }
+  /*
+  if (problem.verbose_level > 2) {
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < M; j++) {
+        console.log(`result:  EV[%d][%d] = %d`, i, j, problem.getE(i, j));
+      }
+    }
+  }
+    */
 }
 
 function solve_general(problem: general_problem) {
@@ -3253,7 +3371,7 @@ function solve_general(problem: general_problem) {
         collect_and_print_results(problem);
       }
       if (p > 0) {
-        if (ii > 10 && p + p0 == prob_ends[ii - 1]) {
+        if (ii > 3 && p + p0 == prob_ends[ii - 1]) {
           if (problem.verbose_level > 2) {
             console.timeEnd(label);
           }
@@ -3307,9 +3425,13 @@ function solve_general(problem: general_problem) {
     }
     problem.average_rounds = sum;
   } else {
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < M; j++) {
-        solve_one_general_state(problem, i, j, false, 0, false, false);
+    if (problem.do_roundless_eval) {
+      do_roundless_eval(problem, didBombard ? 1.0 : 0.0);
+    } else {
+      for (i = 0; i < N; i++) {
+        for (j = 0; j < M; j++) {
+          solve_one_general_state(problem, i, j, false, 0, false, false);
+        }
       }
     }
   }
@@ -3366,6 +3488,9 @@ function solve_general(problem: general_problem) {
     if (problem.verbose_level > 2) {
       console.log(sum, 'sum');
     }
+    problem.E_1d = [];
+    problem.ERound_1d = [];
+    problem.R_1d = [];
   }
 }
 
@@ -4277,6 +4402,7 @@ export interface multiwave_input {
   is_naval: boolean;
   in_progress: boolean;
   is_deadzone: boolean;
+  do_roundless_eval: boolean;
   territory_value: number;
   num_runs: number;
   verbose_level: number;
@@ -4415,6 +4541,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.sortMode,
           input.is_deadzone,
           input.territory_value,
+          input.do_roundless_eval,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_strafe_threshold,
         ),
