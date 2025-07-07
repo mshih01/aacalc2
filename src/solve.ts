@@ -829,6 +829,10 @@ class general_problem {
   debug_level: number = 0;
   verbose_level: number = 0;
 
+  // average rounds related variabless
+  ERound_1d: number[] = []; // rounds of state i, j
+  init_rounds: number = 0; // on init state -- incoming rounds.  ERound_1d[i, j] / p_init;
+
   P_1d: number[] = []; // probability of state i, j
 
   // retreat state
@@ -840,10 +844,6 @@ class general_problem {
   accumulate: number = 0; // accumulated expected value
   base_attcost: number = 0;
   base_defcost: number = 0;
-
-  // average rounds related variabless
-  ERound_1d: number[] = []; // rounds of state i, j
-  init_rounds: number = 0; // on init state -- incoming rounds.  ERound_1d[i, j] / p_init;
 
   nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
@@ -3182,11 +3182,51 @@ function do_roundless_eval(
     */
 }
 
-function solve_general(problem: general_problem) {
-  //debugger;
-  problem.P_1d = [];
+function do_roundless_eval_without_rounds(problem: general_problem): void {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
+  let i, j;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      solve_one_general_state(problem, i, j, false, 0, false, false);
+    }
+  }
+}
+
+function do_round_eval(
+  problem: general_problem,
+  allow_same_state: boolean,
+  num_bombard: number,
+  do_retreat_only: boolean,
+  disable_retreat: boolean,
+): void {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+  for (i = N - 1; i >= 0; i--) {
+    for (j = M - 1; j >= 0; j--) {
+      solve_one_general_state(
+        problem,
+        i,
+        j,
+        allow_same_state,
+        num_bombard,
+        do_retreat_only,
+        disable_retreat,
+      );
+    }
+  }
+}
+
+function solve_general(problem: general_problem) {
+  //debugger;
+
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  problem.P_1d = new Array(N * M);
+  problem.R_1d = new Array(N * M);
+  problem.E_1d = new Array(N * M);
+  problem.ERound_1d = new Array(N * M);
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -3301,11 +3341,7 @@ function solve_general(problem: general_problem) {
       count_units(problem.att_data.unit_str, 'C')
     : 0;
   if (numBombard > 0 || problem.hasRetreatCondition()) {
-    for (i = N - 1; i >= 0; i--) {
-      for (j = M - 1; j >= 0; j--) {
-        solve_one_general_state(problem, i, j, true, numBombard, false, true);
-      }
-    }
+    do_round_eval(problem, true, numBombard, false, true);
     didBombard = true;
   }
 
@@ -3322,11 +3358,7 @@ function solve_general(problem: general_problem) {
       problem.hasNonCombat();
     if (didBombard) {
       if (needs_early_retreat) {
-        for (i = N - 1; i >= 0; i--) {
-          for (j = M - 1; j >= 0; j--) {
-            solve_one_general_state(problem, i, j, true, 0, true, false);
-          }
-        }
+        do_round_eval(problem, true, 0, true, false);
       }
       const p = get_terminal_state_prob(problem, false, false);
       prob_ends.push(p + p0);
@@ -3348,17 +3380,9 @@ function solve_general(problem: general_problem) {
       if (problem.verbose_level > 2) {
         console.time(label);
       }
-      for (i = N - 1; i >= 0; i--) {
-        for (j = M - 1; j >= 0; j--) {
-          solve_one_general_state(problem, i, j, true, 0, false, false);
-        }
-      }
+      do_round_eval(problem, true, 0, false, false);
       if (needs_early_retreat) {
-        for (i = N - 1; i >= 0; i--) {
-          for (j = M - 1; j >= 0; j--) {
-            solve_one_general_state(problem, i, j, true, 0, true, false);
-          }
-        }
+        do_round_eval(problem, true, 0, true, false);
       }
       const enable_debug = false;
       const debug = enable_debug && prob_ends.length == 8;
@@ -3394,11 +3418,7 @@ function solve_general(problem: general_problem) {
       prob_ends[prob_ends.length - 1] = p + p0;
       // evaluate infinite rounds -- with retreat disabled. -- remaining attackers are not allowed to retreat.
       for (let ii = 0; ii < 100; ii++) {
-        for (i = N - 1; i >= 0; i--) {
-          for (j = M - 1; j >= 0; j--) {
-            solve_one_general_state(problem, i, j, true, 0, false, true);
-          }
-        }
+        do_round_eval(problem, true, 0, false, true);
         const p = get_terminal_state_prob(problem, false, false);
         prob_ends.push(p + p0);
         if (p == prob_ends[prob_ends.length - 2]) {
@@ -3426,11 +3446,7 @@ function solve_general(problem: general_problem) {
     if (problem.do_roundless_eval) {
       do_roundless_eval(problem, didBombard ? 1.0 : 0.0);
     } else {
-      for (i = 0; i < N; i++) {
-        for (j = 0; j < M; j++) {
-          solve_one_general_state(problem, i, j, false, 0, false, false);
-        }
-      }
+      do_roundless_eval_without_rounds(problem);
     }
   }
 

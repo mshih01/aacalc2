@@ -84,9 +84,11 @@ let inputSettings2: Setting[] = [
 
 let inputSettings: Setting[] = [
   ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
   ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0', undefined, 0, undefined, false, 0, false], // no retreat  (A)
-  ['no retreat 100', undefined, 100, undefined, false, 0, false], // no retreat  (A)
+  ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
+  ['no retreat 100 roundless', undefined, 100, undefined, false, 0, true], // no retreat  (A)
 ];
 
 console.profile('multiwaveExternal');
