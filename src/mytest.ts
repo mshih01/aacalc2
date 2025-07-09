@@ -11,6 +11,7 @@ let out = [];
 let retreats = [undefined, undefined, 0, 0, undefined];
 let rounds = [100, 1, 100, 100, 100];
 let strafes = [undefined, undefined, undefined, 0.05, 0.05];
+let verbose = 3; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -82,28 +83,27 @@ let inputSettings2: Setting[] = [
   ], // strafe (E)
 ];
 
-let inputSettings: Setting[] = [
+let inputSettings4: Setting[] = [
+  // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, false], // no retreat  (A)
+  // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
+  // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
+  // ['no retreat 0 roundless', 0, 100, undefined, false, 0, false], // no retreat  (A)
+  // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
   ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['EV retreat', 0, 0, undefined, false, 0, true], // no retreat  (A)
-  ['EV retreat + strafe', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
-  ['EV retreat + strafe', undefined, 0, 0.05, false, 0, false], // no retreat  (A)
-  ['EV retreat', 0, 100, undefined, false, 0, false], // no retreat  (A)
-  ['no retreat', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['EV retreat', 0, 0, undefined, false, 0, true], // no retreat  (A)
-  ['EV retreat + strafe', 0, 0, 0.05, false, 0, true], // no retreat  (A)
-  ['1 round', undefined, 1, undefined, false, 0, true], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, false], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 100, undefined, false, 0, false], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 100, 0.05, false, 0, false], // no retreat  (A)
+  // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
 
-/*
 let inputSettings: Setting[] = [];
 
-for (let i = 0; i < 20; i++) {
-  inputSettings.push(inputSettings4[0]);
-}
-*/
+inputSettings.push(inputSettings4[0]);
 
-console.profile('multiwaveExternal');
+console.log(process.memoryUsage());
+
+// console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
   let setting = inputSettings[i];
   let [
@@ -158,7 +158,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_naval: false,
     in_progress: false,
     num_runs: 1,
-    verbose_level: 3,
+    verbose_level: verbose,
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
@@ -207,7 +207,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_naval: false,
     in_progress: false,
     num_runs: 1,
-    verbose_level: 0,
+    verbose_level: verbose,
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
@@ -238,6 +238,125 @@ for (let i = 0; i < inputSettings.length; i++) {
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
           takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+  const input4: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 30,
+            art: 2,
+            arm: 10,
+            fig: 5,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 20,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            inf: 6,
+            art: 2,
+            arm: 0,
+            fig: 2,
+            bom: 1,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 2,
+            arm: 0,
+            fig: 2,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 1,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
           aaLast: false,
         },
         att_submerge: false,
@@ -257,7 +376,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_naval: false,
     in_progress: false,
     num_runs: 1,
-    verbose_level: 0,
+    verbose_level: verbose,
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
@@ -270,6 +389,7 @@ for (let i = 0; i < inputSettings.length; i++) {
   console.log(output, description);
   console.timeEnd(description);
   console.log(input3);
+  console.log(process.memoryUsage());
 
   let o = [
     description,
@@ -281,5 +401,5 @@ for (let i = 0; i < inputSettings.length; i++) {
   out.push(o);
 }
 
-console.profileEnd('multiwaveExternal');
+// console.profileEnd('multiwaveExternal');
 console.log(out);
