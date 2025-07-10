@@ -495,7 +495,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
-  const input5: MultiwaveInput = {
+  const input6: MultiwaveInput = {
     wave_info: [
       {
         attack: {
@@ -604,6 +604,62 @@ for (let i = 0; i < inputSettings.length; i++) {
     prune_threshold: 1e-12,
     report_prune_threshold: 1e-12,
     is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    report_complexity_only: report_complexity_only,
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+  const input5: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            sub: 60,
+            des: 10,
+            cru: 1,
+            acc: 5,
+            fig: 50,
+            bom: 1,
+            bat: 2,
+          },
+          ool: ['acc', 'sub', 'des', 'fig', 'cru', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            sub: 40,
+            des: 5,
+            cru: 1,
+            acc: 15,
+            fig: 30,
+            bat: 1,
+            tra: 5,
+          },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
     in_progress: false,
     num_runs: 1,
     verbose_level: verbose,
