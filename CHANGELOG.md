@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.23
+
+### Patch Changes
+
+- 672cfa2: improve multiwaveComplexityFastV2 for naval battles
+
 ## 1.0.22
 
 ### Patch Changes
