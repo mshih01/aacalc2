@@ -152,6 +152,7 @@ function run3(argc: number, argv: string[]) {
     diceMode: diceMode,
     sortMode: 'unit_count',
     is_deadzone: false,
+    report_complexity_only: false, // default to false if not provided
     territory_value: 0, // default to 0 if not provided
     do_roundless_eval: false,
     num_runs: num_runs,

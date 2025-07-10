@@ -131,6 +131,7 @@ export interface MultiwaveInput {
   diceMode: DiceMode;
   sortMode?: SortMode;
   is_deadzone?: boolean;
+  report_complexity_only?: boolean; // if true, only report complexity and no other results.
   do_roundless_eval?: boolean;
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
 }
@@ -168,6 +169,14 @@ export interface MultiwaveOutput {
   takesTerritory: number[];
   rounds: number[];
   waves: number;
+  complexity: number;
+}
+
+export function multiwaveComplexity(input: MultiwaveInput): number {
+  const complexityInput: MultiwaveInput = input;
+  complexityInput.report_complexity_only = true; // only report complexity
+  const output = multiwaveExternal(complexityInput);
+  return output.complexity;
 }
 
 export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
@@ -224,6 +233,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     is_naval: input.is_naval,
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
+    report_complexity_only: input.report_complexity_only ?? false, // default to false if not provided
     do_roundless_eval: input.do_roundless_eval ?? false, // default to false if not provided
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     diceMode: input.diceMode,
@@ -297,6 +307,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     takesTerritory: internal_output.out.takesTerritory,
     rounds: rounds,
     casualtiesInfo: casualtiesInfo,
+    complexity: internal_output.complexity,
   };
 
   return out;
@@ -459,6 +470,7 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
     takesTerritory: [],
     rounds: [1, 0, 0],
     waves: 1,
+    complexity: 0, // SBR does not have complexity in the same way as multiwave
   };
 
   return output;

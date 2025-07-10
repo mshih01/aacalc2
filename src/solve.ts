@@ -48,7 +48,8 @@ export class unit_manager {
   rev_map3: Map<UnitIdentifier, string>;
   unit_group_manager: unit_group_manager;
   verbose_level: number;
-  constructor(verbose_level: number) {
+  skip_compute: boolean = false;
+  constructor(verbose_level: number, skip_compute: boolean = false) {
     this.unit_stats = new Map();
     this.rev_map = new Map();
     this.rev_map2 = new Map();
@@ -56,6 +57,7 @@ export class unit_manager {
     this.init_units();
     this.unit_group_manager = new unit_group_manager();
     this.verbose_level = verbose_level;
+    this.skip_compute = skip_compute;
   }
   init_units() {
     this.make_unit(
@@ -510,6 +512,7 @@ export class unit_group {
     this.diceMode = diceMode;
     let i: number;
     let j: number;
+
     if (manager.verbose_level > 2) {
       console.log(input_str, 'make_unit_group');
     }
@@ -825,6 +828,7 @@ class general_problem {
   diceMode: DiceMode = 'standard';
   sortMode: SortMode = 'unit_count';
   is_deadzone: boolean = false; // deadzone attack
+  skip_compute: boolean = false; // skip compute, used for complexity calculations.
   territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
   do_roundless_eval: boolean = false; // do roundless evaluation
   N: number;
@@ -941,6 +945,9 @@ class general_problem {
       count_units(this.def_data.unit_str, 'e') > 0
     );
   }
+  get_complexity(): number {
+    return this.att_data.nodeArr.length * this.def_data.nodeArr.length;
+  }
   constructor(
     verbose_level: number,
     um: unit_manager,
@@ -960,6 +967,7 @@ class general_problem {
     diceMode: DiceMode = 'standard',
     sortMode: SortMode = 'unit_count',
     is_deadzone: boolean = false,
+    skip_compute: boolean = false,
     territory_value: number = 0,
     do_roundless_eval: boolean = false,
     retreat_expected_ipc_profit_threshold?: number,
@@ -981,6 +989,7 @@ class general_problem {
     this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
+    this.skip_compute = skip_compute;
     this.is_deadzone = is_deadzone;
     this.territory_value = territory_value;
     this.do_roundless_eval = do_roundless_eval;
@@ -1064,6 +1073,7 @@ class general_problem {
           this.diceMode,
           this.sortMode,
           this.is_deadzone,
+          this.skip_compute,
           this.territory_value,
           this.do_roundless_eval,
           this.retreat_expected_ipc_profit_threshold,
@@ -4840,12 +4850,21 @@ export function make_unit_group(
   attdef: number,
   diceMode: DiceMode,
 ): unit_group {
-  return um.unit_group_manager.get_or_create_unit_group(
-    um,
-    input_str,
-    attdef,
-    diceMode,
-  );
+  if (um.skip_compute) {
+    return um.unit_group_manager.get_or_create_unit_group(
+      um,
+      '',
+      attdef,
+      diceMode,
+    );
+  } else {
+    return um.unit_group_manager.get_or_create_unit_group(
+      um,
+      input_str,
+      attdef,
+      diceMode,
+    );
+  }
 }
 
 function count_units(input: string, tok: string): number {
@@ -5109,11 +5128,13 @@ export interface multiwave_input {
   territory_value: number;
   num_runs: number;
   verbose_level: number;
+  report_complexity_only: boolean;
 }
 
 export interface multiwave_output {
   out: aacalc_output;
   output: aacalc_output[];
+  complexity: number;
 }
 
 function collect_and_print_results(problem: general_problem) {
@@ -5132,6 +5153,23 @@ function collect_and_print_results(problem: general_problem) {
   console.log(out);
 }
 
+function get_defender_distribution(problem: general_problem): casualty_1d[] {
+  const N = problem.def_data.nodeArr.length;
+  let result: casualty_1d[] = [];
+  for (let i = 0; i < N; i++) {
+    const node = problem.def_data.nodeArr[i];
+    const mycost = get_general_cost(problem, problem.def_data, node.index);
+    const cas: casualty_1d = {
+      remain: node.unit_str,
+      retreat: node.retreat,
+      casualty: mycost.casualty,
+      prob: 0.01,
+    };
+    result.push(cas);
+  }
+  return result;
+}
+
 export function multiwave(input: multiwave_input): multiwave_output {
   const umarr: unit_manager[] = [];
   const probArr: general_problem[] = [];
@@ -5140,9 +5178,13 @@ export function multiwave(input: multiwave_input): multiwave_output {
   //let um3 = new unit_manager();
   const output: aacalc_output[] = [];
 
+  let complexity: number = 0;
+
   for (let runs = 0; runs < input.num_runs; runs++) {
     for (let i = 0; i < input.wave_info.length; i++) {
-      umarr.push(new unit_manager(input.verbose_level));
+      umarr.push(
+        new unit_manager(input.verbose_level, input.report_complexity_only),
+      );
       const um = umarr[i];
       const wave = input.wave_info[i];
 
@@ -5150,7 +5192,9 @@ export function multiwave(input: multiwave_input): multiwave_output {
       defend_add_reinforce = undefined;
       let defenders_internal;
       if (i > 0) {
-        const defend_dist = output[i - 1].def_cas;
+        const defend_dist = input.report_complexity_only
+          ? get_defender_distribution(probArr[i - 1])
+          : output[i - 1].def_cas;
         const def_token = preparse_token(wave.defender);
         defend_add_reinforce = [];
         for (let j = 0; j < defend_dist.length; j++) {
@@ -5159,7 +5203,11 @@ export function multiwave(input: multiwave_input): multiwave_output {
           //let p2;
           if (cas.remain.length == 0) {
             //if attacker takes -- then no reinforce
-            p1 = cas.prob - output[i - 1].takesTerritory[0];
+            if (output[i - 1] != undefined) {
+              p1 = cas.prob - output[i - 1].takesTerritory[0];
+            } else {
+              p1 = cas.prob;
+            }
             //p2 = output[i-1].takesTerritory[0];
           } else {
             p1 = cas.prob;
@@ -5243,12 +5291,25 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.diceMode,
           input.sortMode,
           input.is_deadzone,
+          input.report_complexity_only,
           input.territory_value,
           input.do_roundless_eval,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_strafe_threshold,
         ),
       );
+      complexity += probArr[i].get_complexity();
+      if (input.verbose_level > 2) {
+        console.log(
+          complexity,
+          probArr[i].att_data.nodeArr.length,
+          probArr[i].def_data.nodeArr.length,
+          'complexity',
+        );
+      }
+      if (input.report_complexity_only) {
+        continue;
+      }
       const myprob = probArr[i];
       myprob.set_prune_threshold(
         input.prune_threshold,
@@ -5280,6 +5341,23 @@ export function multiwave(input: multiwave_input): multiwave_output {
     }
   }
 
+  if (input.report_complexity_only) {
+    const out2: aacalc_output = {
+      attack: { survives: [0], ipcLoss: [0] },
+      defense: { survives: [0], ipcLoss: [0] },
+      casualtiesInfo: [],
+      att_cas: [],
+      def_cas: [],
+      rounds: -1,
+      takesTerritory: [0],
+    };
+    const out: multiwave_output = {
+      out: out2,
+      output: [out2],
+      complexity: complexity,
+    };
+    return out;
+  }
   const attsurvive: number[] = [];
   const defsurvive: number[] = [];
   const attipc: number[] = [];
@@ -5323,6 +5401,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
   const out: multiwave_output = {
     out: out2,
     output: output,
+    complexity: complexity,
   };
   return out;
 }

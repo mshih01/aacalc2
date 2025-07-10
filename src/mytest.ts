@@ -7,11 +7,7 @@ import {
 } from './index.js';
 
 let out = [];
-//              no retreat, 1 round, EV based, EV based with strafe, strafe without EV
-let retreats = [undefined, undefined, 0, 0, undefined];
-let rounds = [100, 1, 100, 100, 100];
-let strafes = [undefined, undefined, undefined, 0.05, 0.05];
-let verbose = 3; // 0, 1, 2, 3
+let verbose = 0; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -21,21 +17,113 @@ type Setting = [
   boolean, // is deadzone
   number, // territory value
   boolean, // do roundless eval, optional
+  boolean, //complexity only
 ];
 
 let do_roundless_global = false;
+let complexity_global = false;
 
 let inputSettings2: Setting[] = [
-  ['no retreat', undefined, 100, undefined, false, 0, do_roundless_global], // no retreat  (A)
-  ['1 round', undefined, 1, undefined, false, 0, do_roundless_global], // 1 round (B)
-  ['EV based retreat', 0, 100, undefined, false, 0, do_roundless_global], // EV based retreat (C)
-  ['EV retreat + strafe', 0, 100, 0.05, false, 0, do_roundless_global], // EV based retreat + strafe (D)
-  ['strafe only', undefined, 100, 0.05, false, 0, do_roundless_global], // strafe (E)
-  ['DZ + no retreat', undefined, 100, undefined, true, 0, do_roundless_global], // no retreat  (A)
-  ['DZ + 1 round', undefined, 1, undefined, true, 0, do_roundless_global], // 1 round (B)
-  ['DZ + EV based retreat', 0, 100, undefined, true, 0, do_roundless_global], // EV based retreat (C)
-  ['DZ + EV retreat + strafe', 0, 100, 0.05, true, 0, do_roundless_global], // EV based retreat + strafe (D)
-  ['DZ + strafe only', undefined, 100, 0.05, true, 0, do_roundless_global], // strafe (E)
+  [
+    'no retreat',
+    undefined,
+    100,
+    undefined,
+    false,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // no retreat  (A)
+  [
+    '1 round',
+    undefined,
+    1,
+    undefined,
+    false,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // 1 round (B)
+  [
+    'EV based retreat',
+    0,
+    100,
+    undefined,
+    false,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // EV based retreat (C)
+  [
+    'EV retreat + strafe',
+    0,
+    100,
+    0.05,
+    false,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // EV based retreat + strafe (D)
+  [
+    'strafe only',
+    undefined,
+    100,
+    0.05,
+    false,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // strafe (E)
+  [
+    'DZ + no retreat',
+    undefined,
+    100,
+    undefined,
+    true,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // no retreat  (A)
+  [
+    'DZ + 1 round',
+    undefined,
+    1,
+    undefined,
+    true,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // 1 round (B)
+  [
+    'DZ + EV based retreat',
+    0,
+    100,
+    undefined,
+    true,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // EV based retreat (C)
+  [
+    'DZ + EV retreat + strafe',
+    0,
+    100,
+    0.05,
+    true,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // EV based retreat + strafe (D)
+  [
+    'DZ + strafe only',
+    undefined,
+    100,
+    0.05,
+    true,
+    0,
+    do_roundless_global,
+    complexity_global,
+  ], // strafe (E)
   [
     'DZ + terrValue + no retreat',
     undefined,
@@ -44,6 +132,7 @@ let inputSettings2: Setting[] = [
     true,
     -5,
     do_roundless_global,
+    complexity_global,
   ], // no retreat  (A)
   [
     'DZ + terrValue + 1 round',
@@ -53,6 +142,7 @@ let inputSettings2: Setting[] = [
     true,
     -5,
     do_roundless_global,
+    complexity_global,
   ], // 1 round (B)
   [
     'DZ + terrValue + EV based retreat',
@@ -62,6 +152,7 @@ let inputSettings2: Setting[] = [
     true,
     -5,
     do_roundless_global,
+    complexity_global,
   ], // EV based retreat (C)
   [
     'DZ + terrValue + EV retreat + strafe',
@@ -71,6 +162,7 @@ let inputSettings2: Setting[] = [
     true,
     -5,
     do_roundless_global,
+    complexity_global,
   ], // EV based retreat + strafe (D)
   [
     'DZ + terrValue + strafe only',
@@ -80,6 +172,7 @@ let inputSettings2: Setting[] = [
     true,
     -5,
     do_roundless_global,
+    complexity_global,
   ], // strafe (E)
 ];
 
@@ -89,17 +182,30 @@ let inputSettings4: Setting[] = [
   // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
   // ['no retreat 0 roundless', 0, 100, undefined, false, 0, false], // no retreat  (A)
   // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, false], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 100, undefined, false, 0, false], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 100, 0.05, false, 0, false], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true, false], // no retreat  (A)
+  [
+    'no retreat 0 roundlessorig',
+    undefined,
+    0,
+    undefined,
+    false,
+    0,
+    false,
+    false,
+  ], // no retreat  (A)
+  ['no retreat 100 rounds', undefined, 100, undefined, false, 0, false, false], // no retreat  (A)
+  ['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], // no retreat  (A)
+  ['strafe 100 rounds', undefined, 100, 0.05, false, 0, false, false], // no retreat  (A)
+  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true, true], // no retreat  (A)
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
 
 let inputSettings: Setting[] = [];
 
-inputSettings.push(inputSettings4[0]);
+for (let i = 0; i < 1; i++) {
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[0]);
+}
 
 console.log(process.memoryUsage());
 
@@ -114,6 +220,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone,
     territory_value,
     do_roundless_eval,
+    report_complexity_only,
   ] = setting;
 
   const input2: MultiwaveInput = {
@@ -261,6 +368,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
+    report_complexity_only: report_complexity_only,
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -383,9 +491,128 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  const input5: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 200,
+            art: 20,
+            arm: 10,
+            fig: 10,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 400,
+            art: 0,
+            arm: 10,
+            fig: 10,
+            aa: 3,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            inf: 200,
+            art: 20,
+            arm: 10,
+            fig: 10,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            inf: 200,
+            art: 20,
+            arm: 10,
+            fig: 10,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 1,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    report_complexity_only: report_complexity_only,
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
 
   console.time(description);
-  let output = multiwaveExternal(input3);
+  let output = multiwaveExternal(input5);
   console.log(output, description);
   console.timeEnd(description);
   console.log(input3);
