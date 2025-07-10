@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.20
+
+### Patch Changes
+
+- 2cc71c4: multiwaveComplexityFast
+
 ## 1.0.19
 
 ### Patch Changes
