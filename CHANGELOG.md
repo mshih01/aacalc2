@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.22
+
+### Patch Changes
+
+- ceca73a: but in multiwaveComplexity -- changes input
+
 ## 1.0.21
 
 ### Patch Changes
