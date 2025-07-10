@@ -4867,7 +4867,7 @@ export function make_unit_group(
   }
 }
 
-function count_units(input: string, tok: string): number {
+export function count_units(input: string, tok: string): number {
   let cnt = 0;
   for (let i = 0; i < input.length; i++) {
     const ch = input.charAt(i);

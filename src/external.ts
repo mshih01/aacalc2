@@ -7,6 +7,7 @@ import {
   type wave_input,
   multiwave,
   get_cost_from_str,
+  count_units,
 } from './solve.js';
 import { sbr, type sbr_input } from './sbr.js';
 
@@ -170,6 +171,91 @@ export interface MultiwaveOutput {
   rounds: number[];
   waves: number;
   complexity: number;
+}
+
+interface unit_counts {
+  num_air: number;
+  num_subs: number;
+  num_naval: number;
+  num_aa: number;
+  N: number;
+}
+export function multiwaveComplexityFast(input: MultiwaveInput): number {
+  let attacker_counts: unit_counts = {
+    num_air: 0,
+    num_subs: 0,
+    num_naval: 0,
+    num_aa: 0,
+    N: 0,
+  };
+  let defender_counts: unit_counts = attacker_counts;
+
+  for (let i = 0; i < input.wave_info.length; i++) {
+    const wave = input.wave_info[i];
+    if (!wave) {
+      continue; // Skip undefined or null waves
+    }
+    const att_unit_group_string = make_unit_group_string(
+      wave.attack.units,
+      wave.attack.ool,
+      wave.attack.takes,
+      false,
+      input.is_naval,
+      input.verbose_level,
+    );
+    const def_unit_group_string = make_unit_group_string(
+      wave.defense.units,
+      wave.defense.ool,
+      0,
+      wave.defense.aaLast,
+      input.is_naval,
+      input.verbose_level,
+    );
+    // attacker
+    attacker_counts.num_subs += count_units(att_unit_group_string.unit, 'S');
+    attacker_counts.num_air +=
+      count_units(att_unit_group_string.unit, 'f') +
+      count_units(att_unit_group_string.unit, 'b');
+    attacker_counts.num_naval +=
+      att_unit_group_string.unit.length -
+      attacker_counts.num_subs -
+      attacker_counts.num_air;
+    attacker_counts.num_aa += count_units(att_unit_group_string.unit, 'c');
+
+    defender_counts.num_subs += count_units(def_unit_group_string.unit, 'S');
+    defender_counts.num_air +=
+      count_units(def_unit_group_string.unit, 'f') +
+      count_units(def_unit_group_string.unit, 'b');
+    defender_counts.num_naval +=
+      def_unit_group_string.unit.length -
+      defender_counts.num_subs -
+      defender_counts.num_air;
+    defender_counts.num_aa += count_units(def_unit_group_string.unit, 'c');
+  }
+  attacker_counts.N =
+    attacker_counts.num_air +
+    attacker_counts.num_subs +
+    attacker_counts.num_naval;
+  defender_counts.N =
+    defender_counts.num_air +
+    defender_counts.num_subs +
+    defender_counts.num_naval;
+  let numAAShots = defender_counts.num_aa * 3;
+  if (attacker_counts.num_air < numAAShots) {
+    numAAShots = attacker_counts.num_air;
+  }
+  let attacker_complexity = input.is_naval
+    ? attacker_counts.num_air *
+      attacker_counts.num_subs *
+      attacker_counts.num_naval
+    : attacker_counts.N * (numAAShots + 1);
+  let defender_complexity = input.is_naval
+    ? defender_counts.num_air *
+      defender_counts.num_subs *
+      defender_counts.num_naval
+    : defender_counts.N;
+  let complexity = attacker_complexity * defender_complexity;
+  return complexity;
 }
 
 export function multiwaveComplexity(input: MultiwaveInput): number {

@@ -2,6 +2,8 @@ import {
   type MultiwaveInput,
   type MultiwaveOutput,
   multiwaveExternal,
+  multiwaveComplexity,
+  multiwaveComplexityFast,
   sbrExternal,
   type SbrInput,
 } from './index.js';
@@ -611,21 +613,33 @@ for (let i = 0; i < inputSettings.length; i++) {
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
-  console.time(description);
-  let output = multiwaveExternal(input5);
-  console.log(output, description);
-  console.timeEnd(description);
-  console.log(input3);
-  console.log(process.memoryUsage());
+  if (input5.report_complexity_only) {
+    console.time(description);
+    let complexity = multiwaveComplexity(input5);
+    console.log(complexity, 'multiwaveComplexity');
+    console.timeEnd(description);
 
-  let o = [
-    description,
-    output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
-    output.defense.ipcLoss[0],
-    output.attack.ipcLoss[0],
-    output.takesTerritory[0],
-  ];
-  out.push(o);
+    console.time(description);
+    complexity = multiwaveComplexityFast(input5);
+    console.log(complexity, 'multiwaveComplexityFast');
+    console.timeEnd(description);
+  } else {
+    console.time(description);
+    let output = multiwaveExternal(input5);
+    console.timeEnd(description);
+    console.log(output, description);
+    console.log(input3);
+    console.log(process.memoryUsage());
+
+    let o = [
+      description,
+      output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
+      output.defense.ipcLoss[0],
+      output.attack.ipcLoss[0],
+      output.takesTerritory[0],
+    ];
+    out.push(o);
+  }
 }
 
 // console.profileEnd('multiwaveExternal');
