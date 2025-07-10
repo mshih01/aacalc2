@@ -350,9 +350,40 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
   }
   return complexitySum;
 }
+export interface MultiwaveInput {
+  wave_info: WaveInput[];
+  debug: boolean;
+  prune_threshold: number;
+  report_prune_threshold: number;
+  is_naval: boolean;
+  in_progress: boolean;
+  num_runs: number;
+  verbose_level: number;
+  diceMode: DiceMode;
+  sortMode?: SortMode;
+  is_deadzone?: boolean;
+  report_complexity_only?: boolean; // if true, only report complexity and no other results.
+  do_roundless_eval?: boolean;
+  territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
+}
 
 export function multiwaveComplexity(input: MultiwaveInput): number {
-  const complexityInput: MultiwaveInput = input;
+  const complexityInput: MultiwaveInput = {
+    wave_info: input.wave_info,
+    debug: input.debug,
+    prune_threshold: input.prune_threshold,
+    report_prune_threshold: input.report_prune_threshold,
+    is_naval: input.is_naval,
+    in_progress: input.in_progress,
+    num_runs: input.num_runs,
+    verbose_level: input.verbose_level,
+    diceMode: input.diceMode,
+    sortMode: input.sortMode,
+    is_deadzone: input.is_deadzone,
+    report_complexity_only: input.report_complexity_only,
+    do_roundless_eval: input.do_roundless_eval,
+    territory_value: input.territory_value,
+  };
   complexityInput.report_complexity_only = true; // only report complexity
   const output = multiwaveExternal(complexityInput);
   return output.complexity;
