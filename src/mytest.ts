@@ -4,6 +4,7 @@ import {
   multiwaveExternal,
   multiwaveComplexity,
   multiwaveComplexityFast,
+  multiwaveComplexityFastV2,
   sbrExternal,
   type SbrInput,
 } from './index.js';
@@ -207,6 +208,7 @@ let inputSettings: Setting[] = [];
 for (let i = 0; i < 1; i++) {
   inputSettings.push(inputSettings4[5]);
   inputSettings.push(inputSettings4[0]);
+  // inputSettings.push(inputSettings4[0]);
 }
 
 console.log(process.memoryUsage());
@@ -622,6 +624,11 @@ for (let i = 0; i < inputSettings.length; i++) {
     console.time(description);
     complexity = multiwaveComplexityFast(input5);
     console.log(complexity, 'multiwaveComplexityFast');
+    console.timeEnd(description);
+
+    console.time(description);
+    complexity = multiwaveComplexityFastV2(input5);
+    console.log(complexity, 'multiwaveComplexityFastV2');
     console.timeEnd(description);
   } else {
     console.time(description);
