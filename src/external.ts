@@ -188,7 +188,13 @@ export function multiwaveComplexityFast(input: MultiwaveInput): number {
     num_aa: 0,
     N: 0,
   };
-  let defender_counts: unit_counts = attacker_counts;
+  let defender_counts: unit_counts = {
+    num_air: 0,
+    num_subs: 0,
+    num_naval: 0,
+    num_aa: 0,
+    N: 0,
+  };
 
   for (let i = 0; i < input.wave_info.length; i++) {
     const wave = input.wave_info[i];
