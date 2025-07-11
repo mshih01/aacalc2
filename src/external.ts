@@ -266,7 +266,13 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
     num_aa: 0,
     N: 0,
   };
-  let defender_counts: unit_counts = attacker_counts;
+  let defender_counts: unit_counts = {
+    num_air: 0,
+    num_subs: 0,
+    num_naval: 0,
+    num_aa: 0,
+    N: 0,
+  };
   let complexitySum: number = 0;
   let prev_defense_ool: string = '';
   let prev_defense_aaLast: boolean = false;
@@ -303,14 +309,15 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
       attacker_counts.num_air;
     attacker_counts.num_aa = count_units(att_unit_group_string.unit, 'c');
 
-    defender_counts.num_subs += count_units(def_unit_group_string.unit, 'S');
-    defender_counts.num_air +=
+    let subs = count_units(def_unit_group_string.unit, 'S');
+    let air =
       count_units(def_unit_group_string.unit, 'f') +
       count_units(def_unit_group_string.unit, 'b');
-    defender_counts.num_naval +=
-      def_unit_group_string.unit.length -
-      defender_counts.num_subs -
-      defender_counts.num_air;
+    let naval = def_unit_group_string.unit.length - subs - air;
+
+    defender_counts.num_subs += subs;
+    defender_counts.num_air += air;
+    defender_counts.num_naval += naval;
     defender_counts.num_aa += count_units(def_unit_group_string.unit, 'c');
 
     attacker_counts.N =
@@ -342,6 +349,16 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
       : defender_counts.N;
     defender_complexity *= defenseOOLComplexity;
     let complexity = attacker_complexity * defender_complexity;
+    if (input.verbose_level > 2) {
+      console.log(
+        i,
+        attacker_complexity,
+        defender_complexity,
+        attacker_complexity * defender_complexity,
+        'attack, defense, att * def',
+      );
+      console.log(attacker_counts, defender_counts, 'att counts, def_counts');
+    }
     complexitySum += complexity;
     prev_defense_ool = def_unit_group_string.ool;
     prev_defense_aaLast = wave.defense.aaLast;
