@@ -10,7 +10,7 @@ import {
 } from './index.js';
 
 let out = [];
-let verbose = 3; // 0, 1, 2, 3
+let verbose = 0; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -207,7 +207,7 @@ let inputSettings: Setting[] = [];
 
 for (let i = 0; i < 1; i++) {
   inputSettings.push(inputSettings4[5]);
-  inputSettings.push(inputSettings4[0]);
+  inputSettings.push(inputSettings4[2]);
   // inputSettings.push(inputSettings4[0]);
 }
 
@@ -495,7 +495,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
-  const input5: MultiwaveInput = {
+  const input7: MultiwaveInput = {
     wave_info: [
       {
         attack: {
@@ -670,6 +670,8 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+
+  let input5 = input3;
 
   if (input5.report_complexity_only) {
     console.time(description);

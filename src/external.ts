@@ -282,6 +282,7 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
   let complexitySum: number = 0;
   let prev_defense_ool: string = '';
   let prev_defense_aaLast: boolean = false;
+  let complexityMax: number = 0;
 
   for (let i = 0; i < input.wave_info.length; i++) {
     const wave = input.wave_info[i];
@@ -341,17 +342,16 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
             wave.defense.aaLast == prev_defense_aaLast
           ? 1
           : Math.max(defender_counts.num_aa, 3);
+    defenseOOLComplexity = 1;
     let numAAShots = defender_counts.num_aa * 3;
     if (attacker_counts.num_air < numAAShots) {
       numAAShots = attacker_counts.num_air;
     }
     let attacker_complexity = input.is_naval
-      ? (attacker_counts.num_subs + attacker_counts.num_naval + 1) *
-        (attacker_counts.num_air + 1)
+      ? attacker_counts.N * (attacker_counts.num_air + 1)
       : attacker_counts.N * (numAAShots + 1);
     let defender_complexity = input.is_naval
-      ? (defender_counts.num_subs + defender_counts.num_naval + 1) *
-        (defender_counts.num_air + 1)
+      ? defender_counts.N * (defender_counts.num_air + 1)
       : defender_counts.N;
     defender_complexity *= defenseOOLComplexity;
     let complexity = attacker_complexity * defender_complexity;
@@ -366,10 +366,11 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
       console.log(attacker_counts, defender_counts, 'att counts, def_counts');
     }
     complexitySum += complexity;
+    complexityMax = Math.max(complexityMax, complexity);
     prev_defense_ool = def_unit_group_string.ool;
     prev_defense_aaLast = wave.defense.aaLast;
   }
-  return complexitySum;
+  return complexityMax;
 }
 export interface MultiwaveInput {
   wave_info: WaveInput[];
@@ -620,7 +621,7 @@ export function make_unit_group_string(
         }
       }
       out = head + remains;
-      if (verbose_level > 0) {
+      if (verbose_level > 3) {
         console.log(out);
       }
     }
