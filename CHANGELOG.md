@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.24
+
+### Patch Changes
+
+- 5d1b911: bugs in complexity
+
 ## 1.0.23
 
 ### Patch Changes
