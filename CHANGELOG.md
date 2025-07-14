@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.26
+
+### Patch Changes
+
+- 40701cc: fix multiwave detailed casualties bug (previous waves details not reported)
+
 ## 1.0.25
 
 ### Patch Changes
