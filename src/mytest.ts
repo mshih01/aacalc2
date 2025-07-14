@@ -10,7 +10,7 @@ import {
 } from './index.js';
 
 let out = [];
-let verbose = 0; // 0, 1, 2, 3
+let verbose = 3; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -381,7 +381,7 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 30,
+            inf: 10,
             art: 2,
             arm: 10,
             fig: 5,
@@ -671,7 +671,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
-  let input5 = input3;
+  let input5 = input4;
 
   if (input5.report_complexity_only) {
     console.time(description);
@@ -693,6 +693,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     let output = multiwaveExternal(input5);
     console.timeEnd(description);
     console.log(output, description);
+    console.log(JSON.stringify(output, null, 2));
     console.log(input3);
     console.log(process.memoryUsage());
 
@@ -708,4 +709,4 @@ for (let i = 0; i < inputSettings.length; i++) {
 }
 
 // console.profileEnd('multiwaveExternal');
-console.log(out);
+console.log(JSON.stringify(out, null, 2));

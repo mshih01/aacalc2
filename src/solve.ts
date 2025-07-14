@@ -2818,7 +2818,7 @@ function isLand(um: unit_manager, input: string): boolean {
   return stat.isLand;
 }
 
-function hasLand(um: unit_manager, input: string): boolean {
+export function hasLand(um: unit_manager, input: string): boolean {
   for (let i = input.length - 1; i >= 0; i--) {
     const ch = input.charAt(i);
     if (isLand(um, ch)) {

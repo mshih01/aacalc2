@@ -8,6 +8,7 @@ import {
   multiwave,
   get_cost_from_str,
   count_units,
+  hasLand,
 } from './solve.js';
 import { sbr, type sbr_input } from './sbr.js';
 
@@ -485,48 +486,97 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const lastWave = internal_output.output.length - 1;
   const lastOutput = internal_output.output[lastWave];
   const um = new unit_manager(input.verbose_level);
-  for (let i = 0; i < lastOutput.att_cas.length; i++) {
-    const cas = lastOutput.att_cas[i];
-    const casualty: CasualtyInfo = {
-      casualties: get_external_unit_str(um, cas.casualty),
-      survivors: get_external_unit_str(um, cas.remain),
-      retreaters: get_external_unit_str(um, cas.retreat),
-      amount: cas.prob,
-      ipcLoss: get_cost_from_str(um, cas.casualty),
-    };
-
-    const key: string =
-      get_external_unit_str(um, cas.casualty) +
-      ';' +
-      get_external_unit_str(um, cas.remain) +
-      ';' +
-      get_external_unit_str(um, cas.retreat);
-    if (att[key] == undefined) {
-      att[key] = casualty;
-    } else {
-      att[key].amount += cas.prob;
+  for (let ii = 0; ii < internal_output.output.length; ii++) {
+    const currOutput = internal_output.output[ii];
+    if (currOutput == undefined) {
+      continue; // Skip undefined outputs
     }
-  }
-  for (let i = 0; i < lastOutput.def_cas.length; i++) {
-    const cas = lastOutput.def_cas[i];
-    const casualty: CasualtyInfo = {
-      casualties: get_external_unit_str(um, cas.casualty),
-      survivors: get_external_unit_str(um, cas.remain),
-      retreaters: get_external_unit_str(um, cas.retreat),
-      amount: cas.prob,
-      ipcLoss: get_cost_from_str(um, cas.casualty),
-    };
+    let sum = 0;
+    for (let i = 0; i < currOutput.att_cas.length; i++) {
+      const cas = currOutput.att_cas[i];
+      const casualty: CasualtyInfo = {
+        casualties: get_external_unit_str(um, cas.casualty),
+        survivors: get_external_unit_str(um, cas.remain),
+        retreaters: get_external_unit_str(um, cas.retreat),
+        amount: cas.prob,
+        ipcLoss: get_cost_from_str(um, cas.casualty),
+      };
+      let include: boolean = false;
+      if (
+        ii < internal_output.output.length - 1 &&
+        cas.remain.length > 0 &&
+        hasLand(um, cas.remain)
+      ) {
+        // If there are land units remaining, we captured the territory in the previous wave and need to record
+        // the casualties details.
+        include = true;
+      }
+      if (ii == internal_output.output.length - 1) {
+        include = true;
+      }
+      if (!include) {
+        continue; // Skip casualties that are not relevant for the last wave
+      }
 
-    const key: string =
-      get_external_unit_str(um, cas.casualty) +
-      ';' +
-      get_external_unit_str(um, cas.remain) +
-      ';' +
-      get_external_unit_str(um, cas.retreat);
-    if (def[key] == undefined) {
-      def[key] = casualty;
-    } else {
-      def[key].amount += cas.prob;
+      const key: string =
+        get_external_unit_str(um, cas.casualty) +
+        ';' +
+        get_external_unit_str(um, cas.remain) +
+        ';' +
+        get_external_unit_str(um, cas.retreat);
+      if (att[key] == undefined) {
+        att[key] = casualty;
+      } else {
+        att[key].amount += cas.prob;
+      }
+      sum += cas.prob;
+    }
+    if (input.verbose_level > 2) {
+      console.log(`Attacker casualties for wave ${ii}: ${sum}`);
+    }
+    sum = 0;
+    for (let i = 0; i < currOutput.def_cas.length; i++) {
+      const cas = currOutput.def_cas[i];
+      const casualty: CasualtyInfo = {
+        casualties: get_external_unit_str(um, cas.casualty),
+        survivors: get_external_unit_str(um, cas.remain),
+        retreaters: get_external_unit_str(um, cas.retreat),
+        amount: cas.prob,
+        ipcLoss: get_cost_from_str(um, cas.casualty),
+      };
+      let include: boolean = false;
+      let prob = cas.prob;
+      if (ii < internal_output.output.length - 1 && cas.remain.length == 0) {
+        // If there are land units remaining, we captured the territory in the previous wave and need to record
+        // the casualties details.
+        include = true;
+        prob =
+          internal_output.out.takesTerritory[ii] -
+          (ii > 0 ? internal_output.out.takesTerritory[ii - 1] : 0);
+      }
+      if (ii == internal_output.output.length - 1) {
+        include = true;
+      }
+      if (!include) {
+        continue; // Skip casualties that are not relevant for the last wave
+      }
+
+      const key: string =
+        get_external_unit_str(um, cas.casualty) +
+        ';' +
+        get_external_unit_str(um, cas.remain) +
+        ';' +
+        get_external_unit_str(um, cas.retreat);
+      if (def[key] == undefined) {
+        def[key] = casualty;
+        def[key].amount = prob;
+      } else {
+        def[key].amount += prob;
+      }
+      sum += prob;
+    }
+    if (input.verbose_level > 2) {
+      console.log(`Defender casualties for wave ${ii}: ${sum}`);
     }
   }
   casualtiesInfo['attack'] = att;
