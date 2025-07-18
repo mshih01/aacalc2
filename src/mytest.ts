@@ -10,7 +10,7 @@ import {
 } from './index.js';
 
 let out = [];
-let verbose = 3; // 0, 1, 2, 3
+let verbose = 0; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -199,7 +199,8 @@ let inputSettings4: Setting[] = [
   ['no retreat 100 rounds', undefined, 100, undefined, false, 0, false, false], // no retreat  (A)
   ['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], // no retreat  (A)
   ['strafe 100 rounds', undefined, 100, 0.05, false, 0, false, false], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true, true], // no retreat  (A)
+  ['no retreat roundless', undefined, 0, undefined, false, 0, true, true], // no retreat  (A)
+  ['EV retreat roundless', 0, 0, undefined, false, 0, true, true], // no retreat  (A)
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
 
@@ -208,10 +209,31 @@ let inputSettings: Setting[] = [];
 for (let i = 0; i < 1; i++) {
   inputSettings.push(inputSettings4[5]);
   inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+
+  inputSettings.push(inputSettings4[6]);
+
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
+  inputSettings.push(inputSettings4[5]);
+  inputSettings.push(inputSettings4[2]);
   // inputSettings.push(inputSettings4[0]);
 }
 
 console.log(process.memoryUsage());
+
+let attackerString: string = '';
+let defenderString: string = '';
+let precision = 3;
 
 // console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
@@ -381,9 +403,9 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 10,
-            art: 2,
-            arm: 10,
+            inf: 30,
+            art: 5,
+            arm: 5,
             fig: 5,
           },
           ool: ['inf', 'art', 'arm', 'fig', 'bom'],
@@ -392,11 +414,11 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 20,
+            inf: 30,
             art: 0,
-            arm: 0,
-            fig: 0,
-            aa: 0,
+            arm: 5,
+            fig: 5,
+            aa: 3,
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
           takes: 0,
@@ -689,24 +711,54 @@ for (let i = 0; i < inputSettings.length; i++) {
     console.log(complexity, 'multiwaveComplexityFastV2');
     console.timeEnd(description);
   } else {
+    let t0 = performance.now();
     console.time(description);
     let output = multiwaveExternal(input5);
+    let t1 = performance.now() - t0;
     console.timeEnd(description);
+    console.log(input5);
+
+    attackerString = JSON.stringify(input5.wave_info[0].attack.units);
+    defenderString = JSON.stringify(input5.wave_info[0].defense.units);
+
     console.log(output, description);
-    console.log(JSON.stringify(output, null, 2));
-    console.log(input3);
-    console.log(process.memoryUsage());
+
+    let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
 
     let o = [
+      profit.toFixed(precision),
+      output.defense.ipcLoss[0].toFixed(precision),
+      output.attack.ipcLoss[0].toFixed(precision),
+      output.takesTerritory[0].toFixed(precision),
+      t1.toFixed(precision),
       description,
-      output.defense.ipcLoss[0] - output.attack.ipcLoss[0],
-      output.defense.ipcLoss[0],
-      output.attack.ipcLoss[0],
-      output.takesTerritory[0],
     ];
     out.push(o);
   }
 }
 
-// console.profileEnd('multiwaveExternal');
-console.log(JSON.stringify(out, null, 2));
+let padding = 10;
+
+let heading =
+  'profit'.padEnd(padding) +
+  ' ' +
+  'def ipc'.padEnd(padding) +
+  ' ' +
+  'att ipc'.padEnd(padding) +
+  ' ' +
+  'takes'.padEnd(padding) +
+  ' ' +
+  'runtime'.padEnd(padding) +
+  ' ' +
+  'description'.padEnd(padding) +
+  ' ' +
+  console.log(attackerString, 'vs. ', defenderString);
+console.log(heading);
+for (let i = 0; i < out.length; i++) {
+  let o = out[i];
+  let result = '';
+  for (let j = 0; j < o.length; j++) {
+    result += o[j].padEnd(padding) + ' ';
+  }
+  console.log(result);
+}
