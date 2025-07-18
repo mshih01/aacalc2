@@ -8,6 +8,8 @@ export type DiceMode = 'standard' | 'lowluck' | 'biased';
 
 export type SortMode = 'unit_count' | 'ipc_cost';
 
+import { solve_one_general_state } from './solveone.js';
+
 class unit_group_manager {
   unit_group_arr: unit_group[];
   mymap: Map<string, number>;
@@ -813,7 +815,7 @@ type state_data = [
 ];
 
 // General problem -- supports random order of loss cases
-class general_problem {
+export class general_problem {
   um: unit_manager;
   is_naval: boolean;
   prob: number = 0;
@@ -1202,7 +1204,7 @@ class unit_stat {
   }
 }
 
-function hasDestroyer(
+export function hasDestroyer(
   group: general_unit_group,
   node: general_unit_graph_node,
 ): boolean {
@@ -1228,7 +1230,10 @@ function hasDestroyerOrig( group : general_unit_group, node : general_unit_graph
 }
 */
 
-function remove_subhits2(node: general_unit_graph_node, hits: number): number {
+export function remove_subhits2(
+  node: general_unit_graph_node,
+  hits: number,
+): number {
   const n = hits;
   return node.nsubArr[n];
 }
@@ -1242,7 +1247,7 @@ function remove_aahits(
   return node.naaArr[n];
 }
 
-function remove_dlast_subhits2(
+export function remove_dlast_subhits2(
   node: general_unit_graph_node,
   hits: number,
 ): number {
@@ -1250,7 +1255,7 @@ function remove_dlast_subhits2(
   return node.ndlastsubArr[n];
 }
 
-function remove_planehits2(
+export function remove_planehits2(
   node: general_unit_graph_node,
   hasDest: boolean,
   hits: number,
@@ -1263,7 +1268,7 @@ function remove_planehits2(
   }
 }
 
-function remove_dlast_planehits2(
+export function remove_dlast_planehits2(
   node: general_unit_graph_node,
   hasDest: boolean,
   hits: number,
@@ -1276,7 +1281,7 @@ function remove_dlast_planehits2(
   }
 }
 
-function remove_navalhits2(
+export function remove_navalhits2(
   node: general_unit_graph_node,
   hits: number,
 ): number {
@@ -1284,7 +1289,7 @@ function remove_navalhits2(
   return node.nnavalArr[n];
 }
 
-function remove_dlast_navalhits2(
+export function remove_dlast_navalhits2(
   node: general_unit_graph_node,
   hits: number,
 ): number {
@@ -1328,7 +1333,7 @@ function has_retreat_condition(problem: general_problem): boolean {
   }
   return false;
 }
-function is_retreat_state(
+export function is_retreat_state(
   problem: general_problem,
   N: number,
   M: number,
@@ -1528,6 +1533,7 @@ function do_early_retreat(problem: general_problem, N: number, M: number) {
   }
 }
 
+/*
 // iterate all possible next states -- and update the probabilities
 function solve_one_general_state(
   problem: general_problem,
@@ -1745,12 +1751,6 @@ function solve_one_general_state(
 
   let prob: number;
   let p2, p3, p4, p5: number;
-
-  /*
-   *  N1 ==> sub hits
-   *  N2 ==> plane hits
-   *  N3 ==> naval hits
-   */
 
   let i1, i2, i3;
   let j1, j2, j3;
@@ -2153,6 +2153,7 @@ function solve_one_general_state(
   }
   onExitState(problem, N, M);
 }
+*/
 
 function solve_one_general_state_roundless(
   problem: general_problem,
