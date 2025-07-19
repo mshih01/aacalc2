@@ -8,13 +8,16 @@ import {
   sbrExternal,
   type SbrInput,
 } from './index.js';
+import type { PwinMode } from './solve.js';
 
 let out = [];
 let verbose = 0; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
-  number | undefined, // retreat threshold
+  number | undefined, // EV retreat threshold
+  number | undefined, // pwin retreat threshold
+  PwinMode, // pwin mode
   number, // rounds, required
   number | undefined, // strafe threshold
   boolean, // is deadzone
@@ -30,6 +33,8 @@ let inputSettings2: Setting[] = [
   [
     'no retreat',
     undefined,
+    undefined,
+    'takes',
     100,
     undefined,
     false,
@@ -40,6 +45,8 @@ let inputSettings2: Setting[] = [
   [
     '1 round',
     undefined,
+    undefined,
+    'takes',
     1,
     undefined,
     false,
@@ -50,6 +57,8 @@ let inputSettings2: Setting[] = [
   [
     'EV based retreat',
     0,
+    undefined,
+    'takes',
     100,
     undefined,
     false,
@@ -60,6 +69,8 @@ let inputSettings2: Setting[] = [
   [
     'EV retreat + strafe',
     0,
+    undefined,
+    'takes',
     100,
     0.05,
     false,
@@ -70,6 +81,8 @@ let inputSettings2: Setting[] = [
   [
     'strafe only',
     undefined,
+    undefined,
+    'takes',
     100,
     0.05,
     false,
@@ -80,6 +93,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + no retreat',
     undefined,
+    undefined,
+    'takes',
     100,
     undefined,
     true,
@@ -90,6 +105,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + 1 round',
     undefined,
+    undefined,
+    'takes',
     1,
     undefined,
     true,
@@ -100,6 +117,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + EV based retreat',
     0,
+    undefined,
+    'takes',
     100,
     undefined,
     true,
@@ -110,6 +129,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + EV retreat + strafe',
     0,
+    undefined,
+    'takes',
     100,
     0.05,
     true,
@@ -120,6 +141,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + strafe only',
     undefined,
+    undefined,
+    'takes',
     100,
     0.05,
     true,
@@ -130,6 +153,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + terrValue + no retreat',
     undefined,
+    undefined,
+    'takes',
     100,
     undefined,
     true,
@@ -140,6 +165,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + terrValue + 1 round',
     undefined,
+    undefined,
+    'takes',
     1,
     undefined,
     true,
@@ -150,6 +177,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + terrValue + EV based retreat',
     0,
+    undefined,
+    'takes',
     100,
     undefined,
     true,
@@ -160,6 +189,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + terrValue + EV retreat + strafe',
     0,
+    undefined,
+    'takes',
     100,
     0.05,
     true,
@@ -170,6 +201,8 @@ let inputSettings2: Setting[] = [
   [
     'DZ + terrValue + strafe only',
     undefined,
+    undefined,
+    'takes',
     100,
     0.05,
     true,
@@ -185,10 +218,23 @@ let inputSettings4: Setting[] = [
   // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
   // ['no retreat 0 roundless', 0, 100, undefined, false, 0, false], // no retreat  (A)
   // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
-  ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true, false], // no retreat  (A)
+  [
+    'no retreat 0 roundless',
+    undefined,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+  ], // no retreat  (A)
   [
     'no retreat 0 roundlessorig',
     undefined,
+    undefined,
+    'takes',
     0,
     undefined,
     false,
@@ -196,43 +242,120 @@ let inputSettings4: Setting[] = [
     false,
     false,
   ], // no retreat  (A)
-  ['no retreat 100 rounds', undefined, 100, undefined, false, 0, false, false], // no retreat  (A)
-  ['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], // no retreat  (A)
-  ['strafe 100 rounds', undefined, 100, 0.05, false, 0, false, false], // no retreat  (A)
-  ['no retreat roundless', undefined, 0, undefined, false, 0, true, false], // no retreat  (A)
-  ['EV retreat roundless', 0, 0, undefined, false, 0, true, false], // no retreat  (A)
+  [
+    'no retreat 100 rounds',
+    undefined,
+    undefined,
+    'takes',
+    100,
+    undefined,
+    false,
+    0,
+    false,
+    false,
+  ], // no retreat  (A)
+  [
+    'strafe 0 roundless',
+    undefined,
+    undefined,
+    'takes',
+    0,
+    0.05,
+    false,
+    0,
+    true,
+    false,
+  ], // no retreat  (A)
+  [
+    'strafe 100 rounds',
+    undefined,
+    undefined,
+    'takes',
+    100,
+    0.05,
+    false,
+    0,
+    false,
+    false,
+  ], // no retreat  (A)
+  [
+    'no retreat roundless',
+    undefined,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+  ], // no retreat  (A)
+  [
+    'EV retreat roundless',
+    0,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+  ], // no retreat  (A)
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
 
 let inputSettings: [Setting, number][] = [];
 
-for (let i = 0; i < 1; i++) {
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-
-  inputSettings.push([inputSettings4[6], 3]);
-  inputSettings.push([inputSettings4[6], 3]);
-
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-
-  inputSettings.push([inputSettings4[6], 3]);
-  inputSettings.push([inputSettings4[6], 3]);
-
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
-  inputSettings.push([inputSettings4[5], 3]);
-  inputSettings.push([inputSettings4[2], 3]);
+for (let i = 0; i < 1; i += 0.1) {
+  let desc = 'pwin retreat: ' + i.toFixed(1);
+  let mysetting: Setting = [
+    desc,
+    undefined,
+    i,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+  ];
+  // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
+  if (i == 0) {
+    let desc = 'no retreat: ';
+    let mysetting: Setting = [
+      desc,
+      undefined,
+      undefined,
+      'takes',
+      0,
+      undefined,
+      false,
+      0,
+      true,
+      false,
+    ];
+    inputSettings.push([mysetting, 3]);
+  }
+  inputSettings.push([mysetting, 3]);
+  if (i >= 0.99) {
+    let desc = '1 round: ';
+    let mysetting: Setting = [
+      desc,
+      undefined,
+      undefined,
+      'takes',
+      1,
+      undefined,
+      false,
+      0,
+      true,
+      false,
+    ];
+    inputSettings.push([mysetting, 3]);
+    inputSettings.push([inputSettings4[6], 3]);
+  }
 
   /*
   inputSettings.push([inputSettings4[5], 5]);
@@ -292,6 +415,8 @@ for (let i = 0; i < inputSettings.length; i++) {
   let [
     description,
     retreat,
+    pwin_retreat,
+    pwin_mode,
     round,
     strafe,
     is_deadzone,
@@ -433,6 +558,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,

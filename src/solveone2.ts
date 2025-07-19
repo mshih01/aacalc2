@@ -1,6 +1,3 @@
-import { Heap } from 'heap-js';
-
-import type { UnitIdentifier } from './external.js';
 import {
   remove_subhits2,
   remove_planehits2,
@@ -13,12 +10,6 @@ import {
 } from './solve.js';
 
 import type { general_problem } from './solve.js';
-
-const epsilon: number = 1e-9;
-
-export type DiceMode = 'standard' | 'lowluck' | 'biased';
-
-export type SortMode = 'unit_count' | 'ipc_cost';
 
 // iterate all possible next states -- and update the probabilities
 export function solve_one_general_state_copy2(

@@ -12,7 +12,7 @@ import {
 import type { general_problem } from './solve.js';
 
 // iterate all possible next states -- and update the probabilities
-export function solve_one_general_state_copy3(
+export function solve_one_general_state_copy4(
   problem: general_problem,
   N: number,
   M: number,

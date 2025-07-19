@@ -8,10 +8,13 @@ export type DiceMode = 'standard' | 'lowluck' | 'biased';
 
 export type SortMode = 'unit_count' | 'ipc_cost';
 
+export type PwinMode = 'takes' | 'destroys';
+
 import { solve_one_general_state } from './solveone.js';
 import { solve_one_general_state_copy1 } from './solveone1.js';
 import { solve_one_general_state_copy2 } from './solveone2.js';
 import { solve_one_general_state_copy3 } from './solveone3.js';
+import { solve_one_general_state_copy4 } from './solveone4.js';
 
 class unit_group_manager {
   unit_group_arr: unit_group[];
@@ -857,6 +860,10 @@ export class general_problem {
   base_attcost: number = 0;
   base_defcost: number = 0;
 
+  // Pwin related variables
+  pwin_acc: number = 0; // accumulated expected value
+  Pwin_1d: number[] = []; // Pwin of state i, j
+
   nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
   prune_threshold: number = -1;
@@ -864,6 +871,8 @@ export class general_problem {
   report_prune_threshold: number = -1;
   retreat_threshold: number = 0;
   retreat_expected_ipc_profit_threshold?: number;
+  retreat_pwin_threshold?: number; // if defined, retreat if Pwin < retreat_pwin_threshold
+  pwinMode?: PwinMode; // 'takes' or 'destroys'
   retreat_strafe_threshold?: number;
   attmap: Map<string, number>;
   defmap: Map<string, number>;
@@ -899,6 +908,20 @@ export class general_problem {
   setE(i: number, j: number, val: number) {
     const ii = this.getIndex(i, j);
     this.E_1d[ii] = val;
+  }
+  setPwin(i: number, j: number, val: number) {
+    const ii = this.getIndex(i, j);
+    this.Pwin_1d[ii] = val;
+  }
+  getiPwin(ii: number): number {
+    return this.Pwin_1d[ii];
+  }
+  getPwin(i: number, j: number): number {
+    const ii = this.getIndex(i, j);
+    return this.Pwin_1d[ii];
+  }
+  setiPwin(ii: number, val: number) {
+    this.Pwin_1d[ii] = val;
   }
   getiERound(ii: number): number {
     return this.ERound_1d[ii];
@@ -940,6 +963,7 @@ export class general_problem {
     return (
       this.retreat_threshold > 0 ||
       this.retreat_expected_ipc_profit_threshold !== undefined ||
+      this.retreat_pwin_threshold !== undefined ||
       this.retreat_strafe_threshold !== undefined
     );
   }
@@ -976,6 +1000,8 @@ export class general_problem {
     territory_value: number = 0,
     do_roundless_eval: boolean = false,
     retreat_expected_ipc_profit_threshold?: number,
+    retreat_pwin_threshold?: number,
+    pwinMode?: PwinMode,
     retreat_strafe_threshold?: number,
   ) {
     this.um = um;
@@ -991,6 +1017,8 @@ export class general_problem {
     }
     this.retreat_expected_ipc_profit_threshold =
       retreat_expected_ipc_profit_threshold;
+    this.retreat_pwin_threshold = retreat_pwin_threshold;
+    this.pwinMode = pwinMode;
     this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
@@ -1082,6 +1110,8 @@ export class general_problem {
           this.territory_value,
           this.do_roundless_eval,
           this.retreat_expected_ipc_profit_threshold,
+          this.retreat_pwin_threshold,
+          this.pwinMode,
           this.retreat_strafe_threshold,
         );
         if (this.nonavalproblem != undefined) {
@@ -1331,6 +1361,9 @@ function has_retreat_condition(problem: general_problem): boolean {
   if (problem.retreat_expected_ipc_profit_threshold != undefined) {
     return true;
   }
+  if (problem.retreat_pwin_threshold != undefined) {
+    return true;
+  }
   if (problem.retreat_strafe_threshold != undefined) {
     return true;
   }
@@ -1354,16 +1387,6 @@ export function is_retreat_state(
       return true;
     }
   }
-  /*
-  if (
-    !disable_retreat_ipc &&
-    problem.retreat_expected_ipc_profit_threshold != undefined
-  ) {
-    if (problem.getE(N, M) < problem.retreat_expected_ipc_profit_threshold) {
-      return true;
-    }
-  }
-    */
   if (
     problem.retreat_strafe_threshold != undefined &&
     attnode.nosub_group != undefined
@@ -2419,29 +2442,6 @@ function print_retreat_state(problem: general_problem): void {
   }
 }
 
-const onNextState_EV = (
-  problem: general_problem,
-  ii: number,
-  prob: number,
-  n: number,
-  m: number,
-  num_rounds: number,
-): void => {
-  const attnode = problem.att_data.nodeArr[n];
-  const defnode = problem.def_data.nodeArr[m];
-  const attloss = problem.base_attcost - attnode.cost;
-  const defloss = problem.base_defcost - defnode.cost;
-  const deltacost = defloss - attloss;
-  const expected_value = problem.getiE(ii);
-  /*
-            const ev =
-              expected_value >= problem.retreat_expected_ipc_profit_threshold
-                ? expected_value
-                : 0;
-                */
-  problem.accumulate += (deltacost + expected_value) * prob;
-};
-
 // compute EV for all possible substates
 function compute_expected_value(problem: general_problem): void {
   problem.E_1d = [];
@@ -2468,7 +2468,22 @@ function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
-        onNextState_EV,
+        (
+          problem: general_problem,
+          ii: number,
+          prob: number,
+          n: number,
+          m: number,
+          num_rounds: number,
+        ) => {
+          const attnode = problem.att_data.nodeArr[n];
+          const defnode = problem.def_data.nodeArr[m];
+          const attloss = problem.base_attcost - attnode.cost;
+          const defloss = problem.base_defcost - defnode.cost;
+          const deltacost = defloss - attloss;
+          const expected_value = problem.E_1d[ii];
+          problem.accumulate += (deltacost + expected_value) * prob;
+        },
         (problem, n: number, m: number) => {
           problem.accumulate = 0;
           problem.base_attcost = problem.att_data.nodeArr[n].cost;
@@ -2512,17 +2527,76 @@ function compute_expected_value(problem: general_problem): void {
   }
 }
 
-const onNextState_roundless = (
-  problem: general_problem,
-  ii: number,
-  prob: number,
-  n: number,
-  m: number,
-  num_rounds: number,
-): void => {
-  problem.P_1d[ii] += prob;
-  problem.ERound_1d[ii] += prob * (problem.init_rounds + num_rounds);
-};
+// compute the Pwin with the win condition as attacker takes territory
+function compute_prob_wins(problem: general_problem): void {
+  problem.Pwin_1d = [];
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let i, j;
+  for (i = 0; i < N; i++) {
+    for (j = 0; j < M; j++) {
+      problem.setPwin(i, j, 0.0);
+    }
+  }
+  for (i = N - 1; i >= 0; i--) {
+    for (j = M - 1; j >= 0; j--) {
+      // for each state... compute the Pwin(i, j)
+      // Pwin(i, j) =
+      //    for terminal state -- 0, or 1 based on if the state should be
+      //            considered a win.  (e.g. takes)
+      //    for non-terminal state --
+      //      Pwin(i,j) = sum of (ii, jj all possible next states :=
+      //            prob(ii, jj) * Pwin(ii, jj);
+
+      solve_one_general_state_copy3(
+        problem,
+        i,
+        j,
+        false,
+        0,
+        false,
+        false,
+        (
+          problem: general_problem,
+          ii: number,
+          prob: number,
+          n: number,
+          m: number,
+          num_rounds: number,
+        ) => {
+          problem.pwin_acc += prob * problem.Pwin_1d[ii];
+        },
+        (problem, n: number, m: number) => {
+          problem.pwin_acc = 0;
+          return 1;
+        },
+        (problem, n: number, m: number) => {
+          const attnode = problem.att_data.nodeArr[n];
+          const defnode = problem.def_data.nodeArr[m];
+          if (is_terminal_state(problem, n, m, false, false)) {
+            problem.pwin_acc = 0;
+            if (
+              defnode.N == 0 &&
+              (attnode.hasLand || problem.pwinMode == 'destroys')
+            ) {
+              problem.pwin_acc = 1; // attacker wins
+            }
+            problem.setPwin(n, m, problem.pwin_acc);
+          } else {
+            const is_retreat =
+              problem.retreat_pwin_threshold != undefined &&
+              problem.pwin_acc < problem.retreat_pwin_threshold;
+            const pwin = !is_retreat ? problem.pwin_acc : 0;
+            if (is_retreat) {
+              problem.setRetreat(n, m, true);
+            }
+            problem.setPwin(n, m, pwin);
+          }
+        },
+      );
+    }
+  }
+}
 
 // roundless evaluation... while analytically computing average rounds.
 function do_roundless_eval(
@@ -2636,7 +2710,7 @@ function do_round_eval(
   let i, j;
   for (i = N - 1; i >= 0; i--) {
     for (j = M - 1; j >= 0; j--) {
-      solve_one_general_state(
+      solve_one_general_state_copy4(
         problem,
         i,
         j,
@@ -2671,6 +2745,11 @@ function solve_general(problem: general_problem) {
     console.time('compute_expected_value');
     compute_expected_value(problem);
     console.timeEnd('compute_expected_value');
+  }
+  if (problem.retreat_pwin_threshold != undefined) {
+    console.time('compute_prob_pwins');
+    compute_prob_wins(problem);
+    console.timeEnd('compute_prob_pwins');
   }
   problem.is_retreat_state_initialized = true;
   if (problem.verbose_level > 3) {
@@ -3844,6 +3923,8 @@ export interface wave_input {
   is_crash_fighters: boolean;
   retreat_threshold: number;
   retreat_expected_ipc_profit_threshold?: number;
+  retreat_pwin_threshold?: number;
+  pwinMode?: PwinMode;
   retreat_strafe_threshold?: number;
   rounds: number;
 }
@@ -4029,6 +4110,8 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.territory_value,
           input.do_roundless_eval,
           wave.retreat_expected_ipc_profit_threshold,
+          wave.retreat_pwin_threshold,
+          wave.pwinMode,
           wave.retreat_strafe_threshold,
         ),
       );

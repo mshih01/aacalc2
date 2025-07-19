@@ -9,6 +9,7 @@ import {
   get_cost_from_str,
   count_units,
   hasLand,
+  type PwinMode,
 } from './solve.js';
 import { sbr, type sbr_input } from './sbr.js';
 
@@ -118,6 +119,8 @@ export interface WaveInput {
   rounds: number; // -1 means all rounds
   retreat_threshold: number; // retreat if <= number of units remaining.
   retreat_expected_ipc_profit_threshold?: number; // retreat if expected ipc profit is less than this value.
+  retreat_pwin_threshold?: number; // retreat if probability of winning is less than threshold
+  pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'
   retreat_strafe_threshold?: number; // retreat if expected ipc profit is less than this value.
 }
 
@@ -451,6 +454,8 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       retreat_threshold: wave.retreat_threshold,
       retreat_expected_ipc_profit_threshold:
         wave.retreat_expected_ipc_profit_threshold,
+      retreat_pwin_threshold: wave.retreat_pwin_threshold,
+      pwinMode: wave.pwinMode ?? 'takes', // default to 'takes' if not provided
       retreat_strafe_threshold: wave.retreat_strafe_threshold,
     };
 
