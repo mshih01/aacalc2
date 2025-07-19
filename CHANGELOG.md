@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.27
+
+### Patch Changes
+
+- b3638fe: implemented retreat based on probability of winning.
+
 ## 1.0.26
 
 ### Patch Changes
