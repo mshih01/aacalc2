@@ -2405,9 +2405,10 @@ function print_general_results(
 }
 
 function compute_retreat_state(problem: general_problem): void {
-  problem.R_1d = [];
+  //problem.R_1d = [];
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
+  problem.R_1d = new Array(N * M);
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -2444,9 +2445,9 @@ function print_retreat_state(problem: general_problem): void {
 
 // compute EV for all possible substates
 function compute_expected_value(problem: general_problem): void {
-  problem.E_1d = [];
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
+  problem.E_1d = new Array(N * M);
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -2611,7 +2612,8 @@ function do_roundless_eval(
     console.log('doing roundless eval with init_rounds', init_rounds);
     console.time('do_roundless_eval');
   }
-  problem.ERound_1d = [];
+  //problem.ERound_1d = [];
+  problem.ERound_1d = new Array(N * M);
   // initialize expected rounds for each state
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -2729,9 +2731,9 @@ function solve_general(problem: general_problem) {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
   problem.P_1d = new Array(N * M);
-  problem.R_1d = new Array(N * M);
-  problem.E_1d = new Array(N * M);
-  problem.ERound_1d = new Array(N * M);
+  //problem.R_1d = new Array(N * M);
+  //problem.E_1d = new Array(N * M);
+  //problem.ERound_1d = new Array(N * M);
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
