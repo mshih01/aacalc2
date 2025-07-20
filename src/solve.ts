@@ -2744,14 +2744,22 @@ function solve_general(problem: general_problem) {
   compute_retreat_state(problem);
 
   if (problem.retreat_expected_ipc_profit_threshold != undefined) {
-    console.time('compute_expected_value');
+    if (problem.verbose_level > 2) {
+      console.time('compute_expected_value');
+    }
     compute_expected_value(problem);
-    console.timeEnd('compute_expected_value');
+    if (problem.verbose_level > 2) {
+      console.timeEnd('compute_expected_value');
+    }
   }
   if (problem.retreat_pwin_threshold != undefined) {
-    console.time('compute_prob_pwins');
+    if (problem.verbose_level > 2) {
+      console.time('compute_prob_pwins');
+    }
     compute_prob_wins(problem);
-    console.timeEnd('compute_prob_pwins');
+    if (problem.verbose_level > 2) {
+      console.timeEnd('compute_prob_pwins');
+    }
   }
   problem.is_retreat_state_initialized = true;
   if (problem.verbose_level > 3) {

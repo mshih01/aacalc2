@@ -1,7 +1,7 @@
 import * as readline from 'readline';
 
-import { unit_manager } from './solve.js';
-import type { DiceMode } from './solve.js';
+import { unit_manager } from '../solve.js';
+import type { DiceMode } from '../solve.js';
 
 import type {
   UnitIdentifier,
@@ -10,13 +10,13 @@ import type {
   MultiwaveInput,
   WaveInput,
   UnitGroup,
-} from './external.js';
+} from '../external.js';
 import {
   make_unit_group_string,
   sbrExternal,
   multiwaveExternal,
   Unit2UnitIdentifierMap,
-} from './external.js';
+} from '../external.js';
 
 const rl = readline.createInterface({
   input: process.stdin,

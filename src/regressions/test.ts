@@ -5,7 +5,7 @@ import {
   type multiwave_input,
   type wave_input,
   multiwave,
-} from './solve.js';
+} from '../solve.js';
 
 const rl = readline.createInterface({
   input: process.stdin,

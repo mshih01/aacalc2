@@ -7,8 +7,12 @@ import {
   multiwaveComplexityFastV2,
   sbrExternal,
   type SbrInput,
-} from './index.js';
-import type { PwinMode } from './solve.js';
+} from '../index.js';
+import type { PwinMode } from '../solve.js';
+
+import { writeFileSync } from 'fs';
+const JSONToFile = (obj: any, filename: string) =>
+  writeFileSync(`${filename}.json`, JSON.stringify(obj, null, 2));
 
 let out = [];
 let verbose = 0; // 0, 1, 2, 3
@@ -336,9 +340,9 @@ for (let i = 0; i < 1; i += 0.1) {
       true,
       false,
     ];
-    inputSettings.push([mysetting, 3]);
+    inputSettings.push([mysetting, 2]);
   }
-  inputSettings.push([mysetting, 3]);
+  inputSettings.push([mysetting, 2]);
   if (i >= 0.99) {
     let desc = '1 round: ';
     let mysetting: Setting = [
@@ -353,61 +357,32 @@ for (let i = 0; i < 1; i += 0.1) {
       true,
       false,
     ];
-    inputSettings.push([mysetting, 3]);
-    inputSettings.push([inputSettings4[6], 3]);
+    inputSettings.push([mysetting, 2]);
+    inputSettings.push([inputSettings4[6], 2]);
   }
-
-  /*
-  inputSettings.push([inputSettings4[5], 5]);
-  inputSettings.push([inputSettings4[2], 5]);
-  inputSettings.push([inputSettings4[6], 5]);
-
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-
-  inputSettings.push([inputSettings4[6], 4]);
-  inputSettings.push([inputSettings4[6], 4]);
-
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-
-  inputSettings.push([inputSettings4[6], 4]);
-
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  inputSettings.push([inputSettings4[5], 4]);
-  inputSettings.push([inputSettings4[2], 4]);
-  // inputSettings.push(inputSettings4[0]);
-  */
 }
+
+for (let i = 0; i < inputSettings2.length; i++) {
+  let setting = inputSettings2[i];
+  inputSettings.push([setting, 2]);
+
+  // strafe doesn't work with subs
+  if (setting[5] != undefined) {
+    continue;
+  }
+  inputSettings.push([setting, 8]);
+}
+
+// multiwave without retreat
+inputSettings.push([inputSettings2[0], 4]);
 
 console.log(process.memoryUsage());
 
 let attackerString: string = '';
 let defenderString: string = '';
 let precision = 3;
+
+let testIndex = 0;
 
 // console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
@@ -425,54 +400,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     report_complexity_only,
   ] = setting;
 
-  const input2: MultiwaveInput = {
-    wave_info: [
-      {
-        attack: {
-          units: {
-            inf: 11,
-            art: 2,
-            arm: 1,
-            fig: 2,
-          },
-          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
-          takes: 0,
-          aaLast: false,
-        },
-        defense: {
-          units: {
-            inf: 7,
-            art: 1,
-            arm: 5,
-            aa: 0,
-          },
-          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
-          takes: 0,
-          aaLast: false,
-        },
-        att_submerge: false,
-        def_submerge: false,
-        att_dest_last: false,
-        def_dest_last: false,
-        is_crash_fighters: false,
-        rounds: round,
-        retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: retreat, // optional
-        retreat_strafe_threshold: strafe, // optional
-      },
-    ],
-    debug: false,
-    prune_threshold: 1e-12,
-    report_prune_threshold: 1e-12,
-    is_naval: false,
-    in_progress: false,
-    num_runs: 1,
-    verbose_level: verbose,
-    diceMode: 'standard',
-    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
-    is_deadzone: is_deadzone, // optional, default is false
-    territory_value: territory_value, // optional, default is 0
-  };
+  // 1 vs. 1
   const input: MultiwaveInput = {
     wave_info: [
       {
@@ -508,6 +436,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,
@@ -523,6 +453,60 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  // small single wave
+  const input2: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 2,
+            arm: 2,
+            fig: 2,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 4,
+            art: 0,
+            arm: 2,
+            fig: 2,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+  // large single wave
   const input3: MultiwaveInput = {
     wave_info: [
       {
@@ -572,10 +556,10 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  // smaller multiwave
   const input4: MultiwaveInput = {
     wave_info: [
       {
@@ -611,6 +595,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -646,6 +632,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -680,6 +668,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,
@@ -695,6 +685,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  // imbalanced multiwave
   const input5: MultiwaveInput = {
     wave_info: [
       {
@@ -730,6 +721,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -765,6 +758,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -799,6 +794,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,
@@ -814,6 +811,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  // large multiwave
   const input7: MultiwaveInput = {
     wave_info: [
       {
@@ -849,6 +847,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -883,6 +883,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
       {
         attack: {
@@ -917,6 +919,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,
@@ -929,10 +933,10 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  // large naval singlewave
   const input6: MultiwaveInput = {
     wave_info: [
       {
@@ -973,6 +977,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
       },
     ],
     debug: false,
@@ -985,7 +991,65 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+
+  // small naval
+  const input8: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            sub: 5,
+            des: 5,
+            cru: 1,
+            acc: 1,
+            fig: 2,
+            bom: 1,
+            bat: 2,
+          },
+          ool: ['acc', 'sub', 'des', 'fig', 'cru', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            sub: 5,
+            des: 5,
+            cru: 1,
+            acc: 1,
+            fig: 2,
+            bat: 1,
+            tra: 2,
+          },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -999,6 +1063,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     input5,
     input6,
     input7,
+    input8,
   ];
 
   let myinput = inputs[fileindex];
@@ -1023,10 +1088,18 @@ for (let i = 0; i < inputSettings.length; i++) {
   } else {
     let t0 = performance.now();
     console.time(description);
+
+    let testName = 'test' + testIndex;
+    let inputName = 'input/' + testName;
+    let outputName = 'output/' + testName;
+    JSONToFile(myinput, inputName);
     let output = multiwaveExternal(myinput);
+    JSONToFile(output, outputName);
     let t1 = performance.now() - t0;
     console.timeEnd(description);
     console.log(myinput);
+
+    testIndex++;
 
     attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
     defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
