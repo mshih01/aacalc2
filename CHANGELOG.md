@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.28
+
+### Patch Changes
+
+- eda2baf: branch cleanup -- remove regresion files from dist
+
 ## 1.0.27
 
 ### Patch Changes
