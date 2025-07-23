@@ -417,6 +417,7 @@ export function multiwaveComplexity(input: MultiwaveInput): number {
 
 export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const wavearr: wave_input[] = [];
+  const do_roundless_eval = input.do_roundless_eval ?? true;
   for (let i = 0; i < input.wave_info.length; i++) {
     const wave = input.wave_info[i];
     if (!wave) {
@@ -440,6 +441,11 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       input.verbose_level,
     );
 
+    let rounds = wave.rounds;
+    if (do_roundless_eval && rounds == 100) {
+      rounds = 0;
+    }
+
     const internal_wave = {
       attacker: att_unit_group_string.unit,
       defender: def_unit_group_string.unit,
@@ -450,7 +456,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       att_dest_last: wave.att_dest_last,
       def_dest_last: wave.def_dest_last,
       is_crash_fighters: wave.is_crash_fighters,
-      rounds: wave.rounds,
+      rounds: rounds,
       retreat_threshold: wave.retreat_threshold,
       retreat_expected_ipc_profit_threshold:
         wave.retreat_expected_ipc_profit_threshold,
@@ -472,7 +478,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
     report_complexity_only: input.report_complexity_only ?? false, // default to false if not provided
-    do_roundless_eval: input.do_roundless_eval ?? false, // default to false if not provided
+    do_roundless_eval: do_roundless_eval,
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     diceMode: input.diceMode,
     sortMode: input.sortMode == undefined ? 'unit_count' : input.sortMode,

@@ -10,10 +10,6 @@ import {
 } from '../index.js';
 import type { PwinMode } from '../solve.js';
 
-import { writeFileSync } from 'fs';
-const JSONToFile = (obj: any, filename: string) =>
-  writeFileSync(`${filename}.json`, JSON.stringify(obj, null, 2));
-
 let out = [];
 let verbose = 0; // 0, 1, 2, 3
 
@@ -375,6 +371,14 @@ for (let i = 0; i < inputSettings2.length; i++) {
 
 // multiwave without retreat
 inputSettings.push([inputSettings2[0], 4]);
+inputSettings = [];
+inputSettings.push([inputSettings4[2], 9]);
+inputSettings.push([inputSettings4[0], 9]);
+inputSettings.push([inputSettings4[2], 9]);
+inputSettings.push([inputSettings4[0], 9]);
+
+console.log(inputSettings);
+console.log(inputSettings.length);
 
 console.log(process.memoryUsage());
 
@@ -1053,6 +1057,46 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  const input9: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            sub: 10,
+            bat: 10,
+          },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            sub: 10,
+            bat: 10,
+          },
+          ool: ['sub', 'des', 'cru', 'fig', 'acc', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'unit_count',
+  };
 
   let inputs: MultiwaveInput[] = [
     input,
@@ -1064,6 +1108,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     input6,
     input7,
     input8,
+    input9,
   ];
 
   let myinput = inputs[fileindex];
@@ -1090,14 +1135,11 @@ for (let i = 0; i < inputSettings.length; i++) {
     console.time(description);
 
     let testName = 'test' + testIndex;
-    let inputName = 'input/' + testName;
-    let outputName = 'output/' + testName;
-    JSONToFile(myinput, inputName);
     let output = multiwaveExternal(myinput);
-    JSONToFile(output, outputName);
     let t1 = performance.now() - t0;
     console.timeEnd(description);
     console.log(myinput);
+    console.log(testName);
 
     testIndex++;
 

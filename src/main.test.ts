@@ -27,7 +27,7 @@ type Setting = [
   boolean, //complexity only
 ];
 
-let do_roundless_global = false;
+let do_roundless_global = true;
 let complexity_global = false;
 
 let inputSettings2: Setting[] = [
