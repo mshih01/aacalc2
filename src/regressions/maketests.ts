@@ -30,6 +30,7 @@ type Setting = [
 let do_roundless_global = false;
 let complexity_global = false;
 let retreat_lose_air_probability_global = 1.0;
+let retreat_round_zero = false;
 
 let inputSettings2: Setting[] = [
   [
@@ -443,6 +444,7 @@ inputSettings.push([inputSettings4[6], 10]); // EV retreat
 inputSettings.push([inputSettings4[7], 10]); // retreat don't lose air 0
 inputSettings.push([inputSettings4[8], 10]); // retreat don't lose air 0.12
 inputSettings.push([inputSettings4[9], 10]); // retreat don't lose air 0.11
+inputSettings = [];
 
 console.log(inputSettings);
 console.log(inputSettings.length);
@@ -524,6 +526,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // small single wave
   const input2: MultiwaveInput = {
@@ -577,6 +580,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // large single wave
   const input3: MultiwaveInput = {
@@ -630,6 +634,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // smaller multiwave
   const input4: MultiwaveInput = {
@@ -756,6 +761,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // imbalanced multiwave
   const input5: MultiwaveInput = {
@@ -882,6 +888,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // large multiwave
   const input7: MultiwaveInput = {
@@ -1007,6 +1014,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   // large naval singlewave
   const input6: MultiwaveInput = {
@@ -1065,6 +1073,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
 
   // small naval
@@ -1124,6 +1133,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
   const input9: MultiwaveInput = {
     wave_info: [
@@ -1219,6 +1229,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
+    retreat_round_zero: retreat_round_zero, // optional, default is true
   };
 
   let inputs: MultiwaveInput[] = [
@@ -1310,4 +1321,222 @@ for (let i = 0; i < out.length; i++) {
     result += o[j].padEnd(padding) + ' ';
   }
   console.log(result);
+}
+
+if (false) {
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 3,
+            arm: 2,
+            fig: 3,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 5,
+            art: 2,
+            arm: 1,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: 0.0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 4,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+    retreat_round_zero: true,
+  };
+
+  let output = multiwaveExternal(input);
+  console.log(output.attack.survives[0], 'attack survives');
+  console.log(output.attack.ipcLoss[0], 'attack ipc loss');
+  console.log(output.defense.survives[0], 'defense survives');
+  console.log(output.defense.ipcLoss[0], 'defense ipc loss');
+  console.log(input);
+}
+if (false) {
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 3,
+            arm: 2,
+            fig: 3,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 5,
+            art: 2,
+            arm: 1,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: 0.0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 4,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+    retreat_round_zero: false,
+  };
+
+  let output = multiwaveExternal(input);
+  console.log(output.attack.survives[0], 'attack survives');
+  console.log(output.attack.ipcLoss[0], 'attack ipc loss');
+  console.log(output.defense.survives[0], 'defense survives');
+  console.log(output.defense.ipcLoss[0], 'defense ipc loss');
+  console.log(input);
+}
+
+{
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 1,
+            arm: 0,
+            fig: 1,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 1,
+            art: 0,
+            arm: 0,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: 0.0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 4,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+    retreat_round_zero: true,
+  };
+
+  let output = multiwaveExternal(input);
+  console.log(output.attack.survives[0], 'attack survives');
+  console.log(output.attack.ipcLoss[0], 'attack ipc loss');
+  console.log(output.defense.survives[0], 'defense survives');
+  console.log(output.defense.ipcLoss[0], 'defense ipc loss');
+  console.log(input);
+}
+{
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 1,
+            arm: 0,
+            fig: 1,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 1,
+            art: 0,
+            arm: 0,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: 0.0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 4,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+    retreat_round_zero: false,
+  };
+
+  let output = multiwaveExternal(input);
+  console.log(output.attack.survives[0], 'attack survives');
+  console.log(output.attack.ipcLoss[0], 'attack ipc loss');
+  console.log(output.defense.survives[0], 'defense survives');
+  console.log(output.defense.ipcLoss[0], 'defense ipc loss');
+  console.log(input);
 }
