@@ -25,6 +25,7 @@ type Setting = [
   number, // territory value
   boolean, // do roundless eval, optional
   boolean, //complexity only
+  number, // retreat_lose_air_probability, optional
 ];
 
 let do_roundless_global = true;
@@ -42,6 +43,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // no retreat  (A)
   [
     '1 round',
@@ -54,6 +56,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // 1 round (B)
   [
     'EV based retreat',
@@ -66,6 +69,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat (C)
   [
     'EV retreat + strafe',
@@ -78,6 +82,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat + strafe (D)
   [
     'strafe only',
@@ -90,6 +95,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // strafe (E)
   [
     'DZ + no retreat',
@@ -102,6 +108,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // no retreat  (A)
   [
     'DZ + 1 round',
@@ -114,6 +121,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // 1 round (B)
   [
     'DZ + EV based retreat',
@@ -126,6 +134,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat (C)
   [
     'DZ + EV retreat + strafe',
@@ -138,6 +147,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat + strafe (D)
   [
     'DZ + strafe only',
@@ -150,6 +160,7 @@ let inputSettings2: Setting[] = [
     0,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // strafe (E)
   [
     'DZ + terrValue + no retreat',
@@ -162,6 +173,7 @@ let inputSettings2: Setting[] = [
     -5,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // no retreat  (A)
   [
     'DZ + terrValue + 1 round',
@@ -174,6 +186,7 @@ let inputSettings2: Setting[] = [
     -5,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // 1 round (B)
   [
     'DZ + terrValue + EV based retreat',
@@ -186,6 +199,7 @@ let inputSettings2: Setting[] = [
     -5,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat (C)
   [
     'DZ + terrValue + EV retreat + strafe',
@@ -198,6 +212,7 @@ let inputSettings2: Setting[] = [
     -5,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // EV based retreat + strafe (D)
   [
     'DZ + terrValue + strafe only',
@@ -210,6 +225,7 @@ let inputSettings2: Setting[] = [
     -5,
     do_roundless_global,
     complexity_global,
+    1.0,
   ], // strafe (E)
 ];
 
@@ -230,6 +246,7 @@ let inputSettings4: Setting[] = [
     0,
     true,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'no retreat 0 roundlessorig',
@@ -242,6 +259,7 @@ let inputSettings4: Setting[] = [
     0,
     false,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'no retreat 100 rounds',
@@ -254,6 +272,7 @@ let inputSettings4: Setting[] = [
     0,
     false,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'strafe 0 roundless',
@@ -266,6 +285,7 @@ let inputSettings4: Setting[] = [
     0,
     true,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'strafe 100 rounds',
@@ -278,6 +298,7 @@ let inputSettings4: Setting[] = [
     0,
     false,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'no retreat roundless',
@@ -290,6 +311,7 @@ let inputSettings4: Setting[] = [
     0,
     true,
     false,
+    1.0,
   ], // no retreat  (A)
   [
     'EV retreat roundless',
@@ -302,7 +324,47 @@ let inputSettings4: Setting[] = [
     0,
     true,
     false,
-  ], // no retreat  (A)
+    1.0,
+  ], // EV retreat -- 6
+  [
+    'retreat lose air 0.0',
+    0,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+    0.0,
+  ], // retreat air 0.0 -- 7
+  [
+    'retreat lose air 0.11',
+    0,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+    0.11,
+  ], // retreat air 0.11 -- 8
+  [
+    'retreat lose air 0.12',
+    0,
+    undefined,
+    'takes',
+    0,
+    undefined,
+    false,
+    0,
+    true,
+    false,
+    0.12,
+  ], // retreat air 0.12 -- 9
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
 
@@ -321,6 +383,7 @@ for (let i = 0; i < 1; i += 0.1) {
     0,
     true,
     false,
+    1.0,
   ];
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
   if (i == 0) {
@@ -336,6 +399,7 @@ for (let i = 0; i < 1; i += 0.1) {
       0,
       true,
       false,
+      1.0,
     ];
     inputSettings.push([mysetting, 2]);
   }
@@ -353,6 +417,7 @@ for (let i = 0; i < 1; i += 0.1) {
       0,
       true,
       false,
+      1.0,
     ];
     inputSettings.push([mysetting, 2]);
     inputSettings.push([inputSettings4[6], 2]);
@@ -372,6 +437,12 @@ for (let i = 0; i < inputSettings2.length; i++) {
 
 // multiwave without retreat
 inputSettings.push([inputSettings2[0], 4]);
+
+inputSettings.push([inputSettings2[0], 10]);
+inputSettings.push([inputSettings2[6], 10]);
+inputSettings.push([inputSettings2[7], 10]);
+inputSettings.push([inputSettings2[8], 10]);
+inputSettings.push([inputSettings2[9], 10]);
 
 console.log(process.memoryUsage());
 
@@ -395,6 +466,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value,
     do_roundless_eval,
     report_complexity_only,
+    retreat_lose_air_probability,
   ] = setting;
 
   // 1 vs. 1
@@ -1051,6 +1123,61 @@ for (let i = 0; i < inputSettings.length; i++) {
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
+  // small single wave -- retreat_lose_air_probability
+  const input10: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 2,
+            art: 0,
+            arm: 0,
+            fig: 2,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 2,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+        retreat_pwin_threshold: pwin_retreat, // optional
+        pwinMode: pwin_mode, // optional
+        retreat_lose_air_probability: retreat_lose_air_probability, // optional
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+
   let inputs: MultiwaveInput[] = [
     input,
     input,
@@ -1061,6 +1188,8 @@ for (let i = 0; i < inputSettings.length; i++) {
     input6,
     input7,
     input8,
+    input8,
+    input10,
   ];
 
   let myinput = inputs[fileindex];

@@ -20479,3 +20479,493 @@ exports[`Regression test for test38 1`] = `
   "waves": 3,
 }
 `;
+
+exports[`Regression test for test39 1`] = `
+{
+  "attack": {
+    "ipcLoss": [
+      3.6787673935635876,
+    ],
+    "survives": [
+      0.9805604568742283,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Fig, 2 Inf;1 Fig;": {
+        "amount": 0.0472161560931814,
+        "casualties": "1 Fig, 2 Inf",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "1 Fig",
+      },
+      "1 Inf;2 Fig, 1 Inf;": {
+        "amount": 0.4160313603321489,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Inf",
+      },
+      "2 Fig, 2 Inf;;": {
+        "amount": 0.019439543125771744,
+        "casualties": "2 Fig, 2 Inf",
+        "ipcLoss": 26,
+        "retreaters": "",
+        "survivors": "",
+      },
+      "2 Inf;2 Fig;": {
+        "amount": 0.19496444896769544,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      ";2 Fig, 2 Inf;": {
+        "amount": 0.3223484914812027,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Fig, 2 Inf",
+      },
+    },
+    "defense": {
+      "1 Inf;1 Inf;": {
+        "amount": 0.009719771562885872,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "1 Inf",
+      },
+      "2 Inf;;": {
+        "amount": 0.9872845620028387,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";2 Inf;": {
+        "amount": 0.0029956664342755744,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Inf",
+      },
+    },
+  },
+  "complexity": 15,
+  "defense": {
+    "ipcLoss": [
+      5.952866686705689,
+    ],
+    "survives": [
+      0.012715437997161447,
+    ],
+  },
+  "rounds": [
+    1.862248583204122,
+  ],
+  "takesTerritory": [
+    0.7383798518133515,
+  ],
+  "waves": 1,
+}
+`;
+
+exports[`Regression test for test40 1`] = `
+{
+  "attack": {
+    "ipcLoss": [
+      3.0925925925925934,
+    ],
+    "survives": [
+      1.0000000000000002,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Inf;2 Fig, 1 Inf;": {
+        "amount": 0.1820987654320988,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Inf",
+      },
+      "1 Inf;;2 Fig, 1 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "2 Fig, 1 Inf",
+        "survivors": "",
+      },
+      "2 Inf;2 Fig;": {
+        "amount": 0.045524691358024685,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "2 Inf;;2 Fig": {
+        "amount": 0.06558641975308642,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "2 Fig",
+        "survivors": "",
+      },
+      ";2 Fig, 2 Inf;": {
+        "amount": 0.18209876543209885,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Fig, 2 Inf",
+      },
+      ";;2 Fig, 2 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "2 Fig, 2 Inf",
+        "survivors": "",
+      },
+    },
+    "defense": {
+      "1 Inf;1 Inf;": {
+        "amount": 0.41666666666666674,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "1 Inf",
+      },
+      "2 Inf;;": {
+        "amount": 0.4097222222222223,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";2 Inf;": {
+        "amount": 0.17361111111111113,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Inf",
+      },
+    },
+  },
+  "complexity": 15,
+  "defense": {
+    "ipcLoss": [
+      3.7083333333333335,
+    ],
+    "survives": [
+      0.5902777777777779,
+    ],
+  },
+  "rounds": [
+    1,
+  ],
+  "takesTerritory": [
+    0.36419753086419765,
+  ],
+  "waves": 1,
+}
+`;
+
+exports[`Regression test for test41 1`] = `
+{
+  "attack": {
+    "ipcLoss": [
+      4.158249684597112,
+    ],
+    "survives": [
+      1.0000000000000004,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Fig, 2 Inf;1 Fig;": {
+        "amount": 0.0034127363319909907,
+        "casualties": "1 Fig, 2 Inf",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "1 Fig",
+      },
+      "1 Fig, 2 Inf;;1 Fig": {
+        "amount": 0.006825472663981982,
+        "casualties": "1 Fig, 2 Inf",
+        "ipcLoss": 16,
+        "retreaters": "1 Fig",
+        "survivors": "",
+      },
+      "1 Inf;2 Fig, 1 Inf;": {
+        "amount": 0.3454701980047604,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Inf",
+      },
+      "2 Inf;2 Fig;": {
+        "amount": 0.13022946798743237,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "2 Inf;;2 Fig": {
+        "amount": 0.1160688139750452,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "2 Fig",
+        "survivors": "",
+      },
+      ";2 Fig, 2 Inf;": {
+        "amount": 0.19732441471571918,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Fig, 2 Inf",
+      },
+      ";;2 Fig, 2 Inf": {
+        "amount": 0.2006688963210703,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "2 Fig, 2 Inf",
+        "survivors": "",
+      },
+    },
+    "defense": {
+      "1 Inf;1 Inf;": {
+        "amount": 0.2919953718891808,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "1 Inf",
+      },
+      "2 Inf;;": {
+        "amount": 0.676436817039903,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";2 Inf;": {
+        "amount": 0.03156781107091667,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Inf",
+      },
+    },
+  },
+  "complexity": 15,
+  "defense": {
+    "ipcLoss": [
+      4.934607017906961,
+    ],
+    "survives": [
+      0.32356318296009745,
+    ],
+  },
+  "rounds": [
+    1.430588245655367,
+  ],
+  "takesTerritory": [
+    0.5427946127204796,
+  ],
+  "waves": 1,
+}
+`;
+
+exports[`Regression test for test42 1`] = `
+{
+  "attack": {
+    "ipcLoss": [
+      3.0925925925925934,
+    ],
+    "survives": [
+      1.0000000000000002,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Inf;2 Fig, 1 Inf;": {
+        "amount": 0.1820987654320988,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Inf",
+      },
+      "1 Inf;;2 Fig, 1 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "2 Fig, 1 Inf",
+        "survivors": "",
+      },
+      "2 Inf;2 Fig;": {
+        "amount": 0.045524691358024685,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "2 Inf;;2 Fig": {
+        "amount": 0.06558641975308642,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "2 Fig",
+        "survivors": "",
+      },
+      ";2 Fig, 2 Inf;": {
+        "amount": 0.18209876543209885,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Fig, 2 Inf",
+      },
+      ";;2 Fig, 2 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "2 Fig, 2 Inf",
+        "survivors": "",
+      },
+    },
+    "defense": {
+      "1 Inf;1 Inf;": {
+        "amount": 0.41666666666666674,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "1 Inf",
+      },
+      "2 Inf;;": {
+        "amount": 0.4097222222222223,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";2 Inf;": {
+        "amount": 0.17361111111111113,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Inf",
+      },
+    },
+  },
+  "complexity": 15,
+  "defense": {
+    "ipcLoss": [
+      3.7083333333333335,
+    ],
+    "survives": [
+      0.5902777777777779,
+    ],
+  },
+  "rounds": [
+    1.0000000000000002,
+  ],
+  "takesTerritory": [
+    0.36419753086419765,
+  ],
+  "waves": 1,
+}
+`;
+
+exports[`Regression test for test43 1`] = `
+{
+  "attack": {
+    "ipcLoss": [
+      3.0925925925925934,
+    ],
+    "survives": [
+      1.0000000000000002,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Inf;2 Fig, 1 Inf;": {
+        "amount": 0.1820987654320988,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Inf",
+      },
+      "1 Inf;;2 Fig, 1 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "2 Fig, 1 Inf",
+        "survivors": "",
+      },
+      "2 Inf;2 Fig;": {
+        "amount": 0.045524691358024685,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "2 Inf;;2 Fig": {
+        "amount": 0.06558641975308642,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "2 Fig",
+        "survivors": "",
+      },
+      ";2 Fig, 2 Inf;": {
+        "amount": 0.18209876543209885,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Fig, 2 Inf",
+      },
+      ";;2 Fig, 2 Inf": {
+        "amount": 0.26234567901234573,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "2 Fig, 2 Inf",
+        "survivors": "",
+      },
+    },
+    "defense": {
+      "1 Inf;1 Inf;": {
+        "amount": 0.41666666666666674,
+        "casualties": "1 Inf",
+        "ipcLoss": 3,
+        "retreaters": "",
+        "survivors": "1 Inf",
+      },
+      "2 Inf;;": {
+        "amount": 0.4097222222222223,
+        "casualties": "2 Inf",
+        "ipcLoss": 6,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";2 Inf;": {
+        "amount": 0.17361111111111113,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "2 Inf",
+      },
+    },
+  },
+  "complexity": 15,
+  "defense": {
+    "ipcLoss": [
+      3.7083333333333335,
+    ],
+    "survives": [
+      0.5902777777777779,
+    ],
+  },
+  "rounds": [
+    1.0000000000000002,
+  ],
+  "takesTerritory": [
+    0.36419753086419765,
+  ],
+  "waves": 1,
+}
+`;

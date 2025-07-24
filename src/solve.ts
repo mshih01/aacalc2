@@ -15,6 +15,7 @@ import { solve_one_general_state_copy1 } from './solveone1.js';
 import { solve_one_general_state_copy2 } from './solveone2.js';
 import { solve_one_general_state_copy3 } from './solveone3.js';
 import { solve_one_general_state_copy4 } from './solveone4.js';
+import { get } from 'http';
 
 class unit_group_manager {
   unit_group_arr: unit_group[];
@@ -671,6 +672,7 @@ class general_unit_graph_node {
   hasLand: boolean = false; // true if unit_str has land units.
   cost: number;
   deadzone_cost: number; // land units taking territories in a deadzone.
+  firstAirCasualty: number; // index of the first air casualty, -1 if no air units.
   dlast: boolean = false;
   index: number = 0;
   next_aahit: general_unit_graph_node | undefined = undefined;
@@ -711,6 +713,11 @@ class general_unit_graph_node {
     this.cost = get_cost_from_str(um, unit_str, '');
     this.deadzone_cost = get_deadzone_cost_from_str(um, unit_str, '');
     this.hasLand = hasLand(um, unit_str);
+    this.firstAirCasualty = -1;
+    if (this.num_air > 0) {
+      this.firstAirCasualty = getFirstAirCasualty(um, unit_str);
+    }
+
     if (is_nonaval) {
       if (this.num_naval == 0) {
         this.cost += this.num_subs * 1000;
@@ -874,6 +881,7 @@ export class general_problem {
   retreat_pwin_threshold?: number; // if defined, retreat if Pwin < retreat_pwin_threshold
   pwinMode?: PwinMode; // 'takes' or 'destroys'
   retreat_strafe_threshold?: number;
+  retreat_lose_air_probability: number;
   attmap: Map<string, number>;
   defmap: Map<string, number>;
   attmap2: Map<string, number>;
@@ -964,7 +972,8 @@ export class general_problem {
       this.retreat_threshold > 0 ||
       this.retreat_expected_ipc_profit_threshold !== undefined ||
       this.retreat_pwin_threshold !== undefined ||
-      this.retreat_strafe_threshold !== undefined
+      this.retreat_strafe_threshold !== undefined ||
+      this.retreat_lose_air_probability < 1.0
     );
   }
   hasNonCombat() {
@@ -999,6 +1008,7 @@ export class general_problem {
     skip_compute: boolean = false,
     territory_value: number = 0,
     do_roundless_eval: boolean = false,
+    retreat_lose_air_probability: number,
     retreat_expected_ipc_profit_threshold?: number,
     retreat_pwin_threshold?: number,
     pwinMode?: PwinMode,
@@ -1020,6 +1030,7 @@ export class general_problem {
     this.retreat_pwin_threshold = retreat_pwin_threshold;
     this.pwinMode = pwinMode;
     this.retreat_strafe_threshold = retreat_strafe_threshold;
+    this.retreat_lose_air_probability = retreat_lose_air_probability;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
     this.skip_compute = skip_compute;
@@ -1109,6 +1120,7 @@ export class general_problem {
           this.skip_compute,
           this.territory_value,
           this.do_roundless_eval,
+          this.retreat_lose_air_probability,
           this.retreat_expected_ipc_profit_threshold,
           this.retreat_pwin_threshold,
           this.pwinMode,
@@ -1367,6 +1379,9 @@ function has_retreat_condition(problem: general_problem): boolean {
   if (problem.retreat_strafe_threshold != undefined) {
     return true;
   }
+  if (problem.retreat_lose_air_probability < 1.0) {
+    return true;
+  }
   return false;
 }
 export function is_retreat_state(
@@ -1394,6 +1409,18 @@ export function is_retreat_state(
     const pgt = attnode.nosub_group.pgreater[attnode.N][defnode.N];
     if (pgt > problem.retreat_strafe_threshold) {
       return true;
+    }
+  }
+  if (
+    problem.retreat_lose_air_probability < 1.0 &&
+    defnode.nosub_group != undefined
+  ) {
+    if (attnode.firstAirCasualty >= 0) {
+      const pgt =
+        defnode.nosub_group.pgreater[defnode.N][attnode.firstAirCasualty];
+      if (pgt > problem.retreat_lose_air_probability) {
+        return true;
+      }
     }
   }
   return false;
@@ -1819,6 +1846,19 @@ export function get_deadzone_cost_from_str(
     cost += stat.cost - (stat.def / 6) * 3; // cost of the unit + chance of unit hitting * cost of inf
   }
   return cost;
+}
+
+// returns the number of casualties to lose first air.  -1 if no air units
+function getFirstAirCasualty(um: unit_manager, unit_str: string): number {
+  const len = unit_str.length;
+  for (let cas = 1; cas <= len; cas++) {
+    const i = len - cas;
+    const ch = unit_str.charAt(i);
+    if (isAir(um, ch)) {
+      return cas;
+    }
+  }
+  return -1; // no air casualty
 }
 
 function get_cost_remain(
@@ -3936,6 +3976,7 @@ export interface wave_input {
   retreat_pwin_threshold?: number;
   pwinMode?: PwinMode;
   retreat_strafe_threshold?: number;
+  retreat_lose_air_probability: number;
   rounds: number;
 }
 
@@ -4119,6 +4160,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.report_complexity_only,
           input.territory_value,
           input.do_roundless_eval,
+          wave.retreat_lose_air_probability,
           wave.retreat_expected_ipc_profit_threshold,
           wave.retreat_pwin_threshold,
           wave.pwinMode,

@@ -122,6 +122,7 @@ export interface WaveInput {
   retreat_pwin_threshold?: number; // retreat if probability of winning is less than threshold
   pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'
   retreat_strafe_threshold?: number; // retreat if expected ipc profit is less than this value.
+  retreat_lose_air_probability?: number; // probability of losing air units when retreating, default is 1.0
 }
 
 export interface MultiwaveInput {
@@ -446,6 +447,19 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       rounds = 0;
     }
 
+    if (input.is_naval && wave.retreat_strafe_threshold != undefined) {
+      throw new Error('is_naval && retreat_strafe_threshold is not allowed');
+    }
+    if (
+      input.is_naval &&
+      wave.retreat_lose_air_probability != undefined &&
+      wave.retreat_lose_air_probability < 1.0
+    ) {
+      throw new Error(
+        'is_naval && retreat_lose_air_probability < 1.0 is not allowed',
+      );
+    }
+
     const internal_wave = {
       attacker: att_unit_group_string.unit,
       defender: def_unit_group_string.unit,
@@ -458,6 +472,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       is_crash_fighters: wave.is_crash_fighters,
       rounds: rounds,
       retreat_threshold: wave.retreat_threshold,
+      retreat_lose_air_probability: wave.retreat_lose_air_probability ?? 1.0, // default to 1.0 if not provided
       retreat_expected_ipc_profit_threshold:
         wave.retreat_expected_ipc_profit_threshold,
       retreat_pwin_threshold: wave.retreat_pwin_threshold,

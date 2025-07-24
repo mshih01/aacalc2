@@ -107,6 +107,7 @@ function run3(argc: number, argv: string[]) {
     is_crash_fighters: crash1,
     rounds: rounds1,
     retreat_threshold: retreat1,
+    retreat_lose_air_probability: 1.0,
   };
   const wave2: wave_input = {
     attacker: attackers2,
@@ -120,6 +121,7 @@ function run3(argc: number, argv: string[]) {
     is_crash_fighters: crash2,
     rounds: rounds2,
     retreat_threshold: retreat2,
+    retreat_lose_air_probability: 1.0,
   };
   const wave3: wave_input = {
     attacker: attackers3,
@@ -133,6 +135,7 @@ function run3(argc: number, argv: string[]) {
     is_crash_fighters: crash3,
     rounds: rounds3,
     retreat_threshold: retreat3,
+    retreat_lose_air_probability: 1.0,
   };
   wavearr.push(wave1);
   if (attackers2.length > 0) {
