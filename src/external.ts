@@ -116,13 +116,15 @@ export interface WaveInput {
   att_dest_last: boolean;
   def_dest_last: boolean;
   is_crash_fighters: boolean;
-  rounds: number; // -1 means all rounds
-  retreat_threshold: number; // retreat if <= number of units remaining.
+  rounds: number; // 100 means all rounds.
+  retreat_threshold: number; // retreat if number of units remaining <= threshold
   retreat_expected_ipc_profit_threshold?: number; // retreat if expected ipc profit is less than this value.
   retreat_pwin_threshold?: number; // retreat if probability of winning is less than threshold
-  pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'
-  retreat_strafe_threshold?: number; // retreat if expected ipc profit is less than this value.
-  retreat_lose_air_probability?: number; // probability of losing air units when retreating, default is 1.0
+  pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'   takes | destroys
+  retreat_strafe_threshold?: number; // retreat if the probability of wiping out defenders exceeds threshold.
+  // incompatible with is_naval
+  retreat_lose_air_probability?: number; // retreat if the probability of losing air exceeds threshold.  default is 1.0
+  // incompatible with is_naval
 }
 
 export interface MultiwaveInput {
@@ -136,9 +138,14 @@ export interface MultiwaveInput {
   verbose_level: number;
   diceMode: DiceMode;
   sortMode?: SortMode;
-  is_deadzone?: boolean;
+  is_deadzone?: boolean; // target is a deadzone.  if the territory is taken -- the land units capturing
+  // are considered to be destroyed in the counter attack in 1 round with 1
+  // defensive roll to kill an infantry.
+  // e.g. inf ==> additional IPC cost 2
+  // e.g. art ==> additional IPC cost 3
+  // e.g. arm ==> additional IPC cost 4.5
   report_complexity_only?: boolean; // if true, only report complexity and no other results.
-  do_roundless_eval?: boolean;
+  do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
 }
 
