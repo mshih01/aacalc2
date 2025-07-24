@@ -1323,6 +1323,7 @@ for (let i = 0; i < out.length; i++) {
   console.log(result);
 }
 
+/*
 if (true) {
   const input: MultiwaveInput = {
     wave_info: [
@@ -1540,3 +1541,415 @@ if (true) {
   console.log(output.defense.ipcLoss[0], 'defense ipc loss');
   console.log(input);
 }
+*/
+
+{
+  type Setting = [
+    string,
+    number | undefined,
+    number,
+    number | undefined,
+    boolean,
+    number,
+    boolean,
+    number,
+  ];
+
+  let out = [];
+
+  let verbose_global = 4;
+  let fullrounds = 0;
+  let roundless_global = true;
+
+  let inputSettings2: Setting[] = [
+    [
+      'no retreat',
+      undefined,
+      fullrounds,
+      undefined,
+      false,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    ['1 round', undefined, 1, undefined, false, 0, roundless_global, 1.0],
+    ['2 round', undefined, 2, undefined, false, 0, roundless_global, 1.0],
+    ['3 round', undefined, 3, undefined, false, 0, roundless_global, 1.0],
+    ['4 round', undefined, 4, undefined, false, 0, roundless_global, 1.0],
+    ['EV retreat', 0, fullrounds, undefined, false, 0, roundless_global, 1.0],
+    [
+      'EV retreat + strafe',
+      0,
+      fullrounds,
+      0.05,
+      false,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'strafe only',
+      undefined,
+      fullrounds,
+      0.05,
+      false,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'DZ + no retreat',
+      undefined,
+      fullrounds,
+      undefined,
+      true,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    ['DZ + 1 round', undefined, 1, undefined, true, 0, roundless_global, 1.0],
+    [
+      'DZ + EV retreat',
+      0,
+      fullrounds,
+      undefined,
+      true,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'TV + DZ + no retreat',
+      undefined,
+      fullrounds,
+      undefined,
+      true,
+      -10,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'TV + DZ + 1 round',
+      undefined,
+      1,
+      undefined,
+      true,
+      -10,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'TV + DZ + EV retreat',
+      0,
+      fullrounds,
+      undefined,
+      true,
+      -10,
+      roundless_global,
+      1.0,
+    ],
+    [
+      'air retreat 0.0',
+      undefined,
+      fullrounds,
+      undefined,
+      false,
+      0,
+      roundless_global,
+      0.0,
+    ],
+    [
+      'air retreat 0.1',
+      undefined,
+      fullrounds,
+      undefined,
+      false,
+      0,
+      roundless_global,
+      0.1,
+    ],
+    [
+      'air retreat 0.2',
+      undefined,
+      fullrounds,
+      undefined,
+      false,
+      0,
+      roundless_global,
+      0.2,
+    ],
+  ];
+  inputSettings2 = [
+    [
+      'no retreat',
+      undefined,
+      fullrounds,
+      undefined,
+      false,
+      0,
+      roundless_global,
+      1.0,
+    ],
+    ['EV retreat', 0, fullrounds, undefined, false, 0, roundless_global, 1.0],
+  ];
+  let inputSettings3: Setting[] = [
+    //["no retreat 0 rounds", undefined, 0, undefined, false, 0, false],
+    //["no retreat 0 rounds", undefined, 0, undefined, false, 0, true],
+    ['no retreat 0 rounds', undefined, 100, undefined, false, 0, false, 1.0],
+    //["no retreat 100 rounds", undefined, 100, 0.05, false, 0, false],
+  ];
+  let inputSettings: Setting[] = inputSettings2;
+  /*
+let inputSettings : Setting[] = []
+
+for (let i = 0; i < 20; i++) {
+   inputSettings.push(inputSettings4[0]);
+}
+*/
+
+  inputSettings = inputSettings2;
+
+  let attackerString: string = '';
+  let defenderString: string = '';
+  let precision = 3;
+
+  for (let i = 0; i < inputSettings.length; i++) {
+    let [
+      description,
+      retreat,
+      round,
+      strafe,
+      is_deadzone,
+      territory_value,
+      roundless,
+      retreat_air,
+    ] = inputSettings[i];
+
+    const input: MultiwaveInput = {
+      wave_info: [
+        {
+          attack: {
+            units: {
+              sub: 6,
+              des: 1,
+              cru: 1,
+              acc: 5,
+              fig: 10,
+              bom: 0,
+              bat: 2,
+            },
+            ool: ['sub', 'des', 'acc', 'fig', 'bom', 'bat'],
+            takes: 0,
+            aaLast: false,
+          },
+          defense: {
+            units: {
+              sub: 7,
+              des: 5,
+              cru: 1,
+              acc: 3,
+              fig: 6,
+              bat: 1,
+              tra: 2,
+            },
+            ool: ['sub', 'des', 'acc', 'fig', 'bat', 'tra'],
+            takes: 0,
+            aaLast: false,
+          },
+          att_submerge: false,
+          def_submerge: false,
+          att_dest_last: false,
+          def_dest_last: false,
+          is_crash_fighters: false,
+          rounds: round,
+          retreat_threshold: 0,
+          retreat_expected_ipc_profit_threshold: retreat,
+          retreat_strafe_threshold: strafe,
+        },
+      ],
+      debug: false,
+      prune_threshold: 1e-12,
+      report_prune_threshold: 1e-12,
+      is_naval: true,
+      in_progress: false,
+      num_runs: 1,
+      verbose_level: verbose_global,
+      diceMode: 'standard',
+      sortMode: 'ipc_cost',
+    };
+    const input2: MultiwaveInput = {
+      wave_info: [
+        {
+          attack: {
+            units: {
+              inf: 100,
+              art: 20,
+              arm: 10,
+              fig: 10,
+              bom: 0,
+              bat: 0,
+              cru: 0,
+            },
+            ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+            takes: 0,
+            aaLast: false,
+          },
+          defense: {
+            units: {
+              inf: 100,
+              art: 0,
+              arm: 10,
+              fig: 10,
+              bom: 0,
+              aa: 3,
+            },
+            ool: ['aa', 'bom', 'inf', 'art', 'arm', 'fig'],
+            takes: 0,
+            aaLast: false,
+          },
+          att_submerge: false,
+          def_submerge: false,
+          att_dest_last: false,
+          def_dest_last: false,
+          is_crash_fighters: false,
+          rounds: round,
+          retreat_threshold: 0,
+          retreat_expected_ipc_profit_threshold: retreat,
+          retreat_strafe_threshold: strafe,
+          retreat_lose_air_probability: retreat_air,
+        },
+      ],
+      debug: false,
+      prune_threshold: 1e-12,
+      report_prune_threshold: 1e-12,
+      is_naval: false,
+      in_progress: false,
+      num_runs: 1,
+      verbose_level: verbose_global,
+      diceMode: 'standard',
+      sortMode: 'ipc_cost',
+      is_deadzone: is_deadzone,
+      territory_value: territory_value,
+      do_roundless_eval: roundless,
+      retreat_round_zero: true,
+    };
+    /*
+	  const input2: MultiwaveInput = {
+		wave_info: [
+		  {
+			attack: {
+			  units: {
+				inf: 9,
+				art: 2,
+				arm: 3,
+				fig: 2,
+				bom: 0,
+				bat: 0,
+				cru: 0,
+			  },
+			  ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+			  takes: 0,
+			  aaLast: false,
+			},
+			defense: {
+			  units: {
+				inf: 8,
+				art: 0,
+				arm: 4,
+				fig: 0,
+				bom: 0,
+				aa: 1,
+			  },
+			  ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+			  takes: 0,
+			  aaLast: false,
+			},
+			att_submerge: false,
+			def_submerge: false,
+			att_dest_last: false,
+			def_dest_last: false,
+			is_crash_fighters: false,
+			rounds: round,
+			retreat_threshold: 0,
+			retreat_expected_ipc_profit_threshold: retreat,
+			retreat_strafe_threshold: strafe,
+		  },
+		],
+		debug: false,
+		prune_threshold: 1e-12,
+		report_prune_threshold: 1e-12,
+		is_naval: false,
+		in_progress: false,
+		num_runs: 1,
+		verbose_level: verbose_global,
+		diceMode: 'standard',
+		sortMode: 'ipc_cost',
+		is_deadzone : true,
+	  };
+*/
+
+    let t0 = performance.now();
+    console.time(description);
+    let output = multiwaveExternal(input2);
+    let t1 = performance.now() - t0;
+    console.timeEnd(description);
+    console.log(input2);
+
+    attackerString = JSON.stringify(input2.wave_info[0].attack.units);
+    defenderString = JSON.stringify(input2.wave_info[0].defense.units);
+
+    console.log(output, description);
+
+    let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+
+    let o = [
+      profit.toFixed(precision),
+      output.defense.ipcLoss[0].toFixed(precision),
+      output.attack.ipcLoss[0].toFixed(precision),
+      output.defense.survives[0].toFixed(precision),
+      output.attack.survives[0].toFixed(precision),
+      output.takesTerritory[0].toFixed(precision),
+      output.rounds[0].toFixed(precision),
+      t1.toFixed(precision),
+      description,
+    ];
+    out.push(o);
+  }
+
+  let padding = 9;
+
+  let heading =
+    'profit'.padEnd(padding) +
+    ' ' +
+    'def loss'.padEnd(padding) +
+    ' ' +
+    'att loss'.padEnd(padding) +
+    ' ' +
+    'def surv'.padEnd(padding) +
+    ' ' +
+    'att surv'.padEnd(padding) +
+    ' ' +
+    'takes'.padEnd(padding) +
+    ' ' +
+    'rounds'.padEnd(padding) +
+    ' ' +
+    'runtime'.padEnd(padding) +
+    ' ' +
+    'description'.padEnd(padding) +
+    ' ';
+
+  console.log(attackerString, 'vs. ', defenderString);
+  console.log(heading);
+  for (let i = 0; i < out.length; i++) {
+    let o = out[i];
+    let result = '';
+    for (let j = 0; j < o.length; j++) {
+      result += o[j].padEnd(padding) + ' ';
+    }
+    console.log(result);
+  }
+  //  console.log(out)
+
+  console.log(process.memoryUsage());
+}
+//

@@ -2802,10 +2802,10 @@ function is_round_zero_retreat_state(
       }
       const aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
 
-      const N = aa_data.tbl_size;
+      const NN = aa_data.tbl_size;
       let accumulate = 0.0;
-      for (let i = 0; i < N; i++) {
-        const prob = aa_data.get_prob_table(N - 1, i);
+      for (let i = 0; i < NN; i++) {
+        const prob = aa_data.get_prob_table(NN - 1, i);
         const n = remove_aahits(problem.att_data, i, N);
         const attnode2 = problem.att_data.nodeArr[n];
         const attloss = attnode.cost - attnode2.cost;
@@ -3088,6 +3088,7 @@ function solve_general(problem: general_problem) {
     }
   }
 
+  //
   for (let i = 0; i < zeroRoundList.length; i++) {
     const [N, M, prob] = zeroRoundList[i];
     const ii = problem.getIndex(N, M);
