@@ -31,20 +31,20 @@ def_submerge: false,
 att_dest_last: false,
 def_dest_last: false,
 is_crash_fighters: false,
-rounds: 100,  
- retreat_threshold: 0, // retreat if number of attackers <= threshold
+rounds: 100, // 100 means all rounds.
+retreat_threshold: 0, // retreat if number of attackers <= threshold
 retreat_expected_ipc_profit_threshold: 0, // optional. retreat if the EV less than threshold
 },
 ],
 debug: false,
-prune_threshold: 1e-12,
-report_prune_threshold: 1e-12,
+prune_threshold: 1e-12, // prune threshold during computation
+report_prune_threshold: 1e-12, // prune threshold for reporting only.
 is_naval: false,
 in_progress: false,
 num_runs: 1,
 verbose_level: 0,
-diceMode: 'standard',
-sortMode: 'unit_count',
+diceMode: 'standard', // standard - lowluck - biased
+sortMode: 'unit_count', // unit_count - ipc_cost
 };
 
 let output = multiwaveExternal(input);

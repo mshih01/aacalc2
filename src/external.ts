@@ -116,12 +116,15 @@ export interface WaveInput {
   att_dest_last: boolean;
   def_dest_last: boolean;
   is_crash_fighters: boolean;
-  rounds: number; // -1 means all rounds
-  retreat_threshold: number; // retreat if <= number of units remaining.
+  rounds: number; // 100 means all rounds.
+  retreat_threshold: number; // retreat if number of units remaining <= threshold
   retreat_expected_ipc_profit_threshold?: number; // retreat if expected ipc profit is less than this value.
   retreat_pwin_threshold?: number; // retreat if probability of winning is less than threshold
-  pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'
-  retreat_strafe_threshold?: number; // retreat if expected ipc profit is less than this value.
+  pwinMode?: PwinMode; // mode for calculating pwin, default is 'takes'   takes | destroys
+  retreat_strafe_threshold?: number; // retreat if the probability of wiping out defenders exceeds threshold.
+  // incompatible with is_naval
+  retreat_lose_air_probability?: number; // retreat if the probability of losing air exceeds threshold.  default is 1.0
+  // incompatible with is_naval
 }
 
 export interface MultiwaveInput {
@@ -135,9 +138,14 @@ export interface MultiwaveInput {
   verbose_level: number;
   diceMode: DiceMode;
   sortMode?: SortMode;
-  is_deadzone?: boolean;
+  is_deadzone?: boolean; // target is a deadzone.  if the territory is taken -- the land units capturing
+  // are considered to be destroyed in the counter attack in 1 round with 1
+  // defensive roll to kill an infantry.
+  // e.g. inf ==> additional IPC cost 2
+  // e.g. art ==> additional IPC cost 3
+  // e.g. arm ==> additional IPC cost 4.5
   report_complexity_only?: boolean; // if true, only report complexity and no other results.
-  do_roundless_eval?: boolean;
+  do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
 }
 
@@ -417,6 +425,7 @@ export function multiwaveComplexity(input: MultiwaveInput): number {
 
 export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const wavearr: wave_input[] = [];
+  const do_roundless_eval = input.do_roundless_eval ?? true;
   for (let i = 0; i < input.wave_info.length; i++) {
     const wave = input.wave_info[i];
     if (!wave) {
@@ -440,6 +449,24 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       input.verbose_level,
     );
 
+    let rounds = wave.rounds;
+    if (do_roundless_eval && rounds == 100) {
+      rounds = 0;
+    }
+
+    if (input.is_naval && wave.retreat_strafe_threshold != undefined) {
+      throw new Error('is_naval && retreat_strafe_threshold is not allowed');
+    }
+    if (
+      input.is_naval &&
+      wave.retreat_lose_air_probability != undefined &&
+      wave.retreat_lose_air_probability < 1.0
+    ) {
+      throw new Error(
+        'is_naval && retreat_lose_air_probability < 1.0 is not allowed',
+      );
+    }
+
     const internal_wave = {
       attacker: att_unit_group_string.unit,
       defender: def_unit_group_string.unit,
@@ -450,8 +477,9 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       att_dest_last: wave.att_dest_last,
       def_dest_last: wave.def_dest_last,
       is_crash_fighters: wave.is_crash_fighters,
-      rounds: wave.rounds,
+      rounds: rounds,
       retreat_threshold: wave.retreat_threshold,
+      retreat_lose_air_probability: wave.retreat_lose_air_probability ?? 1.0, // default to 1.0 if not provided
       retreat_expected_ipc_profit_threshold:
         wave.retreat_expected_ipc_profit_threshold,
       retreat_pwin_threshold: wave.retreat_pwin_threshold,
@@ -472,7 +500,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
     report_complexity_only: input.report_complexity_only ?? false, // default to false if not provided
-    do_roundless_eval: input.do_roundless_eval ?? false, // default to false if not provided
+    do_roundless_eval: do_roundless_eval,
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     diceMode: input.diceMode,
     sortMode: input.sortMode == undefined ? 'unit_count' : input.sortMode,
