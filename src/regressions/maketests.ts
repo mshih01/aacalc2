@@ -1323,7 +1323,7 @@ for (let i = 0; i < out.length; i++) {
   console.log(result);
 }
 
-if (false) {
+if (true) {
   const input: MultiwaveInput = {
     wave_info: [
       {
@@ -1377,7 +1377,7 @@ if (false) {
   console.log(output.defense.ipcLoss[0], 'defense ipc loss');
   console.log(input);
 }
-if (false) {
+if (true) {
   const input: MultiwaveInput = {
     wave_info: [
       {

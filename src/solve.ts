@@ -668,6 +668,7 @@ class general_unit_graph_node {
   num_air: number;
   num_naval: number;
   num_dest: number;
+  num_aa: number;
   hasLand: boolean = false; // true if unit_str has land units.
   cost: number;
   deadzone_cost: number; // land units taking territories in a deadzone.
@@ -706,6 +707,7 @@ class general_unit_graph_node {
     this.N = unit_str.length;
     this.num_subs = count_units(unit_str, 'S');
     this.num_air = count_units(unit_str, 'f') + count_units(unit_str, 'b');
+    this.num_aa = count_units(unit_str, 'c');
     this.num_naval = this.N - this.num_subs - this.num_air;
     this.numBB = count_units(this.unit_str, 'E');
     this.num_dest = count_units(this.unit_str, 'D');
@@ -2768,6 +2770,58 @@ function do_round_eval(
   }
 }
 
+// need to consider the impact of AA's
+function is_round_zero_retreat_state(
+  problem: general_problem,
+  N: number,
+  M: number,
+): boolean {
+  if (problem.retreat_round_zero == false) {
+    return false;
+  }
+  if (is_retreat_state(problem, N, M)) {
+    return true;
+  }
+
+  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+    const attnode = problem.att_data.nodeArr[N];
+    const defnode = problem.def_data.nodeArr[M];
+    const doAA =
+      !problem.is_naval &&
+      defnode.num_aa > 0 &&
+      attnode.num_air > 0 &&
+      hasNonAAUnit(problem.um, defnode.unit_str);
+    let num_aashots = defnode.num_aa * 3;
+    if (num_aashots > attnode.num_air) {
+      num_aashots = attnode.num_air;
+    }
+    if (doAA) {
+      let aashots = '';
+      for (let i = 0; i < num_aashots; i++) {
+        aashots = aashots + 'c';
+      }
+      const aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
+
+      const N = aa_data.tbl_size;
+      let accumulate = 0.0;
+      for (let i = 0; i < N; i++) {
+        const prob = aa_data.get_prob_table(N - 1, i);
+        const n = remove_aahits(problem.att_data, i, N);
+        const attnode2 = problem.att_data.nodeArr[n];
+        const attloss = attnode.cost - attnode2.cost;
+        const defloss = 0;
+        const deltacost = defloss - attloss;
+        accumulate += prob * (deltacost + problem.getE(n, M));
+      }
+      if (accumulate < problem.retreat_expected_ipc_profit_threshold) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 function solve_general(problem: general_problem) {
   //debugger;
 
@@ -2821,13 +2875,24 @@ function solve_general(problem: general_problem) {
     }
   }
 
+  // states which are early retreated due to retreat conditions in the zero round.
+  // these states are zeroed in the probability table, so they are not expanded.
+  // for multiwave handling.
+  // They are restored in the end to the seed probabilities after all expansion is complete.
+  let zeroRoundList: [number, number, number][] = [];
+
   if (problem.def_cas == undefined) {
     /* initial seed */
     problem.setP(0, 0, problem.prob);
-    const doAA =
+    let doAA =
       !problem.is_naval &&
       problem.att_data.num_aashot > 0 &&
       hasNonAAUnit(problem.um, problem.def_data.unit_str);
+    if (is_round_zero_retreat_state(problem, 0, 0)) {
+      zeroRoundList.push([0, 0, problem.prob]);
+      problem.setP(0, 0, 0);
+      doAA = false;
+    }
     if (doAA) {
       let aashots = '';
       for (let i = 0; i < problem.att_data.num_aashot; i++) {
@@ -2867,11 +2932,17 @@ function solve_general(problem: general_problem) {
       } else {
         const p = problem.def_cas[i].prob;
         const numAA = count_units(problem.def_cas[i].remain, 'c');
-        const doAA =
+        let doAA =
           !problem.is_naval &&
           numAA > 0 &&
           problem.att_data.num_aashot > 0 &&
           hasNonAAUnit(problem.um, problem.def_cas[i].remain);
+        let isZeroRound = false;
+        if (is_round_zero_retreat_state(problem, 0, ii)) {
+          zeroRoundList.push([0, ii, problem.def_cas[i].prob]);
+          doAA = false;
+          isZeroRound = true;
+        }
         if (doAA && N != undefined && aa_data != undefined) {
           const NN = Math.min(numAA * 3 + 1, N);
 
@@ -2884,7 +2955,9 @@ function solve_general(problem: general_problem) {
             }
           }
         } else {
-          problem.setP(0, ii, problem.getP(0, ii) + problem.def_cas[i].prob);
+          if (!isZeroRound) {
+            problem.setP(0, ii, problem.getP(0, ii) + problem.def_cas[i].prob);
+          }
         }
       }
     }
@@ -2905,10 +2978,7 @@ function solve_general(problem: general_problem) {
     ? count_units(problem.att_data.unit_str, 'B') +
       count_units(problem.att_data.unit_str, 'C')
     : 0;
-  if (
-    numBombard > 0 ||
-    (!problem.retreat_round_zero && problem.hasRetreatCondition())
-  ) {
+  if (numBombard > 0 || problem.hasRetreatCondition()) {
     do_round_eval(problem, true, numBombard, false, true);
     didBombard = true;
   }
@@ -3016,6 +3086,12 @@ function solve_general(problem: general_problem) {
     } else {
       do_roundless_eval_without_rounds(problem);
     }
+  }
+
+  for (let i = 0; i < zeroRoundList.length; i++) {
+    const [N, M, prob] = zeroRoundList[i];
+    const ii = problem.getIndex(N, M);
+    problem.P_1d[ii] += prob;
   }
 
   if (problem.is_crash_fighters) {
