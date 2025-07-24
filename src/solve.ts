@@ -14,8 +14,7 @@ import { solve_one_general_state } from './solveone.js';
 import { solve_one_general_state_copy1 } from './solveone1.js';
 import { solve_one_general_state_copy2 } from './solveone2.js';
 import { solve_one_general_state_copy3 } from './solveone3.js';
-import { solve_one_general_state_copy4 } from './solveone4.js';
-import { get } from 'http';
+//import { solve_one_general_state_copy4 } from './solveone4.js';
 
 class unit_group_manager {
   unit_group_arr: unit_group[];
