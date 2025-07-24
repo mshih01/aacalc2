@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.32
+
+### Patch Changes
+
+- feaf540: bugfix zero round
+
 ## 1.0.31
 
 ### Patch Changes
