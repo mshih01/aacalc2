@@ -844,6 +844,7 @@ export class general_problem {
   is_deadzone: boolean = false; // deadzone attack
   skip_compute: boolean = false; // skip compute, used for complexity calculations.
   territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
+  retreat_round_zero: boolean = true; // allow retreat round 0.   default is true
   do_roundless_eval: boolean = false; // do roundless evaluation
   N: number;
   M: number;
@@ -1006,6 +1007,7 @@ export class general_problem {
     is_deadzone: boolean = false,
     skip_compute: boolean = false,
     territory_value: number = 0,
+    retreat_round_zero: boolean = true,
     do_roundless_eval: boolean = false,
     retreat_lose_air_probability: number,
     retreat_expected_ipc_profit_threshold?: number,
@@ -1035,6 +1037,7 @@ export class general_problem {
     this.skip_compute = skip_compute;
     this.is_deadzone = is_deadzone;
     this.territory_value = territory_value;
+    this.retreat_round_zero = retreat_round_zero;
     this.do_roundless_eval = do_roundless_eval;
     this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
     this.retreat_threshold = retreat_threshold;
@@ -1118,6 +1121,7 @@ export class general_problem {
           this.is_deadzone,
           this.skip_compute,
           this.territory_value,
+          this.retreat_round_zero,
           this.do_roundless_eval,
           this.retreat_lose_air_probability,
           this.retreat_expected_ipc_profit_threshold,
@@ -2901,7 +2905,10 @@ function solve_general(problem: general_problem) {
     ? count_units(problem.att_data.unit_str, 'B') +
       count_units(problem.att_data.unit_str, 'C')
     : 0;
-  if (numBombard > 0 || problem.hasRetreatCondition()) {
+  if (
+    numBombard > 0 ||
+    (!problem.retreat_round_zero && problem.hasRetreatCondition())
+  ) {
     do_round_eval(problem, true, numBombard, false, true);
     didBombard = true;
   }
@@ -3991,6 +3998,7 @@ export interface multiwave_input {
   is_deadzone: boolean;
   do_roundless_eval: boolean;
   territory_value: number;
+  retreat_round_zero: boolean;
   num_runs: number;
   verbose_level: number;
   report_complexity_only: boolean;
@@ -4158,6 +4166,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           input.is_deadzone,
           input.report_complexity_only,
           input.territory_value,
+          input.retreat_round_zero,
           input.do_roundless_eval,
           wave.retreat_lose_air_probability,
           wave.retreat_expected_ipc_profit_threshold,

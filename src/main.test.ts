@@ -30,6 +30,7 @@ type Setting = [
 
 let do_roundless_global = true;
 let complexity_global = false;
+let retreat_round_zero = false;
 
 let inputSettings2: Setting[] = [
   [
@@ -520,6 +521,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // small single wave
@@ -573,6 +575,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // large single wave
@@ -626,6 +629,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // smaller multiwave
@@ -752,6 +756,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // imbalanced multiwave
@@ -878,6 +883,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // large multiwave
@@ -1003,6 +1009,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
   // large naval singlewave
@@ -1061,6 +1068,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
@@ -1120,6 +1128,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
@@ -1175,6 +1184,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
     territory_value: territory_value, // optional, default is 0
+    retreat_round_zero: retreat_round_zero,
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 

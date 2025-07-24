@@ -157,6 +157,7 @@ function run3(argc: number, argv: string[]) {
     is_deadzone: false,
     report_complexity_only: false, // default to false if not provided
     territory_value: 0, // default to 0 if not provided
+    retreat_round_zero: false,
     do_roundless_eval: false,
     num_runs: num_runs,
     verbose_level: verbose_level,
