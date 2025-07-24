@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.31
+
+### Patch Changes
+
+- 95ab305: fix bug with zero round retreat. need to compute and check retreat conditions prior to aaguns
+
 ## 1.0.30
 
 ### Patch Changes
