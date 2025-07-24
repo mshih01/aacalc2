@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.29
+
+### Patch Changes
+
+- 335743a: add retreat_lose_air_probability
+
 ## 1.0.28
 
 ### Patch Changes
