@@ -17,6 +17,7 @@ import {
   unit_group,
   make_unit_group,
   type ProfitDistribution,
+  type ProfitInfo,
   type aacalc_output,
   type casualty_1d,
 } from './solve.js';
@@ -165,10 +166,14 @@ class SbrProblem {
         const numIPCHitsRemain = this.numIPCHitPoints - defloss;
         this.Pdef[numIPCHitsRemain] += prob;
         const profit = defloss - attloss;
+        const profitInfo: ProfitInfo = {
+          ipc: profit,
+          prob: prob,
+        };
         if (this.profitDistribution[profit] === undefined) {
-          this.profitDistribution[profit] = prob;
+          this.profitDistribution[profit] = profitInfo;
         } else {
-          this.profitDistribution[profit] += prob;
+          this.profitDistribution[profit].prob += prob;
         }
       }
     }

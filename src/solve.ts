@@ -2370,10 +2370,14 @@ function print_general_results(
       casualties.push(cas);
 
       const profit: number = defloss - attloss;
+      const profitInfo: ProfitInfo = {
+        ipc: profit,
+        prob: p,
+      };
       if (profitDist[profit] == undefined) {
-        profitDist[profit] = p;
+        profitDist[profit] = profitInfo;
       } else {
-        profitDist[profit] += p;
+        profitDist[profit].prob += p;
       }
     }
   }
@@ -3997,7 +4001,12 @@ export interface casualty_1d {
   casualty: string;
   prob: number;
 }
-export type ProfitDistribution = Record<number, number>; // key: ipc value: probability
+
+export interface ProfitInfo {
+  ipc: number;
+  prob: number;
+}
+export type ProfitDistribution = Record<number, ProfitInfo>; // key: ipc value: probability
 
 export interface aacalc_output {
   attack: aacalc_info;
