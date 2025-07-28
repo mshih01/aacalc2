@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.33
+
+### Patch Changes
+
+- 3946d1c: add profitDistribution to the output
+
 ## 1.0.32
 
 ### Patch Changes
