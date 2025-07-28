@@ -1835,7 +1835,7 @@ export function get_cost_from_str(
   return cost;
 }
 
-export function get_deadzone_cost_from_str(
+function get_deadzone_cost_from_str(
   um: unit_manager,
   s: string,
   retreat: string = '',
@@ -2272,6 +2272,8 @@ function print_general_results(
   const att_retreat_map: Map<number, number> = new Map(); // for retreating units
   const def_map: Map<number, number> = new Map();
 
+  const profitDist: ProfitDistribution = {};
+
   let totalattloss = 0;
   let totaldefloss = 0;
   let takes = 0;
@@ -2328,24 +2330,28 @@ function print_general_results(
       }
     }
     if (p > 0) {
-      totalattloss += att_naval_cost.cost * p;
-      totaldefloss += def_naval_cost.cost * p;
+      let attloss = att_naval_cost.cost;
+      const defloss = def_naval_cost.cost;
       if (
         !baseproblem.is_naval &&
         hasLand(problem.um, att) &&
         def.length == 0
       ) {
         takes += p;
-        totalattloss -= problem.territory_value * p;
+        attloss -= problem.territory_value;
+        //totalattloss -= problem.territory_value * p;
         if (baseproblem.is_deadzone) {
           const attnode = baseproblem.att_data.nodeArr[result.i];
-          totalattloss += attnode.deadzone_cost * p;
+          attloss += attnode.deadzone_cost;
+          //totalattloss += attnode.deadzone_cost * p;
         }
       }
+      totalattloss += attloss * p;
+      totaldefloss += defloss * p;
       if (baseproblem.verbose_level > 2) {
         //console.log(`result:  P[%d][%d] ${red_att} vs. ${red_def} = ${p} cumm(${result.cumm}) rcumm(${result.rcumm}) (${result.cost})`, result.i, result.j);
-        const att_loss = att_naval_cost.cost;
-        const def_loss = def_naval_cost.cost;
+        const att_loss = attloss;
+        const def_loss = defloss;
         console.log(
           `result:  P[%d][%d] ${red_att}:${red_retreat_att} vs. ${red_def}:${red_retreat_def} (loss ${red_att_cas} ${att_loss} vs. ${red_def_cas} ${def_loss})= ${p} cumm(${result.cumm}) rcumm(${result.rcumm}) (${result.cost})`,
           result.i,
@@ -2362,6 +2368,13 @@ function print_general_results(
         prob: p,
       };
       casualties.push(cas);
+
+      const profit: number = defloss - attloss;
+      if (profitDist[profit] == undefined) {
+        profitDist[profit] = p;
+      } else {
+        profitDist[profit] += p;
+      }
     }
   }
 
@@ -2442,6 +2455,7 @@ function print_general_results(
     casualtiesInfo: casualties,
     att_cas: att_cas_1d,
     def_cas: def_cas_1d,
+    profitDistribution: profitDist,
     rounds: baseproblem.average_rounds,
     takesTerritory: [takes, 0, 0],
   };
@@ -3983,6 +3997,7 @@ export interface casualty_1d {
   casualty: string;
   prob: number;
 }
+export type ProfitDistribution = Record<number, number>; // key: ipc value: probability
 
 export interface aacalc_output {
   attack: aacalc_info;
@@ -3990,6 +4005,7 @@ export interface aacalc_output {
   casualtiesInfo: casualty_2d[];
   att_cas: casualty_1d[];
   def_cas: casualty_1d[];
+  profitDistribution: ProfitDistribution;
   rounds: number;
   takesTerritory: number[];
 }
@@ -4302,6 +4318,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
       casualtiesInfo: [],
       att_cas: [],
       def_cas: [],
+      profitDistribution: {},
       rounds: -1,
       takesTerritory: [0],
     };
@@ -4348,6 +4365,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
     casualtiesInfo: [],
     att_cas: [],
     def_cas: [],
+    profitDistribution: {},
     rounds: -1,
     takesTerritory: atttakes,
   };

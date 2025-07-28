@@ -16,6 +16,7 @@ import {
   report_filter,
   unit_group,
   make_unit_group,
+  type ProfitDistribution,
   type aacalc_output,
   type casualty_1d,
 } from './solve.js';
@@ -76,6 +77,7 @@ class SbrProblem {
   Patt: number[]; // probability distribution of attackers (result of aa hits)
   // Patt[i] is the probability that i bombers left
   Pdef: number[]; // probability distribution of defenders (result of sbr run)
+  profitDistribution: ProfitDistribution = {};
   // Pdef[i] is the probability that i defending hit points left.
 
   constructor(
@@ -98,6 +100,7 @@ class SbrProblem {
     }
     this.Patt = [];
     this.Pdef = [];
+    this.profitDistribution = {};
     this.um = new unit_manager(verbose_level);
     this.verbose_level = verbose_level;
     this.prune_threshold = prune_threshold;
@@ -117,8 +120,9 @@ class SbrProblem {
     );
   }
   solve() {
-    let N = this.numBombers;
+    const N = this.numBombers;
     let aastr = '';
+    const stat = this.um.get_stat('b');
     for (let i = 0; i < N; i++) {
       aastr += 'c';
     }
@@ -145,22 +149,27 @@ class SbrProblem {
       if (this.verbose_level > 2) {
         console.log(i, prob, 'i, prob aa hit');
       }
-      let n = this.numBombers - i;
+      const n = this.numBombers - i;
+      const attloss = i * stat.cost;
       this.Patt[n] = prob;
-      let minv = n * 1;
-      let maxv = n * 6;
+      const minv = n * 1;
+      const maxv = n * 6;
       if (this.verbose_level > 2) {
         console.log(minv, maxv, 'minv, maxv');
       }
       for (let j = minv; j <= maxv; j++) {
         // hits
         // n bombers gets j hits.
-        let prob = this.P[n][j];
-        let numIPCHitsRemain = this.numIPCHitPoints - j;
-        if (numIPCHitsRemain < 0) {
-          numIPCHitsRemain = 0;
+        const prob = this.P[n][j] * this.Patt[n];
+        const defloss = Math.min(j, this.numIPCHitPoints);
+        const numIPCHitsRemain = this.numIPCHitPoints - defloss;
+        this.Pdef[numIPCHitsRemain] += prob;
+        const profit = defloss - attloss;
+        if (this.profitDistribution[profit] === undefined) {
+          this.profitDistribution[profit] = prob;
+        } else {
+          this.profitDistribution[profit] += prob;
         }
-        this.Pdef[numIPCHitsRemain] += prob * this.Patt[n];
       }
     }
   }
@@ -256,6 +265,7 @@ export function sbr(input: sbr_input): aacalc_output {
     casualtiesInfo: [],
     att_cas: att_cas,
     def_cas: def_cas,
+    profitDistribution: problem.profitDistribution,
     rounds: 1,
     takesTerritory: [0, 0, 0],
   };

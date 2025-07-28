@@ -1557,7 +1557,7 @@ if (true) {
 
   let out = [];
 
-  let verbose_global = 4;
+  let verbose_global = 3;
   let fullrounds = 0;
   let roundless_global = true;
 
@@ -1692,6 +1692,12 @@ if (true) {
     ],
     ['EV retreat', 0, fullrounds, undefined, false, 0, roundless_global, 1.0],
   ];
+  inputSettings2.push(inputSettings2[0]);
+  inputSettings2.push(inputSettings2[1]);
+  inputSettings2.push(inputSettings2[0]);
+  inputSettings2.push(inputSettings2[1]);
+  inputSettings2.push(inputSettings2[0]);
+  inputSettings2.push(inputSettings2[1]);
   let inputSettings3: Setting[] = [
     //["no retreat 0 rounds", undefined, 0, undefined, false, 0, false],
     //["no retreat 0 rounds", undefined, 0, undefined, false, 0, true],
@@ -1831,7 +1837,7 @@ for (let i = 0; i < 20; i++) {
       is_deadzone: is_deadzone,
       territory_value: territory_value,
       do_roundless_eval: roundless,
-      retreat_round_zero: true,
+      retreat_round_zero: false,
     };
     /*
 	  const input2: MultiwaveInput = {

@@ -10,6 +10,7 @@ import {
   count_units,
   hasLand,
   type PwinMode,
+  type ProfitDistribution,
 } from './solve.js';
 import { sbr, type sbr_input } from './sbr.js';
 
@@ -180,6 +181,7 @@ export interface MultiwaveOutput {
   attack: CalcInfo;
   defense: CalcInfo;
   casualtiesInfo: CasualtiesInfo;
+  profitDistribution: ProfitDistribution[]; // key is profit, data is probability
   takesTerritory: number[];
   rounds: number[];
   waves: number;
@@ -490,7 +492,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     retreat_round_zero: input.retreat_round_zero ?? true, // default to true if not provided
     diceMode: input.diceMode,
-    sortMode: input.sortMode == undefined ? 'unit_count' : input.sortMode,
+    sortMode: input.sortMode == undefined ? 'ipc_cost' : input.sortMode,
     num_runs: input.num_runs,
   };
 
@@ -499,13 +501,18 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   for (let i = 0; i < internal_output.output.length; i++) {
     rounds.push(internal_output.output[i]?.rounds ?? 0);
   }
-  const casualtiesInfo: CasualtiesInfo = { attack: {}, defense: {} };
+  const casualtiesInfo: CasualtiesInfo = {
+    attack: {},
+    defense: {},
+    //profit: {},
+  };
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
 
   const lastWave = internal_output.output.length - 1;
   const lastOutput = internal_output.output[lastWave];
   const um = new unit_manager(input.verbose_level);
+  const profitDist: ProfitDistribution[] = [];
   for (let ii = 0; ii < internal_output.output.length; ii++) {
     const currOutput = internal_output.output[ii];
     if (currOutput == undefined) {
@@ -598,6 +605,8 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     if (input.verbose_level > 2) {
       console.log(`Defender casualties for wave ${ii}: ${sum}`);
     }
+    profitDist.push(currOutput.profitDistribution);
+    //casualtiesInfo['profit'] = profit;
   }
   casualtiesInfo['attack'] = att;
   casualtiesInfo['defense'] = def;
@@ -609,6 +618,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     takesTerritory: internal_output.out.takesTerritory,
     rounds: rounds,
     casualtiesInfo: casualtiesInfo,
+    profitDistribution: profitDist,
     complexity: internal_output.complexity,
   };
 
@@ -736,9 +746,14 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   };
   //console.log(internalInput);
   const internalOutput = sbr(internalInput);
-  const casualtiesInfo: CasualtiesInfo = { attack: {}, defense: {} };
+  const casualtiesInfo: CasualtiesInfo = {
+    attack: {},
+    defense: {},
+    //profit: {},
+  };
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
+  const profit: Record<string, CasualtyInfo> = {};
   const um = new unit_manager(input.verbose_level);
   for (let i = 0; i < internalOutput.att_cas.length; i++) {
     const cas = internalOutput.att_cas[i];
@@ -764,11 +779,13 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   }
   casualtiesInfo['attack'] = att;
   casualtiesInfo['defense'] = def;
+  //casualtiesInfo['profit'] = profit;
 
   const output: MultiwaveOutput = {
     attack: internalOutput.attack,
     defense: internalOutput.defense,
     casualtiesInfo: casualtiesInfo,
+    profitDistribution: [internalOutput.profitDistribution],
     takesTerritory: [],
     rounds: [1, 0, 0],
     waves: 1,
