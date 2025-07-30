@@ -12,15 +12,14 @@
 */
 
 import {
-  unit_manager,
-  report_filter,
-  unit_group,
-  make_unit_group,
   type ProfitDistribution,
   type ProfitInfo,
   type aacalc_output,
   type casualty_1d,
-} from './solve.js';
+} from './output.js';
+import { report_filter } from './output.js';
+import { make_unit_group } from './unitgroup.js';
+import { unit_manager, unit_group } from './unitgroup.js';
 import type { DiceMode } from './solve.js';
 
 function compute_prob_table(

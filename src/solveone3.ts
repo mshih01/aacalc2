@@ -1,3 +1,4 @@
+import { is_retreat_state } from './solve.js';
 import {
   remove_subhits2,
   remove_planehits2,
@@ -5,9 +6,8 @@ import {
   remove_dlast_subhits2,
   remove_dlast_planehits2,
   remove_dlast_navalhits2,
-  is_retreat_state,
   hasDestroyer,
-} from './solve.js';
+} from './unitgroup.js';
 
 import type { general_problem } from './solve.js';
 

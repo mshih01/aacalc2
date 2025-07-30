@@ -1,11 +1,9 @@
 import * as readline from 'readline';
 
-import {
-  type DiceMode,
-  type multiwave_input,
-  type wave_input,
-  multiwave,
-} from '../solve.js';
+import { type DiceMode } from '../solve.js';
+import { type wave_input } from '../multiwave.js';
+import { type multiwave_input } from '../multiwave.js';
+import { multiwave } from '../multiwave.js';
 
 const rl = readline.createInterface({
   input: process.stdin,

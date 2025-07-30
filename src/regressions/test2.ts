@@ -1,6 +1,6 @@
 import * as readline from 'readline';
 
-import { unit_manager } from '../solve.js';
+import { unit_manager } from '../unitgroup.js';
 import type { DiceMode } from '../solve.js';
 
 import type {
