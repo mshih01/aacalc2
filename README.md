@@ -8,9 +8,9 @@ Axis and Allies odds calculator with advanced features.
     - land / sea battles with sub/destroyer/air rules.
     - aa guns, shore bombardments
     - custom order of loss
-- awesome advanced features from popovitsj's aa1942calc.com.
+- awesome advanced features inspired by popovitsj's aa1942calc.com.
     - multiwave calculation
-    - amphibious attacks
+    - amphibious assaults with planned retreat
     - standard - biased - lowluck dice
     - strategic bombing analysis.
 - advanced features:
@@ -22,30 +22,32 @@ Axis and Allies odds calculator with advanced features.
     - retreat if the probability of destroying the defender is too high (strafe / attack to retreat)
 
 ##Future work:
-    - The current cost reporting and EV based analysis is based IPC cost of units.  
-        This could be generalized to any arbitrary cost function (user input -- or custom preset)
-        For example a cost function that emphasizes unit count. 
-        Or one that mirrors attack power.
-        Or one that mirrors attack strength.
-        Or a cost function which gives extra weight for losing air 
-                (e.g. a russian/german fighter worth more than others)
 
-    - Take and hold analysis... In multiwave -- switch sides in between waves to model takes and hold.
+- The current cost reporting and EV based analysis is based IPC cost of units.  
+    - This could be generalized to any arbitrary cost function (user input -- or custom preset)
+        - For example a cost function that emphasizes unit count. 
+        - Or one that mirrors attack power.
+        - Or one that mirrors attack strength.
+        - Or a cost function which gives extra weight for losing air 
+            - (e.g. a russian/german fighter worth more than others)
 
-    - Army recommendation.   
-        Given an attacking army and defending army.
-            - recommend a subset of the defending army that meets target percentage to defend.
-            - recommend a subset of the attacking army that meets target percentage to win.
+- Take and hold analysis... In multiwave -- switch sides in between waves to model takes and hold.
 
-        - Multi-territory defense analysis: (For VC win analysis)
-            - Need to optimize odds to hold 3 or more territories.
-            - Input:  
-                - attacking forces for each of the territories.
-                - total number of defending units.
-            - Output:
-                - the army composition for each territory that maximizes the chance to defend.
+- Army recommendation.   
+    - Given an attacking army and defending army, and a target percentage
+        - recommend a subset of the defending army that meets target percentage to defend.
+        - recommend a subset of the attacking army that meets target percentage to win.
+
+    - Multi-territory defense analysis: (For VC win analysis)
+        - Need to optimize odds to hold 3 or more territories.
+        - Input:  
+            - attacking forces for each of the territories.
+            - total number of defending units.
+        - Output:
+            - the army composition for each territory that maximizes the chance to defend.
 
 ##Example usage:
+
 ```
 const input: MultiwaveInput = {
 	wave_info: [
