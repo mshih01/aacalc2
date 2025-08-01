@@ -1,6 +1,6 @@
-###Axis and Allies 1942 Online probability calculator engine
+# Axis and Allies 1942 Online probability calculator engine
 
-####Overview:
+## Overview:
 
 Axis and Allies odds calculator with advanced features.
 - math based probability computation
@@ -21,7 +21,7 @@ Axis and Allies odds calculator with advanced features.
     - retreat if the probability of losing air is too high
     - retreat if the probability of destroying the defender is too high (strafe / attack to retreat)
 
-####Future work:
+## Future work:
 
 - The current cost reporting and EV based analysis is based IPC cost of units.  
     - This could be generalized to any arbitrary cost function (user input -- or custom preset)
@@ -46,7 +46,7 @@ Axis and Allies odds calculator with advanced features.
         - Output:
             - the army composition for each territory that maximizes the chance to defend.
 
-####Example usage:
+## Example usage:
 
 ```
 const input: MultiwaveInput = {
@@ -99,9 +99,9 @@ let output = multiwaveExternal(input);
 
 
 
-####Technical overview:
+## Technical overview:
 
-##### How it works. 
+### How it works. 
 
 From a very high level -- the calculator is super simple code. 
 
@@ -164,7 +164,7 @@ has already previously been solved.   So P[i][j] at this point is the total prob
 could reach this state from all parent paths.   After solve_one_state is complete... The value of 
 the state is either 0 or the final probability that we end in this state.
 
-##### Code overview.
+### Code overview.
 
 - solve.ts -- solve_general()     
     - solve the problem... Initialize the probability matrix.
