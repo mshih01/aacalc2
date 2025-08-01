@@ -1,6 +1,6 @@
-#Axis and Allies 1942 Online probability calculator engine
+###Axis and Allies 1942 Online probability calculator engine
 
-##Overview:
+####Overview:
 
 Axis and Allies odds calculator with advanced features.
 - math based probability computation
@@ -21,7 +21,7 @@ Axis and Allies odds calculator with advanced features.
     - retreat if the probability of losing air is too high
     - retreat if the probability of destroying the defender is too high (strafe / attack to retreat)
 
-##Future work:
+####Future work:
 
 - The current cost reporting and EV based analysis is based IPC cost of units.  
     - This could be generalized to any arbitrary cost function (user input -- or custom preset)
@@ -46,7 +46,7 @@ Axis and Allies odds calculator with advanced features.
         - Output:
             - the army composition for each territory that maximizes the chance to defend.
 
-##Example usage:
+####Example usage:
 
 ```
 const input: MultiwaveInput = {
@@ -99,14 +99,15 @@ let output = multiwaveExternal(input);
 
 
 
-##Technical overview:
+####Technical overview:
 
-### How it works. 
+##### How it works. 
 
 From a very high level -- the calculator is super simple code. 
 
 The original prototype in C was the following two loops:
 
+```
 // initilal state probability
 //P[N][M] = 1.0;
 //P[i][j] = 0.0 for all other i, j;
@@ -141,6 +142,7 @@ void solve_one_state(problem, n, m) {
     }
     P[n][m] = 0;
 }
+```
 
 This simple code will solve any battle of N attackers vs. M defenders with fixed order
 of losses (no special units like subs, AA's, bombardments).
@@ -162,7 +164,7 @@ has already previously been solved.   So P[i][j] at this point is the total prob
 could reach this state from all parent paths.   After solve_one_state is complete... The value of 
 the state is either 0 or the final probability that we end in this state.
 
-### Code overview.
+##### Code overview.
 
 - solve.ts -- solve_general()     
     - solve the problem... Initialize the probability matrix.
@@ -189,5 +191,5 @@ the state is either 0 or the final probability that we end in this state.
             - compute all possible casualty next states (as well as any other need to transition to a different state).
     - general_unit_graph_node
         - From any state -- reach any casualty state with a single table lookup dereference.
-            e.g.  remove 5 sub hits.   remove 8 plane hits.    remove 10 naval hits.
+            - e.g.  remove 5 sub hits.   remove 8 plane hits.    remove 10 naval hits.
     - The graph nodes are ordered in the node array so that all parent nodes are earlier than all child nodes.
