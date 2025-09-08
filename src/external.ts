@@ -9,6 +9,9 @@ import { type wave_input } from './multiwave.js';
 import { type multiwave_input } from './multiwave.js';
 import { multiwave } from './multiwave.js';
 import { sbr, type sbr_input } from './sbr.js';
+import { multiwaveMultiEval } from './multieval.js';
+import { type multieval_input } from './multieval.js';
+import { type multieval_output } from './multieval.js';
 
 export type UnitIdentifier =
   | 'aa'
@@ -147,6 +150,11 @@ export interface MultiwaveInput {
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
 }
 
+export interface MultiEvalInput extends MultiwaveInput {
+  attackerList: Army[];
+  defenderList: Army[];
+}
+
 export interface SbrInput {
   attack: UnitGroup;
   defense: UnitGroup;
@@ -184,95 +192,14 @@ export interface MultiwaveOutput {
   complexity: number;
 }
 
+export type MultiEvalOutput = multieval_output;
+
 interface unit_counts {
   num_air: number;
   num_subs: number;
   num_naval: number;
   num_aa: number;
   N: number;
-}
-export function multiwaveComplexityFast(input: MultiwaveInput): number {
-  let attacker_counts: unit_counts = {
-    num_air: 0,
-    num_subs: 0,
-    num_naval: 0,
-    num_aa: 0,
-    N: 0,
-  };
-  let defender_counts: unit_counts = {
-    num_air: 0,
-    num_subs: 0,
-    num_naval: 0,
-    num_aa: 0,
-    N: 0,
-  };
-
-  for (let i = 0; i < input.wave_info.length; i++) {
-    const wave = input.wave_info[i];
-    if (!wave) {
-      continue; // Skip undefined or null waves
-    }
-    const att_unit_group_string = make_unit_group_string(
-      wave.attack.units,
-      wave.attack.ool,
-      wave.attack.takes,
-      false,
-      input.is_naval,
-      input.verbose_level,
-    );
-    const def_unit_group_string = make_unit_group_string(
-      wave.defense.units,
-      wave.defense.ool,
-      0,
-      wave.defense.aaLast,
-      input.is_naval,
-      input.verbose_level,
-    );
-    // attacker
-    attacker_counts.num_subs += count_units(att_unit_group_string.unit, 'S');
-    attacker_counts.num_air +=
-      count_units(att_unit_group_string.unit, 'f') +
-      count_units(att_unit_group_string.unit, 'b');
-    attacker_counts.num_naval +=
-      att_unit_group_string.unit.length -
-      attacker_counts.num_subs -
-      attacker_counts.num_air;
-    attacker_counts.num_aa += count_units(att_unit_group_string.unit, 'c');
-
-    defender_counts.num_subs += count_units(def_unit_group_string.unit, 'S');
-    defender_counts.num_air +=
-      count_units(def_unit_group_string.unit, 'f') +
-      count_units(def_unit_group_string.unit, 'b');
-    defender_counts.num_naval +=
-      def_unit_group_string.unit.length -
-      defender_counts.num_subs -
-      defender_counts.num_air;
-    defender_counts.num_aa += count_units(def_unit_group_string.unit, 'c');
-  }
-  attacker_counts.N =
-    attacker_counts.num_air +
-    attacker_counts.num_subs +
-    attacker_counts.num_naval;
-  defender_counts.N =
-    defender_counts.num_air +
-    defender_counts.num_subs +
-    defender_counts.num_naval;
-  let numAAShots = defender_counts.num_aa * 3;
-  if (attacker_counts.num_air < numAAShots) {
-    numAAShots = attacker_counts.num_air;
-  }
-  let attacker_complexity = input.is_naval
-    ? (attacker_counts.num_air + 1) *
-      (attacker_counts.num_subs + 1) *
-      (attacker_counts.num_naval + 1)
-    : attacker_counts.N * (numAAShots + 1);
-  let defender_complexity = input.is_naval
-    ? (defender_counts.num_air + 1) *
-      (defender_counts.num_subs + 1) *
-      (defender_counts.num_naval + 1)
-    : defender_counts.N;
-  let complexity = attacker_complexity * defender_complexity;
-  return complexity;
 }
 
 export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
@@ -407,7 +334,7 @@ export function multiwaveComplexity(input: MultiwaveInput): number {
   return output.complexity;
 }
 
-export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
+export function getInternalInput(input: MultiwaveInput): multiwave_input {
   const wavearr: wave_input[] = [];
   const do_roundless_eval = input.do_roundless_eval ?? true;
   for (let i = 0; i < input.wave_info.length; i++) {
@@ -492,6 +419,11 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     num_runs: input.num_runs,
   };
 
+  return internal_input;
+}
+
+export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
+  const internal_input = getInternalInput(input);
   const internal_output = multiwave(internal_input);
   const rounds: number[] = [];
   for (let i = 0; i < internal_output.output.length; i++) {
@@ -619,6 +551,43 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   };
 
   return out;
+}
+
+export function multiEvalExternal(input: MultiEvalInput): MultiEvalOutput {
+  const internal_input = getInternalInput(input);
+  let attackerList: string[] = [];
+  for (let i = 0; i < input.attackerList.length; i++) {
+    const attackers = input.attackerList[i];
+    const att_unit_group_string = make_unit_group_string(
+      attackers,
+      input.wave_info[0].attack.ool,
+      input.wave_info[0].attack.takes,
+      false,
+      input.is_naval,
+      input.verbose_level,
+    );
+    attackerList.push(att_unit_group_string.unit);
+  }
+  let defenderList: string[] = [];
+  for (let i = 0; i < input.defenderList.length; i++) {
+    const defenders = input.defenderList[i];
+    const def_unit_group_string = make_unit_group_string(
+      defenders,
+      input.wave_info[0].defense.ool,
+      0,
+      input.wave_info[0].defense.aaLast,
+      input.is_naval,
+      input.verbose_level,
+    );
+    defenderList.push(def_unit_group_string.unit);
+  }
+  const multiEvalInput: multieval_input = {
+    ...(internal_input as any),
+    attackerList: attackerList,
+    defenderList: defenderList,
+  };
+  const output = multiwaveMultiEval(multiEvalInput);
+  return output;
 }
 
 interface make_unit_group_string_output {
@@ -789,4 +758,128 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   };
 
   return output;
+}
+
+export function getIntegersInRange(
+  low: number,
+  high: number,
+  step: number,
+): number[] {
+  const result: number[] = [];
+  for (let i = low; i <= high; i += step) {
+    result.push(i);
+  }
+  if (result[result.length - 1] < high) {
+    result.push(high);
+  }
+  return result;
+}
+
+export function getArmyCost(army: Army): number {
+  const um = new unit_manager(0);
+  let sum = 0;
+  for (const [uid, count] of Object.entries(army)) {
+    let ch = UnitIdentifier2UnitMap[<UnitIdentifier>uid];
+    let cost = um.get_stat(ch).cost;
+    sum += cost * count;
+  }
+  return sum;
+}
+
+// compute all combinations of sub-armies from a given army
+export function getSubArmies(
+  army: Army,
+  startArmy: Army,
+  stepArmy: Army,
+): [Army, number, number, number][] {
+  const um = new unit_manager(0);
+  let subArmies: [Army, number, number, number][] = [];
+  const data: number[][] = [];
+  const uidList: UnitIdentifier[] = [];
+  let costMap: Map<UnitIdentifier, number> = new Map();
+  let attPowerMap: Map<UnitIdentifier, number> = new Map();
+  let defPowerMap: Map<UnitIdentifier, number> = new Map();
+  for (const uids of Object.keys(army)) {
+    let uid = <UnitIdentifier>uids;
+    let ch = UnitIdentifier2UnitMap[uid];
+    let cost = um.get_stat(ch).cost;
+    let attPower = um.get_stat(ch).att;
+    if (ch == 'a') {
+      attPower = 3;
+    }
+    let defPower = um.get_stat(ch).def;
+    if (ch == 'c') {
+      defPower = 3;
+    }
+    let hp = um.get_stat(ch).hits;
+    costMap.set(uid, cost);
+    attPowerMap.set(uid, attPower + hp);
+    defPowerMap.set(uid, defPower + hp);
+  }
+  let infIndex: number = 0;
+  for (const [uid, count] of Object.entries(army)) {
+    if (count > 0) {
+      let start = startArmy[<UnitIdentifier>uid];
+      let step = stepArmy[<UnitIdentifier>uid];
+      if (start == undefined) {
+        start = 0;
+      }
+      if (step == undefined) {
+        step = 1;
+      }
+      let values = getIntegersInRange(start, count, step);
+      data.push(values);
+      if (uid == 'inf') {
+        infIndex = uidList.length;
+      }
+      uidList.push(<UnitIdentifier>uid);
+    }
+  }
+  const allCombinations = getCombinations(data);
+  for (let i = 0; i < allCombinations.length; i++) {
+    const combo = allCombinations[i];
+    const subArmy: Army = {};
+    let cost = 0;
+    let AS = 0;
+    let DS = 0;
+    for (let j = 0; j < combo.length; j++) {
+      const uid = uidList[j];
+      const count = combo[j];
+      if (count > 0) {
+        subArmy[uid] = count;
+      }
+      cost += count * (costMap.get(<UnitIdentifier>uid) ?? 0);
+      AS += count * (attPowerMap.get(<UnitIdentifier>uid) ?? 0);
+      DS += count * (defPowerMap.get(<UnitIdentifier>uid) ?? 0);
+      if (uid == 'art') {
+        let numInf = combo[infIndex];
+        if (numInf < count * 2) {
+          let penalty = (1 - numInf / (count * 2)) * count * 0.5;
+          AS -= penalty;
+        }
+      }
+    }
+    if (Object.keys(subArmy).length > 0) {
+      subArmies.push([subArmy, cost, AS, DS]);
+    }
+  }
+  return subArmies;
+}
+
+export function getCombinations<T>(arrays: T[][]): T[][] {
+  if (arrays.length === 0) {
+    return [[]];
+  }
+
+  const firstArray = arrays[0];
+  const remainingArrays = arrays.slice(1);
+  const remainingCombinations = getCombinations(remainingArrays);
+
+  const combinations: T[][] = [];
+  for (const item of firstArray) {
+    for (const remainingCombo of remainingCombinations) {
+      combinations.push([item, ...remainingCombo]);
+    }
+  }
+  return combinations;
 }

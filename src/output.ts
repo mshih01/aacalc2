@@ -74,22 +74,6 @@ export function collect_results(parent_prob: general_problem): result_data_t[] {
   }
   return resultArr;
 }
-function merge_results(sortedArr: result_data_t[]): result_data_t[] {
-  const mergedArr = sortedArr;
-  let i, j;
-  for (i = 0; i < sortedArr.length; i++) {
-    const result = sortedArr[i];
-    j = i + 1;
-    if (j < sortedArr.length) {
-      const result2 = sortedArr[j];
-      if (Math.abs(result.cost - result2.cost) < epsilon) {
-        result2.p += result.p;
-        result.p = 0;
-      }
-    }
-  }
-  return mergedArr;
-}
 
 function get_general_group_string(
   um: unit_manager,

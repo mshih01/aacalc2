@@ -627,7 +627,7 @@ function do_early_retreat(problem: general_problem, N: number, M: number) {
   }
 }
 
-function compute_retreat_state(problem: general_problem): void {
+export function compute_retreat_state(problem: general_problem): void {
   //problem.R_1d = [];
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
@@ -667,7 +667,7 @@ function print_retreat_state(problem: general_problem): void {
 }
 
 // compute EV for all possible substates
-function compute_expected_value(problem: general_problem): void {
+export function compute_expected_value(problem: general_problem): void {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
   problem.E_1d = new Array(N * M);
@@ -752,7 +752,7 @@ function compute_expected_value(problem: general_problem): void {
 }
 
 // compute the Pwin with the win condition as attacker takes territory
-function compute_prob_wins(problem: general_problem): void {
+export function compute_prob_wins(problem: general_problem): void {
   problem.Pwin_1d = [];
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
@@ -818,6 +818,13 @@ function compute_prob_wins(problem: general_problem): void {
           }
         },
       );
+    }
+  }
+  if (problem.verbose_level > 3) {
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < M; j++) {
+        console.log(`result:  Pwin[%d][%d] = %d`, i, j, problem.getPwin(i, j));
+      }
     }
   }
 }
@@ -923,7 +930,7 @@ function do_roundless_eval_without_rounds(problem: general_problem): void {
   }
 }
 
-function do_round_eval(
+export function do_round_eval(
   problem: general_problem,
   allow_same_state: boolean,
   num_bombard: number,

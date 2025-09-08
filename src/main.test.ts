@@ -3,7 +3,6 @@ import {
   type MultiwaveOutput,
   multiwaveExternal,
   multiwaveComplexity,
-  multiwaveComplexityFast,
   multiwaveComplexityFastV2,
   sbrExternal,
   type SbrInput,
@@ -1210,11 +1209,6 @@ for (let i = 0; i < inputSettings.length; i++) {
     console.time(description);
     let complexity = multiwaveComplexity(myinput);
     console.log(complexity, 'multiwaveComplexity');
-    console.timeEnd(description);
-
-    console.time(description);
-    complexity = multiwaveComplexityFast(myinput);
-    console.log(complexity, 'multiwaveComplexityFast');
     console.timeEnd(description);
 
     console.time(description);
