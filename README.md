@@ -154,12 +154,12 @@ P[i][j] is the probability that we are "currently" in the state i attackers vs. 
 
 It is initialized to P[N][M] = 1.0... and rest zeros
 
-At the end of computation... 
-P[i][0] is the probability of i attackers vs. 0 defenders.
-P[0][j] is the probability of 0 attackers vs j defenders.
-all other entries will be zero'd
+At the end of computation, P[i][j] are the final terminal proabilities.
+- P[i][0] is the probability of i attackers vs. 0 defenders.
+- P[0][j] is the probability of 0 attackers vs j defenders.
+- all other entries will be zero'd
 
-When solve_one_state (i, j) is called... ever possible parent state which could lead to this state
+When solve_one_state (i, j) is called... every possible parent state which could lead to this state
 has already previously been solved.   So P[i][j] at this point is the total probability that we 
 could reach this state from all parent paths.   After solve_one_state is complete... The value of 
 the state is either 0 or the final probability that we end in this state.
@@ -177,7 +177,7 @@ the state is either 0 or the final probability that we end in this state.
         - onExitState()
         - onNextState()
 
-    - The callbacks allow for advance3d features like:
+    - The callbacks allow for advanced features like:
         - compute expected value for all sub-problem states.
         - compute Pwin for all sub-problem states.
         - enhance the roundless evaluation to bookkeep and maintain expected number of rounds.
