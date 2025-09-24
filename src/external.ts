@@ -851,11 +851,21 @@ export function getSubArmies(
       cost += count * (costMap.get(<UnitIdentifier>uid) ?? 0);
       AS += count * (attPowerMap.get(<UnitIdentifier>uid) ?? 0);
       DS += count * (defPowerMap.get(<UnitIdentifier>uid) ?? 0);
-      if (uid == 'art') {
+      if (uid == 'art' && count > 0) {
         let numInf = combo[infIndex];
+        // need 2X supporting  infantry to get the full 3 attack.   otherwise 2.5 attack
         if (numInf < count * 2) {
-          let penalty = (1 - numInf / (count * 2)) * count * 0.5;
-          AS -= penalty;
+          let penalty = (1 - numInf / (count * 2)) * count;
+          if (penalty > 0) {
+            AS -= penalty;
+          }
+        }
+        // if not sufficient supporting infantry, then downgrade to 2.0.
+        if (numInf < count) {
+          let penalty = (1 - numInf / count) * count * 0.5;
+          if (penalty > 0) {
+            AS -= penalty;
+          }
         }
       }
     }

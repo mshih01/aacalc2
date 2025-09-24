@@ -1,7 +1,6 @@
 // sweep a set of attacker or defender armies -- and solve multiple problems concurrently to take advaantage of sub-problem reuse.
 
 import {
-  compute_expected_value,
   compute_prob_wins,
   compute_retreat_state,
   general_problem,
@@ -16,7 +15,6 @@ import {
 import { preparse, preparse_token, count_units } from './preparse.js';
 import { apply_ool } from './multiwave.js';
 import type { multiwave_input } from './multiwave.js';
-import { get_reduced_group_string } from './output.js';
 import type { aacalc_output, casualty_1d } from './output.js';
 
 export interface multieval_input extends multiwave_input {
