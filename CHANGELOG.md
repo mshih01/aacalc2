@@ -1,5 +1,11 @@
 # aacalc2
 
+## 1.0.34
+
+### Patch Changes
+
+- fba5d10: add armyRecommend -- recommend sub-army to achieve target percentage win.
+
 ## 1.0.33
 
 ### Patch Changes
