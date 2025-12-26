@@ -10109,7 +10109,7 @@ exports[`Regression test for test15 1`] = `
 {
   "attack": {
     "ipcLoss": [
-      76.97201965795489,
+      76.9720196579549,
     ],
     "survives": [
       0.940240557192663,
@@ -10216,7 +10216,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des;": {
-        "amount": 0.08626964973642448,
+        "amount": 0.08626964973642447,
         "casualties": "1 Des, 5 Sub, 1 ACC",
         "ipcLoss": 52,
         "retreaters": "",
@@ -10314,7 +10314,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184400741338522,
+        "amount": 0.11184400741338524,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -10405,7 +10405,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.11618427384983322,
+        "amount": 0.11618427384983325,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -10461,7 +10461,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 1 Des",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650863826576,
+        "amount": 0.04091650863826575,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -10517,7 +10517,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609474797854,
+        "amount": 0.00041292609474797876,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -10533,14 +10533,14 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 4 Sub",
       },
       "1 ACC, 5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub;": {
-        "amount": 2.094386478076248e-11,
+        "amount": 2.0943864780762476e-11,
         "casualties": "1 ACC, 5 Des, 2 Sub",
         "ipcLoss": 66,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub",
       },
       "1 ACC, 5 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 2 Sub;": {
-        "amount": 8.437371365810069e-11,
+        "amount": 8.437371365810071e-11,
         "casualties": "1 ACC, 5 Des, 3 Sub",
         "ipcLoss": 72,
         "retreaters": "",
@@ -10575,7 +10575,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 2 Sub",
       },
       "1 Cru, 1 ACC, 5 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Sub;": {
-        "amount": 1.0577811589817617e-11,
+        "amount": 1.057781158981762e-11,
         "casualties": "1 Cru, 1 ACC, 5 Des, 4 Sub",
         "ipcLoss": 90,
         "retreaters": "",
@@ -10589,35 +10589,35 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig",
       },
       "1 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub;": {
-        "amount": 1.7277614310472054e-7,
+        "amount": 1.727761431047205e-7,
         "casualties": "1 Des, 1 Sub",
         "ipcLoss": 14,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub",
       },
       "1 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub;": {
-        "amount": 0.000001163254057191545,
+        "amount": 0.0000011632540571915451,
         "casualties": "1 Des, 2 Sub",
         "ipcLoss": 20,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub",
       },
       "1 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub;": {
-        "amount": 0.0000057554972113311725,
+        "amount": 0.000005755497211331174,
         "casualties": "1 Des, 3 Sub",
         "ipcLoss": 26,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub",
       },
       "1 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub;": {
-        "amount": 0.00002252348424772223,
+        "amount": 0.000022523484247722227,
         "casualties": "1 Des, 4 Sub",
         "ipcLoss": 32,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des;": {
-        "amount": 0.0002262083742550412,
+        "amount": 0.00022620837425504125,
         "casualties": "1 Des, 5 Sub",
         "ipcLoss": 38,
         "retreaters": "",
@@ -10687,7 +10687,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Des, 5 Sub",
       },
       "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;2 Tra, 1 Bat;": {
-        "amount": 0.012533234035949484,
+        "amount": 0.012533234035949482,
         "casualties": "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub",
         "ipcLoss": 116,
         "retreaters": "",
@@ -10708,7 +10708,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "",
       },
       "3 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 4 Sub;": {
-        "amount": 2.13717187105898e-8,
+        "amount": 2.1371718710589803e-8,
         "casualties": "3 Des, 1 Sub",
         "ipcLoss": 30,
         "retreaters": "",
@@ -10750,28 +10750,28 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 5 Sub",
       },
       "3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub;": {
-        "amount": 0.000004860885821332695,
+        "amount": 0.0000048608858213326955,
         "casualties": "3 Sub",
         "ipcLoss": 18,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub",
       },
       "4 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub;": {
-        "amount": 1.0272538019917236e-9,
+        "amount": 1.0272538019917239e-9,
         "casualties": "4 Des, 1 Sub",
         "ipcLoss": 38,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub",
       },
       "4 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub;": {
-        "amount": 6.194130683318061e-9,
+        "amount": 6.19413068331806e-9,
         "casualties": "4 Des, 2 Sub",
         "ipcLoss": 44,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub",
       },
       "4 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 2 Sub;": {
-        "amount": 2.853116055252032e-8,
+        "amount": 2.8531160552520333e-8,
         "casualties": "4 Des, 3 Sub",
         "ipcLoss": 50,
         "retreaters": "",
@@ -10813,7 +10813,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Sub",
       },
       "5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Sub;": {
-        "amount": 4.053607754213958e-10,
+        "amount": 4.0536077542139586e-10,
         "casualties": "5 Des, 2 Sub",
         "ipcLoss": 52,
         "retreaters": "",
@@ -10834,7 +10834,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Sub",
       },
       "5 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC;": {
-        "amount": 0.004751674477298461,
+        "amount": 0.004751674477298462,
         "casualties": "5 Des, 5 Sub",
         "ipcLoss": 70,
         "retreaters": "",
@@ -10876,7 +10876,7 @@ exports[`Regression test for test15 1`] = `
     {
       "-102": {
         "ipc": -102,
-        "prob": 2.094386478076248e-11,
+        "prob": 2.0943864780762476e-11,
       },
       "-104": {
         "ipc": -104,
@@ -10904,11 +10904,11 @@ exports[`Regression test for test15 1`] = `
       },
       "-116": {
         "ipc": -116,
-        "prob": 4.053607754213958e-10,
+        "prob": 4.0536077542139586e-10,
       },
       "-118": {
         "ipc": -118,
-        "prob": 2.853116055252032e-8,
+        "prob": 2.8531160552520333e-8,
       },
       "-120": {
         "ipc": -120,
@@ -10920,7 +10920,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-124": {
         "ipc": -124,
-        "prob": 6.194130683318061e-9,
+        "prob": 6.19413068331806e-9,
       },
       "-126": {
         "ipc": -126,
@@ -10932,7 +10932,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-130": {
         "ipc": -130,
-        "prob": 0.00022620940150884318,
+        "prob": 0.00022620940150884324,
       },
       "-132": {
         "ipc": -132,
@@ -10944,7 +10944,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-136": {
         "ipc": -136,
-        "prob": 0.000022523580674185948,
+        "prob": 0.000022523580674185945,
       },
       "-138": {
         "ipc": -138,
@@ -10956,7 +10956,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-142": {
         "ipc": -142,
-        "prob": 0.0000057554972113311725,
+        "prob": 0.000005755497211331174,
       },
       "-144": {
         "ipc": -144,
@@ -10968,11 +10968,11 @@ exports[`Regression test for test15 1`] = `
       },
       "-148": {
         "ipc": -148,
-        "prob": 0.000001163254057191545,
+        "prob": 0.0000011632540571915451,
       },
       "-150": {
         "ipc": -150,
-        "prob": 0.000004860885821332695,
+        "prob": 0.0000048608858213326955,
       },
       "-152": {
         "ipc": -152,
@@ -10980,7 +10980,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-154": {
         "ipc": -154,
-        "prob": 1.7277614310472054e-7,
+        "prob": 1.727761431047205e-7,
       },
       "-156": {
         "ipc": -156,
@@ -11004,7 +11004,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-52": {
         "ipc": -52,
-        "prob": 0.012533234035949484,
+        "prob": 0.012533234035949482,
       },
       "-62": {
         "ipc": -62,
@@ -11016,7 +11016,7 @@ exports[`Regression test for test15 1`] = `
       },
       "-78": {
         "ipc": -78,
-        "prob": 1.0577811589817617e-11,
+        "prob": 1.057781158981762e-11,
       },
       "-84": {
         "ipc": -84,
@@ -11028,11 +11028,11 @@ exports[`Regression test for test15 1`] = `
       },
       "-96": {
         "ipc": -96,
-        "prob": 8.437371365810069e-11,
+        "prob": 8.437371365810071e-11,
       },
       "-98": {
         "ipc": -98,
-        "prob": 0.004751674477298461,
+        "prob": 0.004751674477298462,
       },
       "100": {
         "ipc": 100,
@@ -11060,7 +11060,7 @@ exports[`Regression test for test15 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.040924710633976576,
+        "prob": 0.04092471063397657,
       },
       "114": {
         "ipc": 114,
@@ -11100,7 +11100,7 @@ exports[`Regression test for test15 1`] = `
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609474797854,
+        "prob": 0.00041292609474797876,
       },
       "2": {
         "ipc": 2,
@@ -11184,7 +11184,7 @@ exports[`Regression test for test15 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.11618427384983322,
+        "prob": 0.11618427384983325,
       },
       "84": {
         "ipc": 84,
@@ -11200,7 +11200,7 @@ exports[`Regression test for test15 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184404699651691,
+        "prob": 0.11184404699651693,
       },
       "92": {
         "ipc": 92,
@@ -11216,12 +11216,12 @@ exports[`Regression test for test15 1`] = `
       },
       "98": {
         "ipc": 98,
-        "prob": 0.08627313963660534,
+        "prob": 0.08627313963660532,
       },
     },
   ],
   "rounds": [
-    3.1197773724728157,
+    3.119777372472816,
   ],
   "takesTerritory": [
     0,
@@ -13404,7 +13404,7 @@ exports[`Regression test for test19 1`] = `
   "casualtiesInfo": {
     "attack": {
       "1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub;": {
-        "amount": 0.0018872039112694113,
+        "amount": 0.0018872039112694111,
         "casualties": "1 ACC",
         "ipcLoss": 14,
         "retreaters": "",
@@ -13621,7 +13621,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184380207052952,
+        "amount": 0.11184380207052955,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -13705,7 +13705,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 4 Sub",
       },
       "3 Des, 2 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 3 Sub;": {
-        "amount": 0.0000736311405756853,
+        "amount": 0.00007363114057568532,
         "casualties": "3 Des, 2 Sub, 1 ACC",
         "ipcLoss": 50,
         "retreaters": "",
@@ -13726,7 +13726,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.1161829323963436,
+        "amount": 0.11618293239634361,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -13803,7 +13803,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650849604097,
+        "amount": 0.04091650849604096,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -13880,7 +13880,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609388556716,
+        "amount": 0.0004129260938855673,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -14012,7 +14012,7 @@ exports[`Regression test for test19 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
-      144.2635331673365,
+      144.26353316733653,
     ],
     "survives": [
       0.07132653281024186,
@@ -14242,7 +14242,7 @@ exports[`Regression test for test19 1`] = `
       },
       "100": {
         "ipc": 100,
-        "prob": 0.0000736311405756853,
+        "prob": 0.00007363114057568532,
       },
       "102": {
         "ipc": 102,
@@ -14266,7 +14266,7 @@ exports[`Regression test for test19 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.04092471049175059,
+        "prob": 0.04092471049175058,
       },
       "114": {
         "ipc": 114,
@@ -14302,11 +14302,11 @@ exports[`Regression test for test19 1`] = `
       },
       "136": {
         "ipc": 136,
-        "prob": 0.0018872039112694113,
+        "prob": 0.0018872039112694111,
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609388556716,
+        "prob": 0.0004129260938855673,
       },
       "2": {
         "ipc": 2,
@@ -14382,7 +14382,7 @@ exports[`Regression test for test19 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.1161829323963436,
+        "prob": 0.11618293239634361,
       },
       "84": {
         "ipc": 84,
@@ -14398,7 +14398,7 @@ exports[`Regression test for test19 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184384165366121,
+        "prob": 0.11184384165366124,
       },
       "92": {
         "ipc": 92,
@@ -14419,7 +14419,7 @@ exports[`Regression test for test19 1`] = `
     },
   ],
   "rounds": [
-    2.997959556525342,
+    2.9979595565253416,
   ],
   "takesTerritory": [
     0,
@@ -16318,7 +16318,7 @@ exports[`Regression test for test23 1`] = `
 {
   "attack": {
     "ipcLoss": [
-      76.97201965795489,
+      76.9720196579549,
     ],
     "survives": [
       0.940240557192663,
@@ -16425,7 +16425,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des;": {
-        "amount": 0.08626964973642448,
+        "amount": 0.08626964973642447,
         "casualties": "1 Des, 5 Sub, 1 ACC",
         "ipcLoss": 52,
         "retreaters": "",
@@ -16523,7 +16523,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184400741338522,
+        "amount": 0.11184400741338524,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -16614,7 +16614,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.11618427384983322,
+        "amount": 0.11618427384983325,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -16670,7 +16670,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 1 Des",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650863826576,
+        "amount": 0.04091650863826575,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -16726,7 +16726,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609474797854,
+        "amount": 0.00041292609474797876,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -16742,14 +16742,14 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 4 Sub",
       },
       "1 ACC, 5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub;": {
-        "amount": 2.094386478076248e-11,
+        "amount": 2.0943864780762476e-11,
         "casualties": "1 ACC, 5 Des, 2 Sub",
         "ipcLoss": 66,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub",
       },
       "1 ACC, 5 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 2 Sub;": {
-        "amount": 8.437371365810069e-11,
+        "amount": 8.437371365810071e-11,
         "casualties": "1 ACC, 5 Des, 3 Sub",
         "ipcLoss": 72,
         "retreaters": "",
@@ -16784,7 +16784,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 2 Sub",
       },
       "1 Cru, 1 ACC, 5 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Sub;": {
-        "amount": 1.0577811589817617e-11,
+        "amount": 1.057781158981762e-11,
         "casualties": "1 Cru, 1 ACC, 5 Des, 4 Sub",
         "ipcLoss": 90,
         "retreaters": "",
@@ -16798,35 +16798,35 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig",
       },
       "1 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub;": {
-        "amount": 1.7277614310472054e-7,
+        "amount": 1.727761431047205e-7,
         "casualties": "1 Des, 1 Sub",
         "ipcLoss": 14,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub",
       },
       "1 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub;": {
-        "amount": 0.000001163254057191545,
+        "amount": 0.0000011632540571915451,
         "casualties": "1 Des, 2 Sub",
         "ipcLoss": 20,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub",
       },
       "1 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub;": {
-        "amount": 0.0000057554972113311725,
+        "amount": 0.000005755497211331174,
         "casualties": "1 Des, 3 Sub",
         "ipcLoss": 26,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub",
       },
       "1 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub;": {
-        "amount": 0.00002252348424772223,
+        "amount": 0.000022523484247722227,
         "casualties": "1 Des, 4 Sub",
         "ipcLoss": 32,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des;": {
-        "amount": 0.0002262083742550412,
+        "amount": 0.00022620837425504125,
         "casualties": "1 Des, 5 Sub",
         "ipcLoss": 38,
         "retreaters": "",
@@ -16896,7 +16896,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Des, 5 Sub",
       },
       "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;2 Tra, 1 Bat;": {
-        "amount": 0.012533234035949484,
+        "amount": 0.012533234035949482,
         "casualties": "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub",
         "ipcLoss": 116,
         "retreaters": "",
@@ -16917,7 +16917,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "",
       },
       "3 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 4 Sub;": {
-        "amount": 2.13717187105898e-8,
+        "amount": 2.1371718710589803e-8,
         "casualties": "3 Des, 1 Sub",
         "ipcLoss": 30,
         "retreaters": "",
@@ -16959,28 +16959,28 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 5 Sub",
       },
       "3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub;": {
-        "amount": 0.000004860885821332695,
+        "amount": 0.0000048608858213326955,
         "casualties": "3 Sub",
         "ipcLoss": 18,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub",
       },
       "4 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub;": {
-        "amount": 1.0272538019917236e-9,
+        "amount": 1.0272538019917239e-9,
         "casualties": "4 Des, 1 Sub",
         "ipcLoss": 38,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub",
       },
       "4 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub;": {
-        "amount": 6.194130683318061e-9,
+        "amount": 6.19413068331806e-9,
         "casualties": "4 Des, 2 Sub",
         "ipcLoss": 44,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub",
       },
       "4 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 2 Sub;": {
-        "amount": 2.853116055252032e-8,
+        "amount": 2.8531160552520333e-8,
         "casualties": "4 Des, 3 Sub",
         "ipcLoss": 50,
         "retreaters": "",
@@ -17022,7 +17022,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Sub",
       },
       "5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Sub;": {
-        "amount": 4.053607754213958e-10,
+        "amount": 4.0536077542139586e-10,
         "casualties": "5 Des, 2 Sub",
         "ipcLoss": 52,
         "retreaters": "",
@@ -17043,7 +17043,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Sub",
       },
       "5 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC;": {
-        "amount": 0.004751674477298461,
+        "amount": 0.004751674477298462,
         "casualties": "5 Des, 5 Sub",
         "ipcLoss": 70,
         "retreaters": "",
@@ -17085,7 +17085,7 @@ exports[`Regression test for test23 1`] = `
     {
       "-102": {
         "ipc": -102,
-        "prob": 2.094386478076248e-11,
+        "prob": 2.0943864780762476e-11,
       },
       "-104": {
         "ipc": -104,
@@ -17113,11 +17113,11 @@ exports[`Regression test for test23 1`] = `
       },
       "-116": {
         "ipc": -116,
-        "prob": 4.053607754213958e-10,
+        "prob": 4.0536077542139586e-10,
       },
       "-118": {
         "ipc": -118,
-        "prob": 2.853116055252032e-8,
+        "prob": 2.8531160552520333e-8,
       },
       "-120": {
         "ipc": -120,
@@ -17129,7 +17129,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-124": {
         "ipc": -124,
-        "prob": 6.194130683318061e-9,
+        "prob": 6.19413068331806e-9,
       },
       "-126": {
         "ipc": -126,
@@ -17141,7 +17141,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-130": {
         "ipc": -130,
-        "prob": 0.00022620940150884318,
+        "prob": 0.00022620940150884324,
       },
       "-132": {
         "ipc": -132,
@@ -17153,7 +17153,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-136": {
         "ipc": -136,
-        "prob": 0.000022523580674185948,
+        "prob": 0.000022523580674185945,
       },
       "-138": {
         "ipc": -138,
@@ -17165,7 +17165,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-142": {
         "ipc": -142,
-        "prob": 0.0000057554972113311725,
+        "prob": 0.000005755497211331174,
       },
       "-144": {
         "ipc": -144,
@@ -17177,11 +17177,11 @@ exports[`Regression test for test23 1`] = `
       },
       "-148": {
         "ipc": -148,
-        "prob": 0.000001163254057191545,
+        "prob": 0.0000011632540571915451,
       },
       "-150": {
         "ipc": -150,
-        "prob": 0.000004860885821332695,
+        "prob": 0.0000048608858213326955,
       },
       "-152": {
         "ipc": -152,
@@ -17189,7 +17189,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-154": {
         "ipc": -154,
-        "prob": 1.7277614310472054e-7,
+        "prob": 1.727761431047205e-7,
       },
       "-156": {
         "ipc": -156,
@@ -17213,7 +17213,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-52": {
         "ipc": -52,
-        "prob": 0.012533234035949484,
+        "prob": 0.012533234035949482,
       },
       "-62": {
         "ipc": -62,
@@ -17225,7 +17225,7 @@ exports[`Regression test for test23 1`] = `
       },
       "-78": {
         "ipc": -78,
-        "prob": 1.0577811589817617e-11,
+        "prob": 1.057781158981762e-11,
       },
       "-84": {
         "ipc": -84,
@@ -17237,11 +17237,11 @@ exports[`Regression test for test23 1`] = `
       },
       "-96": {
         "ipc": -96,
-        "prob": 8.437371365810069e-11,
+        "prob": 8.437371365810071e-11,
       },
       "-98": {
         "ipc": -98,
-        "prob": 0.004751674477298461,
+        "prob": 0.004751674477298462,
       },
       "100": {
         "ipc": 100,
@@ -17269,7 +17269,7 @@ exports[`Regression test for test23 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.040924710633976576,
+        "prob": 0.04092471063397657,
       },
       "114": {
         "ipc": 114,
@@ -17309,7 +17309,7 @@ exports[`Regression test for test23 1`] = `
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609474797854,
+        "prob": 0.00041292609474797876,
       },
       "2": {
         "ipc": 2,
@@ -17393,7 +17393,7 @@ exports[`Regression test for test23 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.11618427384983322,
+        "prob": 0.11618427384983325,
       },
       "84": {
         "ipc": 84,
@@ -17409,7 +17409,7 @@ exports[`Regression test for test23 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184404699651691,
+        "prob": 0.11184404699651693,
       },
       "92": {
         "ipc": 92,
@@ -17425,12 +17425,12 @@ exports[`Regression test for test23 1`] = `
       },
       "98": {
         "ipc": 98,
-        "prob": 0.08627313963660534,
+        "prob": 0.08627313963660532,
       },
     },
   ],
   "rounds": [
-    3.1197773724728157,
+    3.119777372472816,
   ],
   "takesTerritory": [
     0,
@@ -19716,7 +19716,7 @@ exports[`Regression test for test27 1`] = `
   "casualtiesInfo": {
     "attack": {
       "1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub;": {
-        "amount": 0.0018872039112694113,
+        "amount": 0.0018872039112694111,
         "casualties": "1 ACC",
         "ipcLoss": 14,
         "retreaters": "",
@@ -19933,7 +19933,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184380207052952,
+        "amount": 0.11184380207052955,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -20017,7 +20017,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 4 Sub",
       },
       "3 Des, 2 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 3 Sub;": {
-        "amount": 0.0000736311405756853,
+        "amount": 0.00007363114057568532,
         "casualties": "3 Des, 2 Sub, 1 ACC",
         "ipcLoss": 50,
         "retreaters": "",
@@ -20038,7 +20038,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.1161829323963436,
+        "amount": 0.11618293239634361,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -20115,7 +20115,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650849604097,
+        "amount": 0.04091650849604096,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -20192,7 +20192,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609388556716,
+        "amount": 0.0004129260938855673,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -20324,7 +20324,7 @@ exports[`Regression test for test27 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
-      144.2635331673365,
+      144.26353316733653,
     ],
     "survives": [
       0.07132653281024186,
@@ -20554,7 +20554,7 @@ exports[`Regression test for test27 1`] = `
       },
       "100": {
         "ipc": 100,
-        "prob": 0.0000736311405756853,
+        "prob": 0.00007363114057568532,
       },
       "102": {
         "ipc": 102,
@@ -20578,7 +20578,7 @@ exports[`Regression test for test27 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.04092471049175059,
+        "prob": 0.04092471049175058,
       },
       "114": {
         "ipc": 114,
@@ -20614,11 +20614,11 @@ exports[`Regression test for test27 1`] = `
       },
       "136": {
         "ipc": 136,
-        "prob": 0.0018872039112694113,
+        "prob": 0.0018872039112694111,
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609388556716,
+        "prob": 0.0004129260938855673,
       },
       "2": {
         "ipc": 2,
@@ -20694,7 +20694,7 @@ exports[`Regression test for test27 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.1161829323963436,
+        "prob": 0.11618293239634361,
       },
       "84": {
         "ipc": 84,
@@ -20710,7 +20710,7 @@ exports[`Regression test for test27 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184384165366121,
+        "prob": 0.11184384165366124,
       },
       "92": {
         "ipc": 92,
@@ -20731,7 +20731,7 @@ exports[`Regression test for test27 1`] = `
     },
   ],
   "rounds": [
-    2.997959556525342,
+    2.9979595565253416,
   ],
   "takesTerritory": [
     0,
@@ -22658,7 +22658,7 @@ exports[`Regression test for test31 1`] = `
 {
   "attack": {
     "ipcLoss": [
-      76.97201965795489,
+      76.9720196579549,
     ],
     "survives": [
       0.940240557192663,
@@ -22765,7 +22765,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 4 Des;": {
-        "amount": 0.08626964973642448,
+        "amount": 0.08626964973642447,
         "casualties": "1 Des, 5 Sub, 1 ACC",
         "ipcLoss": 52,
         "retreaters": "",
@@ -22863,7 +22863,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184400741338522,
+        "amount": 0.11184400741338524,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -22954,7 +22954,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.11618427384983322,
+        "amount": 0.11618427384983325,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -23010,7 +23010,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 1 Des",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650863826576,
+        "amount": 0.04091650863826575,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -23066,7 +23066,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609474797854,
+        "amount": 0.00041292609474797876,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -23082,14 +23082,14 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 4 Sub",
       },
       "1 ACC, 5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub;": {
-        "amount": 2.094386478076248e-11,
+        "amount": 2.0943864780762476e-11,
         "casualties": "1 ACC, 5 Des, 2 Sub",
         "ipcLoss": 66,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 3 Sub",
       },
       "1 ACC, 5 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 2 Sub;": {
-        "amount": 8.437371365810069e-11,
+        "amount": 8.437371365810071e-11,
         "casualties": "1 ACC, 5 Des, 3 Sub",
         "ipcLoss": 72,
         "retreaters": "",
@@ -23124,7 +23124,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 2 Sub",
       },
       "1 Cru, 1 ACC, 5 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Sub;": {
-        "amount": 1.0577811589817617e-11,
+        "amount": 1.057781158981762e-11,
         "casualties": "1 Cru, 1 ACC, 5 Des, 4 Sub",
         "ipcLoss": 90,
         "retreaters": "",
@@ -23138,35 +23138,35 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig",
       },
       "1 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub;": {
-        "amount": 1.7277614310472054e-7,
+        "amount": 1.727761431047205e-7,
         "casualties": "1 Des, 1 Sub",
         "ipcLoss": 14,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 4 Sub",
       },
       "1 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub;": {
-        "amount": 0.000001163254057191545,
+        "amount": 0.0000011632540571915451,
         "casualties": "1 Des, 2 Sub",
         "ipcLoss": 20,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 3 Sub",
       },
       "1 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub;": {
-        "amount": 0.0000057554972113311725,
+        "amount": 0.000005755497211331174,
         "casualties": "1 Des, 3 Sub",
         "ipcLoss": 26,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 2 Sub",
       },
       "1 Des, 4 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub;": {
-        "amount": 0.00002252348424772223,
+        "amount": 0.000022523484247722227,
         "casualties": "1 Des, 4 Sub",
         "ipcLoss": 32,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des, 1 Sub",
       },
       "1 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Des;": {
-        "amount": 0.0002262083742550412,
+        "amount": 0.00022620837425504125,
         "casualties": "1 Des, 5 Sub",
         "ipcLoss": 38,
         "retreaters": "",
@@ -23236,7 +23236,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Des, 5 Sub",
       },
       "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;2 Tra, 1 Bat;": {
-        "amount": 0.012533234035949484,
+        "amount": 0.012533234035949482,
         "casualties": "2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub",
         "ipcLoss": 116,
         "retreaters": "",
@@ -23257,7 +23257,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "",
       },
       "3 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 4 Sub;": {
-        "amount": 2.13717187105898e-8,
+        "amount": 2.1371718710589803e-8,
         "casualties": "3 Des, 1 Sub",
         "ipcLoss": 30,
         "retreaters": "",
@@ -23299,28 +23299,28 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 2 Des, 5 Sub",
       },
       "3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub;": {
-        "amount": 0.000004860885821332695,
+        "amount": 0.0000048608858213326955,
         "casualties": "3 Sub",
         "ipcLoss": 18,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 2 Sub",
       },
       "4 Des, 1 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub;": {
-        "amount": 1.0272538019917236e-9,
+        "amount": 1.0272538019917239e-9,
         "casualties": "4 Des, 1 Sub",
         "ipcLoss": 38,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 4 Sub",
       },
       "4 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub;": {
-        "amount": 6.194130683318061e-9,
+        "amount": 6.19413068331806e-9,
         "casualties": "4 Des, 2 Sub",
         "ipcLoss": 44,
         "retreaters": "",
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 3 Sub",
       },
       "4 Des, 3 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Des, 2 Sub;": {
-        "amount": 2.853116055252032e-8,
+        "amount": 2.8531160552520333e-8,
         "casualties": "4 Des, 3 Sub",
         "ipcLoss": 50,
         "retreaters": "",
@@ -23362,7 +23362,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 4 Sub",
       },
       "5 Des, 2 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 3 Sub;": {
-        "amount": 4.053607754213958e-10,
+        "amount": 4.0536077542139586e-10,
         "casualties": "5 Des, 2 Sub",
         "ipcLoss": 52,
         "retreaters": "",
@@ -23383,7 +23383,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 1 Sub",
       },
       "5 Des, 5 Sub;2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC;": {
-        "amount": 0.004751674477298461,
+        "amount": 0.004751674477298462,
         "casualties": "5 Des, 5 Sub",
         "ipcLoss": 70,
         "retreaters": "",
@@ -23425,7 +23425,7 @@ exports[`Regression test for test31 1`] = `
     {
       "-102": {
         "ipc": -102,
-        "prob": 2.094386478076248e-11,
+        "prob": 2.0943864780762476e-11,
       },
       "-104": {
         "ipc": -104,
@@ -23453,11 +23453,11 @@ exports[`Regression test for test31 1`] = `
       },
       "-116": {
         "ipc": -116,
-        "prob": 4.053607754213958e-10,
+        "prob": 4.0536077542139586e-10,
       },
       "-118": {
         "ipc": -118,
-        "prob": 2.853116055252032e-8,
+        "prob": 2.8531160552520333e-8,
       },
       "-120": {
         "ipc": -120,
@@ -23469,7 +23469,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-124": {
         "ipc": -124,
-        "prob": 6.194130683318061e-9,
+        "prob": 6.19413068331806e-9,
       },
       "-126": {
         "ipc": -126,
@@ -23481,7 +23481,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-130": {
         "ipc": -130,
-        "prob": 0.00022620940150884318,
+        "prob": 0.00022620940150884324,
       },
       "-132": {
         "ipc": -132,
@@ -23493,7 +23493,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-136": {
         "ipc": -136,
-        "prob": 0.000022523580674185948,
+        "prob": 0.000022523580674185945,
       },
       "-138": {
         "ipc": -138,
@@ -23505,7 +23505,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-142": {
         "ipc": -142,
-        "prob": 0.0000057554972113311725,
+        "prob": 0.000005755497211331174,
       },
       "-144": {
         "ipc": -144,
@@ -23517,11 +23517,11 @@ exports[`Regression test for test31 1`] = `
       },
       "-148": {
         "ipc": -148,
-        "prob": 0.000001163254057191545,
+        "prob": 0.0000011632540571915451,
       },
       "-150": {
         "ipc": -150,
-        "prob": 0.000004860885821332695,
+        "prob": 0.0000048608858213326955,
       },
       "-152": {
         "ipc": -152,
@@ -23529,7 +23529,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-154": {
         "ipc": -154,
-        "prob": 1.7277614310472054e-7,
+        "prob": 1.727761431047205e-7,
       },
       "-156": {
         "ipc": -156,
@@ -23553,7 +23553,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-52": {
         "ipc": -52,
-        "prob": 0.012533234035949484,
+        "prob": 0.012533234035949482,
       },
       "-62": {
         "ipc": -62,
@@ -23565,7 +23565,7 @@ exports[`Regression test for test31 1`] = `
       },
       "-78": {
         "ipc": -78,
-        "prob": 1.0577811589817617e-11,
+        "prob": 1.057781158981762e-11,
       },
       "-84": {
         "ipc": -84,
@@ -23577,11 +23577,11 @@ exports[`Regression test for test31 1`] = `
       },
       "-96": {
         "ipc": -96,
-        "prob": 8.437371365810069e-11,
+        "prob": 8.437371365810071e-11,
       },
       "-98": {
         "ipc": -98,
-        "prob": 0.004751674477298461,
+        "prob": 0.004751674477298462,
       },
       "100": {
         "ipc": 100,
@@ -23609,7 +23609,7 @@ exports[`Regression test for test31 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.040924710633976576,
+        "prob": 0.04092471063397657,
       },
       "114": {
         "ipc": 114,
@@ -23649,7 +23649,7 @@ exports[`Regression test for test31 1`] = `
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609474797854,
+        "prob": 0.00041292609474797876,
       },
       "2": {
         "ipc": 2,
@@ -23733,7 +23733,7 @@ exports[`Regression test for test31 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.11618427384983322,
+        "prob": 0.11618427384983325,
       },
       "84": {
         "ipc": 84,
@@ -23749,7 +23749,7 @@ exports[`Regression test for test31 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184404699651691,
+        "prob": 0.11184404699651693,
       },
       "92": {
         "ipc": 92,
@@ -23765,12 +23765,12 @@ exports[`Regression test for test31 1`] = `
       },
       "98": {
         "ipc": 98,
-        "prob": 0.08627313963660534,
+        "prob": 0.08627313963660532,
       },
     },
   ],
   "rounds": [
-    3.1197773724728157,
+    3.119777372472816,
   ],
   "takesTerritory": [
     0,
@@ -26020,7 +26020,7 @@ exports[`Regression test for test35 1`] = `
   "casualtiesInfo": {
     "attack": {
       "1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub;": {
-        "amount": 0.0018872039112694113,
+        "amount": 0.0018872039112694111,
         "casualties": "1 ACC",
         "ipcLoss": 14,
         "retreaters": "",
@@ -26237,7 +26237,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des, 1 Sub",
       },
       "2 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 3 Des;": {
-        "amount": 0.11184380207052952,
+        "amount": 0.11184380207052955,
         "casualties": "2 Des, 5 Sub, 1 ACC",
         "ipcLoss": 60,
         "retreaters": "",
@@ -26321,7 +26321,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 4 Sub",
       },
       "3 Des, 2 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 3 Sub;": {
-        "amount": 0.0000736311405756853,
+        "amount": 0.00007363114057568532,
         "casualties": "3 Des, 2 Sub, 1 ACC",
         "ipcLoss": 50,
         "retreaters": "",
@@ -26342,7 +26342,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des, 1 Sub",
       },
       "3 Des, 5 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 2 Des;": {
-        "amount": 0.1161829323963436,
+        "amount": 0.11618293239634361,
         "casualties": "3 Des, 5 Sub, 1 ACC",
         "ipcLoss": 68,
         "retreaters": "",
@@ -26419,7 +26419,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "",
       },
       "4 Sub, 1 ACC;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 1 Sub;": {
-        "amount": 0.04091650849604097,
+        "amount": 0.04091650849604096,
         "casualties": "4 Sub, 1 ACC",
         "ipcLoss": 38,
         "retreaters": "",
@@ -26496,7 +26496,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;": {
-        "amount": 0.00041292609388556716,
+        "amount": 0.0004129260938855673,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -26628,7 +26628,7 @@ exports[`Regression test for test35 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
-      144.2635331673365,
+      144.26353316733653,
     ],
     "survives": [
       0.07132653281024186,
@@ -26858,7 +26858,7 @@ exports[`Regression test for test35 1`] = `
       },
       "100": {
         "ipc": 100,
-        "prob": 0.0000736311405756853,
+        "prob": 0.00007363114057568532,
       },
       "102": {
         "ipc": 102,
@@ -26882,7 +26882,7 @@ exports[`Regression test for test35 1`] = `
       },
       "112": {
         "ipc": 112,
-        "prob": 0.04092471049175059,
+        "prob": 0.04092471049175058,
       },
       "114": {
         "ipc": 114,
@@ -26918,11 +26918,11 @@ exports[`Regression test for test35 1`] = `
       },
       "136": {
         "ipc": 136,
-        "prob": 0.0018872039112694113,
+        "prob": 0.0018872039112694111,
       },
       "150": {
         "ipc": 150,
-        "prob": 0.00041292609388556716,
+        "prob": 0.0004129260938855673,
       },
       "2": {
         "ipc": 2,
@@ -26998,7 +26998,7 @@ exports[`Regression test for test35 1`] = `
       },
       "82": {
         "ipc": 82,
-        "prob": 0.1161829323963436,
+        "prob": 0.11618293239634361,
       },
       "84": {
         "ipc": 84,
@@ -27014,7 +27014,7 @@ exports[`Regression test for test35 1`] = `
       },
       "90": {
         "ipc": 90,
-        "prob": 0.11184384165366121,
+        "prob": 0.11184384165366124,
       },
       "92": {
         "ipc": 92,
@@ -27035,7 +27035,7 @@ exports[`Regression test for test35 1`] = `
     },
   ],
   "rounds": [
-    2.997959556525342,
+    2.9979595565253416,
   ],
   "takesTerritory": [
     0,
@@ -28512,9 +28512,9 @@ exports[`Regression test for test38 1`] = `
 {
   "attack": {
     "ipcLoss": [
-      172.95303424380802,
-      204.70796562772333,
-      220.15701150237737,
+      172.95303424380805,
+      204.70796562772335,
+      220.1570115023774,
     ],
     "survives": [
       0.27264301508562594,
@@ -28539,7 +28539,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Art, 1 Fig",
       },
       "1 Art, 2 Fig, 4 Inf;1 Art;": {
-        "amount": 0.0069536315321804395,
+        "amount": 0.00695363153218044,
         "casualties": "1 Art, 2 Fig, 4 Inf",
         "ipcLoss": 36,
         "retreaters": "",
@@ -28637,7 +28637,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "4 Fig, 5 Arm, 4 Art",
       },
       "1 Fig, 1 Art, 6 Inf;1 Bom, 1 Fig, 1 Art;": {
-        "amount": 0.007032492251801272,
+        "amount": 0.007032492251801273,
         "casualties": "1 Fig, 1 Art, 6 Inf",
         "ipcLoss": 32,
         "retreaters": "",
@@ -28651,7 +28651,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 1 Fig, 2 Art, 5 Inf",
       },
       "1 Fig, 1 Inf;2 Art, 1 Fig, 3 Inf;": {
-        "amount": 0.00554778181055048,
+        "amount": 0.005547781810550482,
         "casualties": "1 Fig, 1 Inf",
         "ipcLoss": 13,
         "retreaters": "",
@@ -28742,14 +28742,14 @@ exports[`Regression test for test38 1`] = `
         "survivors": "4 Fig, 5 Arm, 3 Art",
       },
       "1 Fig, 2 Inf;1 Bom, 1 Fig, 2 Art, 4 Inf;": {
-        "amount": 0.009574380425322406,
+        "amount": 0.00957438042532241,
         "casualties": "1 Fig, 2 Inf",
         "ipcLoss": 16,
         "retreaters": "",
         "survivors": "1 Bom, 1 Fig, 2 Art, 4 Inf",
       },
       "1 Fig, 2 Inf;2 Art, 1 Fig, 2 Inf;": {
-        "amount": 0.004547899874169143,
+        "amount": 0.0045478998741691435,
         "casualties": "1 Fig, 2 Inf",
         "ipcLoss": 16,
         "retreaters": "",
@@ -28840,7 +28840,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "4 Fig, 5 Arm, 2 Art",
       },
       "1 Fig, 3 Inf;1 Bom, 1 Fig, 2 Art, 3 Inf;": {
-        "amount": 0.00985403163026809,
+        "amount": 0.009854031630268092,
         "casualties": "1 Fig, 3 Inf",
         "ipcLoss": 19,
         "retreaters": "",
@@ -28938,7 +28938,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 1 Fig, 2 Art, 6 Inf",
       },
       "1 Fig;2 Art, 1 Fig, 4 Inf;": {
-        "amount": 0.0019179157243552475,
+        "amount": 0.0019179157243552484,
         "casualties": "1 Fig",
         "ipcLoss": 10,
         "retreaters": "",
@@ -28952,7 +28952,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 2 Fig, 2 Art, 5 Inf",
       },
       "1 Inf;2 Art, 2 Fig, 3 Inf;": {
-        "amount": 0.022447574521344653,
+        "amount": 0.02244757452134466,
         "casualties": "1 Inf",
         "ipcLoss": 3,
         "retreaters": "",
@@ -29036,7 +29036,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 3 Arm",
       },
       "2 Art, 2 Fig, 4 Inf;;": {
-        "amount": 0.35365225082889507,
+        "amount": 0.3536522508288951,
         "casualties": "2 Art, 2 Fig, 4 Inf",
         "ipcLoss": 40,
         "retreaters": "",
@@ -29071,14 +29071,14 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 1 Art",
       },
       "2 Fig, 1 Inf;1 Bom, 2 Art, 5 Inf;": {
-        "amount": 0.0018544262292681155,
+        "amount": 0.0018544262292681153,
         "casualties": "2 Fig, 1 Inf",
         "ipcLoss": 23,
         "retreaters": "",
         "survivors": "1 Bom, 2 Art, 5 Inf",
       },
       "2 Fig, 1 Inf;2 Art, 3 Inf;": {
-        "amount": 0.0004356495584583165,
+        "amount": 0.00043564955845831657,
         "casualties": "2 Fig, 1 Inf",
         "ipcLoss": 23,
         "retreaters": "",
@@ -29169,7 +29169,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "3 Fig, 5 Arm, 3 Art",
       },
       "2 Fig, 2 Inf;1 Bom, 2 Art, 4 Inf;": {
-        "amount": 0.0017802375174610682,
+        "amount": 0.001780237517461068,
         "casualties": "2 Fig, 2 Inf",
         "ipcLoss": 26,
         "retreaters": "",
@@ -29274,7 +29274,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 2 Art, 3 Inf",
       },
       "2 Fig, 3 Inf;2 Art, 1 Inf;": {
-        "amount": 0.000275730884075975,
+        "amount": 0.00027573088407597504,
         "casualties": "2 Fig, 3 Inf",
         "ipcLoss": 29,
         "retreaters": "",
@@ -29302,7 +29302,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "3 Fig, 5 Arm, 1 Art",
       },
       "2 Fig, 4 Inf;1 Bom, 2 Art, 2 Inf;": {
-        "amount": 0.001639771032303606,
+        "amount": 0.0016397710323036063,
         "casualties": "2 Fig, 4 Inf",
         "ipcLoss": 32,
         "retreaters": "",
@@ -29323,14 +29323,14 @@ exports[`Regression test for test38 1`] = `
         "survivors": "3 Fig, 5 Arm",
       },
       "2 Fig, 5 Inf;1 Bom, 2 Art, 1 Inf;": {
-        "amount": 0.0014918538148459592,
+        "amount": 0.0014918538148459594,
         "casualties": "2 Fig, 5 Inf",
         "ipcLoss": 35,
         "retreaters": "",
         "survivors": "1 Bom, 2 Art, 1 Inf",
       },
       "2 Fig, 6 Inf;1 Bom, 2 Art;": {
-        "amount": 0.001274887534554304,
+        "amount": 0.0012748875345543042,
         "casualties": "2 Fig, 6 Inf",
         "ipcLoss": 38,
         "retreaters": "",
@@ -29358,14 +29358,14 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 2 Art, 6 Inf",
       },
       "2 Fig;2 Art, 4 Inf;": {
-        "amount": 0.00014098851832319075,
+        "amount": 0.00014098851832319078,
         "casualties": "2 Fig",
         "ipcLoss": 20,
         "retreaters": "",
         "survivors": "2 Art, 4 Inf",
       },
       "2 Inf;1 Bom, 2 Fig, 2 Art, 4 Inf;": {
-        "amount": 0.01690246402192058,
+        "amount": 0.016902464021920575,
         "casualties": "2 Inf",
         "ipcLoss": 6,
         "retreaters": "",
@@ -29687,7 +29687,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 2 Fig, 2 Art, 3 Inf",
       },
       "3 Inf;2 Art, 2 Fig, 1 Inf;": {
-        "amount": 0.00966098035198793,
+        "amount": 0.009660980351987931,
         "casualties": "3 Inf",
         "ipcLoss": 9,
         "retreaters": "",
@@ -29918,7 +29918,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "1 Bom, 2 Fig, 2 Art, 2 Inf",
       },
       "4 Inf;2 Art, 2 Fig;": {
-        "amount": 0.009357904955775532,
+        "amount": 0.009357904955775534,
         "casualties": "4 Inf",
         "ipcLoss": 12,
         "retreaters": "",
@@ -30165,21 +30165,21 @@ exports[`Regression test for test38 1`] = `
     },
     "defense": {
       "1 Arm, 30 Inf, 1 AA;5 Fig, 4 Arm, 2 AA;": {
-        "amount": 0.0028443205392681002,
+        "amount": 0.002844320539268101,
         "casualties": "1 Arm, 30 Inf, 1 AA",
         "ipcLoss": 101,
         "retreaters": "",
         "survivors": "5 Fig, 4 Arm, 2 AA",
       },
       "1 Arm, 30 Inf, 2 AA;5 Fig, 4 Arm, 1 AA;": {
-        "amount": 0.005858595046763949,
+        "amount": 0.0058585950467639515,
         "casualties": "1 Arm, 30 Inf, 2 AA",
         "ipcLoss": 106,
         "retreaters": "",
         "survivors": "5 Fig, 4 Arm, 1 AA",
       },
       "1 Arm, 30 Inf, 3 AA;5 Fig, 4 Arm;": {
-        "amount": 0.017982162236370187,
+        "amount": 0.017982162236370194,
         "casualties": "1 Arm, 30 Inf, 3 AA",
         "ipcLoss": 111,
         "retreaters": "",
@@ -30207,7 +30207,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "4 Fig, 1 AA",
       },
       "1 Fig, 5 Arm, 30 Inf, 3 AA;4 Fig;": {
-        "amount": 0.02150100232991924,
+        "amount": 0.021501002329919246,
         "casualties": "1 Fig, 5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 145,
         "retreaters": "",
@@ -30221,63 +30221,63 @@ exports[`Regression test for test38 1`] = `
         "survivors": "4 Fig, 3 AA",
       },
       "10 Inf, 1 AA;5 Fig, 5 Arm, 20 Inf, 2 AA;": {
-        "amount": 2.547577723922672e-7,
+        "amount": 2.5475777239226726e-7,
         "casualties": "10 Inf, 1 AA",
         "ipcLoss": 35,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 20 Inf, 2 AA",
       },
       "10 Inf, 2 AA;5 Fig, 5 Arm, 20 Inf, 1 AA;": {
-        "amount": 4.186542650409527e-7,
+        "amount": 4.1865426504095274e-7,
         "casualties": "10 Inf, 2 AA",
         "ipcLoss": 40,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 20 Inf, 1 AA",
       },
       "10 Inf, 3 AA;5 Fig, 5 Arm, 20 Inf;": {
-        "amount": 4.574888607375557e-7,
+        "amount": 4.574888607375558e-7,
         "casualties": "10 Inf, 3 AA",
         "ipcLoss": 45,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 20 Inf",
       },
       "10 Inf;5 Fig, 5 Arm, 20 Inf, 3 AA;": {
-        "amount": 6.64779545056436e-8,
+        "amount": 6.647795450564361e-8,
         "casualties": "10 Inf",
         "ipcLoss": 30,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 20 Inf, 3 AA",
       },
       "11 Inf, 1 AA;5 Fig, 5 Arm, 19 Inf, 2 AA;": {
-        "amount": 7.527964891590783e-7,
+        "amount": 7.527964891590781e-7,
         "casualties": "11 Inf, 1 AA",
         "ipcLoss": 38,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 19 Inf, 2 AA",
       },
       "11 Inf, 2 AA;5 Fig, 5 Arm, 19 Inf, 1 AA;": {
-        "amount": 0.000001237836279166001,
+        "amount": 0.0000012378362791660003,
         "casualties": "11 Inf, 2 AA",
         "ipcLoss": 43,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 19 Inf, 1 AA",
       },
       "11 Inf, 3 AA;5 Fig, 5 Arm, 19 Inf;": {
-        "amount": 0.00000137927923710597,
+        "amount": 0.0000013792792371059696,
         "casualties": "11 Inf, 3 AA",
         "ipcLoss": 48,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 19 Inf",
       },
       "11 Inf;5 Fig, 5 Arm, 19 Inf, 3 AA;": {
-        "amount": 1.9638435605965744e-7,
+        "amount": 1.9638435605965742e-7,
         "casualties": "11 Inf",
         "ipcLoss": 33,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 19 Inf, 3 AA",
       },
       "12 Inf, 1 AA;5 Fig, 5 Arm, 18 Inf, 2 AA;": {
-        "amount": 0.0000020348806042852283,
+        "amount": 0.000002034880604285228,
         "casualties": "12 Inf, 1 AA",
         "ipcLoss": 41,
         "retreaters": "",
@@ -30291,7 +30291,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 18 Inf, 1 AA",
       },
       "12 Inf, 3 AA;5 Fig, 5 Arm, 18 Inf;": {
-        "amount": 0.0000038066316186034104,
+        "amount": 0.0000038066316186034096,
         "casualties": "12 Inf, 3 AA",
         "ipcLoss": 51,
         "retreaters": "",
@@ -30305,126 +30305,126 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 18 Inf, 3 AA",
       },
       "13 Inf, 1 AA;5 Fig, 5 Arm, 17 Inf, 2 AA;": {
-        "amount": 0.000005065766871943085,
+        "amount": 0.0000050657668719430836,
         "casualties": "13 Inf, 1 AA",
         "ipcLoss": 44,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 17 Inf, 2 AA",
       },
       "13 Inf, 2 AA;5 Fig, 5 Arm, 17 Inf, 1 AA;": {
-        "amount": 0.000008343987623332108,
+        "amount": 0.000008343987623332103,
         "casualties": "13 Inf, 2 AA",
         "ipcLoss": 49,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 17 Inf, 1 AA",
       },
       "13 Inf, 3 AA;5 Fig, 5 Arm, 17 Inf;": {
-        "amount": 0.000009684594725914756,
+        "amount": 0.000009684594725914753,
         "casualties": "13 Inf, 3 AA",
         "ipcLoss": 54,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 17 Inf",
       },
       "13 Inf;5 Fig, 5 Arm, 17 Inf, 3 AA;": {
-        "amount": 0.0000013204491182923235,
+        "amount": 0.000001320449118292323,
         "casualties": "13 Inf",
         "ipcLoss": 39,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 17 Inf, 3 AA",
       },
       "14 Inf, 1 AA;5 Fig, 5 Arm, 16 Inf, 2 AA;": {
-        "amount": 0.000011677544508629839,
+        "amount": 0.000011677544508629836,
         "casualties": "14 Inf, 1 AA",
         "ipcLoss": 47,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 16 Inf, 2 AA",
       },
       "14 Inf, 2 AA;5 Fig, 5 Arm, 16 Inf, 1 AA;": {
-        "amount": 0.000019257655951283073,
+        "amount": 0.000019257655951283063,
         "casualties": "14 Inf, 2 AA",
         "ipcLoss": 52,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 16 Inf, 1 AA",
       },
       "14 Inf, 3 AA;5 Fig, 5 Arm, 16 Inf;": {
-        "amount": 0.000022843041967801424,
+        "amount": 0.000022843041967801414,
         "casualties": "14 Inf, 3 AA",
         "ipcLoss": 57,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 16 Inf",
       },
       "14 Inf;5 Fig, 5 Arm, 16 Inf, 3 AA;": {
-        "amount": 0.0000030421270512086408,
+        "amount": 0.0000030421270512086403,
         "casualties": "14 Inf",
         "ipcLoss": 42,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 16 Inf, 3 AA",
       },
       "15 Inf, 1 AA;5 Fig, 5 Arm, 15 Inf, 2 AA;": {
-        "amount": 0.000025036204654829124,
+        "amount": 0.0000250362046548291,
         "casualties": "15 Inf, 1 AA",
         "ipcLoss": 50,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 15 Inf, 2 AA",
       },
       "15 Inf, 2 AA;5 Fig, 5 Arm, 15 Inf, 1 AA;": {
-        "amount": 0.00004135023465491787,
+        "amount": 0.00004135023465491782,
         "casualties": "15 Inf, 2 AA",
         "ipcLoss": 55,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 15 Inf, 1 AA",
       },
       "15 Inf, 3 AA;5 Fig, 5 Arm, 15 Inf;": {
-        "amount": 0.00005018970851058276,
+        "amount": 0.000050189708510582706,
         "casualties": "15 Inf, 3 AA",
         "ipcLoss": 60,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 15 Inf",
       },
       "15 Inf;5 Fig, 5 Arm, 15 Inf, 3 AA;": {
-        "amount": 0.000006517445251567462,
+        "amount": 0.0000065174452515674574,
         "casualties": "15 Inf",
         "ipcLoss": 45,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 15 Inf, 3 AA",
       },
       "16 Inf, 1 AA;5 Fig, 5 Arm, 14 Inf, 2 AA;": {
-        "amount": 0.00005010522333710634,
+        "amount": 0.00005010522333710643,
         "casualties": "16 Inf, 1 AA",
         "ipcLoss": 53,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 14 Inf, 2 AA",
       },
       "16 Inf, 2 AA;5 Fig, 5 Arm, 14 Inf, 1 AA;": {
-        "amount": 0.0000829116113800241,
+        "amount": 0.00008291161138002429,
         "casualties": "16 Inf, 2 AA",
         "ipcLoss": 58,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 14 Inf, 1 AA",
       },
       "16 Inf, 3 AA;5 Fig, 5 Arm, 14 Inf;": {
-        "amount": 0.00010313719492249837,
+        "amount": 0.00010313719492249848,
         "casualties": "16 Inf, 3 AA",
         "ipcLoss": 63,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 14 Inf",
       },
       "16 Inf;5 Fig, 5 Arm, 14 Inf, 3 AA;": {
-        "amount": 0.000013031443036492849,
+        "amount": 0.000013031443036492874,
         "casualties": "16 Inf",
         "ipcLoss": 48,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 14 Inf, 3 AA",
       },
       "17 Inf, 1 AA;5 Fig, 5 Arm, 13 Inf, 2 AA;": {
-        "amount": 0.00009390021033416505,
+        "amount": 0.00009390021033416503,
         "casualties": "17 Inf, 1 AA",
         "ipcLoss": 56,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 13 Inf, 2 AA",
       },
       "17 Inf, 2 AA;5 Fig, 5 Arm, 13 Inf, 1 AA;": {
-        "amount": 0.0001557487366091634,
+        "amount": 0.00015574873660916338,
         "casualties": "17 Inf, 2 AA",
         "ipcLoss": 61,
         "retreaters": "",
@@ -30438,77 +30438,77 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 13 Inf",
       },
       "17 Inf;5 Fig, 5 Arm, 13 Inf, 3 AA;": {
-        "amount": 0.000024393511634374534,
+        "amount": 0.000024393511634374527,
         "casualties": "17 Inf",
         "ipcLoss": 51,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 13 Inf, 3 AA",
       },
       "18 Inf, 1 AA;5 Fig, 5 Arm, 12 Inf, 2 AA;": {
-        "amount": 0.00016526053826562389,
+        "amount": 0.00016526053826562367,
         "casualties": "18 Inf, 1 AA",
         "ipcLoss": 59,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 12 Inf, 2 AA",
       },
       "18 Inf, 2 AA;5 Fig, 5 Arm, 12 Inf, 1 AA;": {
-        "amount": 0.0002749162717015657,
+        "amount": 0.00027491627170156543,
         "casualties": "18 Inf, 2 AA",
         "ipcLoss": 64,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 12 Inf, 1 AA",
       },
       "18 Inf, 3 AA;5 Fig, 5 Arm, 12 Inf;": {
-        "amount": 0.00036136664367033633,
+        "amount": 0.00036136664367033595,
         "casualties": "18 Inf, 3 AA",
         "ipcLoss": 69,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 12 Inf",
       },
       "18 Inf;5 Fig, 5 Arm, 12 Inf, 3 AA;": {
-        "amount": 0.00004286950244223071,
+        "amount": 0.00004286950244223065,
         "casualties": "18 Inf",
         "ipcLoss": 54,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 12 Inf, 3 AA",
       },
       "19 Inf, 1 AA;5 Fig, 5 Arm, 11 Inf, 2 AA;": {
-        "amount": 0.00027390263252150557,
+        "amount": 0.0002739026325215054,
         "casualties": "19 Inf, 1 AA",
         "ipcLoss": 62,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 11 Inf, 2 AA",
       },
       "19 Inf, 2 AA;5 Fig, 5 Arm, 11 Inf, 1 AA;": {
-        "amount": 0.0004573011163827503,
+        "amount": 0.00045730111638274997,
         "casualties": "19 Inf, 2 AA",
         "ipcLoss": 67,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 11 Inf, 1 AA",
       },
       "19 Inf, 3 AA;5 Fig, 5 Arm, 11 Inf;": {
-        "amount": 0.0006202331538673303,
+        "amount": 0.0006202331538673299,
         "casualties": "19 Inf, 3 AA",
         "ipcLoss": 72,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 11 Inf",
       },
       "19 Inf;5 Fig, 5 Arm, 11 Inf, 3 AA;": {
-        "amount": 0.00007092353741267901,
+        "amount": 0.00007092353741267899,
         "casualties": "19 Inf",
         "ipcLoss": 57,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 11 Inf, 3 AA",
       },
       "2 Arm, 30 Inf, 1 AA;5 Fig, 3 Arm, 2 AA;": {
-        "amount": 0.0024989518892130323,
+        "amount": 0.002498951889213033,
         "casualties": "2 Arm, 30 Inf, 1 AA",
         "ipcLoss": 107,
         "retreaters": "",
         "survivors": "5 Fig, 3 Arm, 2 AA",
       },
       "2 Arm, 30 Inf, 2 AA;5 Fig, 3 Arm, 1 AA;": {
-        "amount": 0.005492269770520458,
+        "amount": 0.005492269770520459,
         "casualties": "2 Arm, 30 Inf, 2 AA",
         "ipcLoss": 112,
         "retreaters": "",
@@ -30522,7 +30522,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 3 Arm",
       },
       "2 Arm, 30 Inf;5 Fig, 3 Arm, 3 AA;": {
-        "amount": 0.0005392820526619516,
+        "amount": 0.0005392820526619517,
         "casualties": "2 Arm, 30 Inf",
         "ipcLoss": 102,
         "retreaters": "",
@@ -30543,7 +30543,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "3 Fig, 1 AA",
       },
       "2 Fig, 5 Arm, 30 Inf, 3 AA;3 Fig;": {
-        "amount": 0.01867675536608086,
+        "amount": 0.018676755366080863,
         "casualties": "2 Fig, 5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 155,
         "retreaters": "",
@@ -30557,70 +30557,70 @@ exports[`Regression test for test38 1`] = `
         "survivors": "3 Fig, 3 AA",
       },
       "20 Inf, 1 AA;5 Fig, 5 Arm, 10 Inf, 2 AA;": {
-        "amount": 0.0004287123384885251,
+        "amount": 0.000428712338488525,
         "casualties": "20 Inf, 1 AA",
         "ipcLoss": 65,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 10 Inf, 2 AA",
       },
       "20 Inf, 2 AA;5 Fig, 5 Arm, 10 Inf, 1 AA;": {
-        "amount": 0.0007189726612913006,
+        "amount": 0.0007189726612913004,
         "casualties": "20 Inf, 2 AA",
         "ipcLoss": 70,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 10 Inf, 1 AA",
       },
       "20 Inf, 3 AA;5 Fig, 5 Arm, 10 Inf;": {
-        "amount": 0.0010092310265077684,
+        "amount": 0.0010092310265077675,
         "casualties": "20 Inf, 3 AA",
         "ipcLoss": 75,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 10 Inf",
       },
       "20 Inf;5 Fig, 5 Arm, 10 Inf, 3 AA;": {
-        "amount": 0.00011075969521387891,
+        "amount": 0.00011075969521387883,
         "casualties": "20 Inf",
         "ipcLoss": 60,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 10 Inf, 3 AA",
       },
       "21 Inf, 1 AA;5 Fig, 5 Arm, 9 Inf, 2 AA;": {
-        "amount": 0.0006355428739220732,
+        "amount": 0.000635542873922073,
         "casualties": "21 Inf, 1 AA",
         "ipcLoss": 68,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 9 Inf, 2 AA",
       },
       "21 Inf, 2 AA;5 Fig, 5 Arm, 9 Inf, 1 AA;": {
-        "amount": 0.0010717005283959063,
+        "amount": 0.001071700528395906,
         "casualties": "21 Inf, 2 AA",
         "ipcLoss": 73,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 9 Inf, 1 AA",
       },
       "21 Inf, 3 AA;5 Fig, 5 Arm, 9 Inf;": {
-        "amount": 0.0015623930513443292,
+        "amount": 0.0015623930513443283,
         "casualties": "21 Inf, 3 AA",
         "ipcLoss": 78,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 9 Inf",
       },
       "21 Inf;5 Fig, 5 Arm, 9 Inf, 3 AA;": {
-        "amount": 0.00016373582598477442,
+        "amount": 0.0001637358259847744,
         "casualties": "21 Inf",
         "ipcLoss": 63,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 9 Inf, 3 AA",
       },
       "22 Inf, 1 AA;5 Fig, 5 Arm, 8 Inf, 2 AA;": {
-        "amount": 0.0008950707965926928,
+        "amount": 0.0008950707965926926,
         "casualties": "22 Inf, 1 AA",
         "ipcLoss": 71,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 8 Inf, 2 AA",
       },
       "22 Inf, 2 AA;5 Fig, 5 Arm, 8 Inf, 1 AA;": {
-        "amount": 0.0015194999093811968,
+        "amount": 0.0015194999093811965,
         "casualties": "22 Inf, 2 AA",
         "ipcLoss": 76,
         "retreaters": "",
@@ -30634,14 +30634,14 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 8 Inf",
       },
       "22 Inf;5 Fig, 5 Arm, 8 Inf, 3 AA;": {
-        "amount": 0.0002297973459786161,
+        "amount": 0.00022979734597861607,
         "casualties": "22 Inf",
         "ipcLoss": 66,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 8 Inf, 3 AA",
       },
       "23 Inf, 1 AA;5 Fig, 5 Arm, 7 Inf, 2 AA;": {
-        "amount": 0.0012013493263663966,
+        "amount": 0.0012013493263663968,
         "casualties": "23 Inf, 1 AA",
         "ipcLoss": 74,
         "retreaters": "",
@@ -30655,21 +30655,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 7 Inf, 1 AA",
       },
       "23 Inf, 3 AA;5 Fig, 5 Arm, 7 Inf;": {
-        "amount": 0.003273962121257753,
+        "amount": 0.0032739621212577535,
         "casualties": "23 Inf, 3 AA",
         "ipcLoss": 84,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 7 Inf",
       },
       "23 Inf;5 Fig, 5 Arm, 7 Inf, 3 AA;": {
-        "amount": 0.00030710154331521476,
+        "amount": 0.0003071015433152148,
         "casualties": "23 Inf",
         "ipcLoss": 69,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 7 Inf, 3 AA",
       },
       "24 Inf, 1 AA;5 Fig, 5 Arm, 6 Inf, 2 AA;": {
-        "amount": 0.0015414992577289293,
+        "amount": 0.0015414992577289287,
         "casualties": "24 Inf, 1 AA",
         "ipcLoss": 77,
         "retreaters": "",
@@ -30690,35 +30690,35 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 6 Inf",
       },
       "24 Inf;5 Fig, 5 Arm, 6 Inf, 3 AA;": {
-        "amount": 0.000391950053174092,
+        "amount": 0.00039195005317409193,
         "casualties": "24 Inf",
         "ipcLoss": 72,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 6 Inf, 3 AA",
       },
       "25 Inf, 1 AA;5 Fig, 5 Arm, 5 Inf, 2 AA;": {
-        "amount": 0.0018965825805847241,
+        "amount": 0.0018965825805847237,
         "casualties": "25 Inf, 1 AA",
         "ipcLoss": 80,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 5 Inf, 2 AA",
       },
       "25 Inf, 2 AA;5 Fig, 5 Arm, 5 Inf, 1 AA;": {
-        "amount": 0.003318426668366563,
+        "amount": 0.0033184266683665606,
         "casualties": "25 Inf, 2 AA",
         "ipcLoss": 85,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 5 Inf, 1 AA",
       },
       "25 Inf, 3 AA;5 Fig, 5 Arm, 5 Inf;": {
-        "amount": 0.0058908944927257775,
+        "amount": 0.005890894492725775,
         "casualties": "25 Inf, 3 AA",
         "ipcLoss": 90,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 5 Inf",
       },
       "25 Inf;5 Fig, 5 Arm, 5 Inf, 3 AA;": {
-        "amount": 0.00047904306189527023,
+        "amount": 0.0004790430618952699,
         "casualties": "25 Inf",
         "ipcLoss": 75,
         "retreaters": "",
@@ -30739,7 +30739,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 4 Inf, 1 AA",
       },
       "26 Inf, 3 AA;5 Fig, 5 Arm, 4 Inf;": {
-        "amount": 0.0075370797093598585,
+        "amount": 0.007537079709359857,
         "casualties": "26 Inf, 3 AA",
         "ipcLoss": 93,
         "retreaters": "",
@@ -30767,7 +30767,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 3 Inf, 1 AA",
       },
       "27 Inf, 3 AA;5 Fig, 5 Arm, 3 Inf;": {
-        "amount": 0.00938819607014002,
+        "amount": 0.009388196070140017,
         "casualties": "27 Inf, 3 AA",
         "ipcLoss": 96,
         "retreaters": "",
@@ -30809,21 +30809,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 2 Inf, 3 AA",
       },
       "29 Inf, 1 AA;5 Fig, 5 Arm, 1 Inf, 2 AA;": {
-        "amount": 0.0029818915461335953,
+        "amount": 0.0029818915461335958,
         "casualties": "29 Inf, 1 AA",
         "ipcLoss": 92,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 1 Inf, 2 AA",
       },
       "29 Inf, 2 AA;5 Fig, 5 Arm, 1 Inf, 1 AA;": {
-        "amount": 0.005644007351877331,
+        "amount": 0.0056440073518773315,
         "casualties": "29 Inf, 2 AA",
         "ipcLoss": 97,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 1 Inf, 1 AA",
       },
       "29 Inf, 3 AA;5 Fig, 5 Arm, 1 Inf;": {
-        "amount": 0.013585965610505494,
+        "amount": 0.013585965610505495,
         "casualties": "29 Inf, 3 AA",
         "ipcLoss": 102,
         "retreaters": "",
@@ -30837,28 +30837,28 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 1 Inf, 3 AA",
       },
       "3 Arm, 30 Inf, 1 AA;5 Fig, 2 Arm, 2 AA;": {
-        "amount": 0.0020576050092023005,
+        "amount": 0.002057605009202302,
         "casualties": "3 Arm, 30 Inf, 1 AA",
         "ipcLoss": 113,
         "retreaters": "",
         "survivors": "5 Fig, 2 Arm, 2 AA",
       },
       "3 Arm, 30 Inf, 2 AA;5 Fig, 2 Arm, 1 AA;": {
-        "amount": 0.0048615664373668375,
+        "amount": 0.00486156643736684,
         "casualties": "3 Arm, 30 Inf, 2 AA",
         "ipcLoss": 118,
         "retreaters": "",
         "survivors": "5 Fig, 2 Arm, 1 AA",
       },
       "3 Arm, 30 Inf, 3 AA;5 Fig, 2 Arm;": {
-        "amount": 0.021678030706309675,
+        "amount": 0.02167803070630969,
         "casualties": "3 Arm, 30 Inf, 3 AA",
         "ipcLoss": 123,
         "retreaters": "",
         "survivors": "5 Fig, 2 Arm",
       },
       "3 Arm, 30 Inf;5 Fig, 2 Arm, 3 AA;": {
-        "amount": 0.0004167990871643638,
+        "amount": 0.00041679908716436403,
         "casualties": "3 Arm, 30 Inf",
         "ipcLoss": 108,
         "retreaters": "",
@@ -30879,7 +30879,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "2 Fig, 1 AA",
       },
       "3 Fig, 5 Arm, 30 Inf, 3 AA;2 Fig;": {
-        "amount": 0.014871948197449317,
+        "amount": 0.014871948197449318,
         "casualties": "3 Fig, 5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 165,
         "retreaters": "",
@@ -30893,21 +30893,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "2 Fig, 3 AA",
       },
       "3 Inf, 1 AA;5 Fig, 5 Arm, 27 Inf, 2 AA;": {
-        "amount": 3.2669157058855746e-12,
+        "amount": 3.266915705885573e-12,
         "casualties": "3 Inf, 1 AA",
         "ipcLoss": 14,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 27 Inf, 2 AA",
       },
       "3 Inf, 2 AA;5 Fig, 5 Arm, 27 Inf, 1 AA;": {
-        "amount": 5.473805185621729e-12,
+        "amount": 5.473805185621728e-12,
         "casualties": "3 Inf, 2 AA",
         "ipcLoss": 19,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 27 Inf, 1 AA",
       },
       "3 Inf, 3 AA;5 Fig, 5 Arm, 27 Inf;": {
-        "amount": 5.261844063285481e-12,
+        "amount": 5.261844063285479e-12,
         "casualties": "3 Inf, 3 AA",
         "ipcLoss": 24,
         "retreaters": "",
@@ -30942,21 +30942,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 3 AA",
       },
       "4 Arm, 30 Inf, 1 AA;5 Fig, 1 Arm, 2 AA;": {
-        "amount": 0.001574940902974982,
+        "amount": 0.0015749409029749825,
         "casualties": "4 Arm, 30 Inf, 1 AA",
         "ipcLoss": 119,
         "retreaters": "",
         "survivors": "5 Fig, 1 Arm, 2 AA",
       },
       "4 Arm, 30 Inf, 2 AA;5 Fig, 1 Arm, 1 AA;": {
-        "amount": 0.0040070785793654895,
+        "amount": 0.00400707857936549,
         "casualties": "4 Arm, 30 Inf, 2 AA",
         "ipcLoss": 124,
         "retreaters": "",
         "survivors": "5 Fig, 1 Arm, 1 AA",
       },
       "4 Arm, 30 Inf, 3 AA;5 Fig, 1 Arm;": {
-        "amount": 0.02274791663438648,
+        "amount": 0.02274791663438649,
         "casualties": "4 Arm, 30 Inf, 3 AA",
         "ipcLoss": 129,
         "retreaters": "",
@@ -30970,21 +30970,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 1 Arm, 3 AA",
       },
       "4 Fig, 5 Arm, 30 Inf, 1 AA;1 Fig, 2 AA;": {
-        "amount": 3.935382648170242e-7,
+        "amount": 3.935382648170244e-7,
         "casualties": "4 Fig, 5 Arm, 30 Inf, 1 AA",
         "ipcLoss": 165,
         "retreaters": "",
         "survivors": "1 Fig, 2 AA",
       },
       "4 Fig, 5 Arm, 30 Inf, 2 AA;1 Fig, 1 AA;": {
-        "amount": 0.0000022538055845449745,
+        "amount": 0.0000022538055845449758,
         "casualties": "4 Fig, 5 Arm, 30 Inf, 2 AA",
         "ipcLoss": 170,
         "retreaters": "",
         "survivors": "1 Fig, 1 AA",
       },
       "4 Fig, 5 Arm, 30 Inf, 3 AA;1 Fig;": {
-        "amount": 0.01024832786596266,
+        "amount": 0.010248327865962662,
         "casualties": "4 Fig, 5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 175,
         "retreaters": "",
@@ -31005,49 +31005,49 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 26 Inf, 2 AA",
       },
       "4 Inf, 2 AA;5 Fig, 5 Arm, 26 Inf, 1 AA;": {
-        "amount": 4.9104496512376947e-11,
+        "amount": 4.910449651237693e-11,
         "casualties": "4 Inf, 2 AA",
         "ipcLoss": 22,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 26 Inf, 1 AA",
       },
       "4 Inf, 3 AA;5 Fig, 5 Arm, 26 Inf;": {
-        "amount": 4.7857434187263385e-11,
+        "amount": 4.785743418726338e-11,
         "casualties": "4 Inf, 3 AA",
         "ipcLoss": 27,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 26 Inf",
       },
       "4 Inf;5 Fig, 5 Arm, 26 Inf, 3 AA;": {
-        "amount": 7.82569019048246e-12,
+        "amount": 7.825690190482459e-12,
         "casualties": "4 Inf",
         "ipcLoss": 12,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 26 Inf, 3 AA",
       },
       "5 Arm, 30 Inf, 1 AA;5 Fig, 2 AA;": {
-        "amount": 0.0010992201020581934,
+        "amount": 0.0010992201020581936,
         "casualties": "5 Arm, 30 Inf, 1 AA",
         "ipcLoss": 125,
         "retreaters": "",
         "survivors": "5 Fig, 2 AA",
       },
       "5 Arm, 30 Inf, 2 AA;5 Fig, 1 AA;": {
-        "amount": 0.0030011770656481447,
+        "amount": 0.003001177065648146,
         "casualties": "5 Arm, 30 Inf, 2 AA",
         "ipcLoss": 130,
         "retreaters": "",
         "survivors": "5 Fig, 1 AA",
       },
       "5 Arm, 30 Inf, 3 AA;5 Fig;": {
-        "amount": 0.02289506439573675,
+        "amount": 0.022895064395736756,
         "casualties": "5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 135,
         "retreaters": "",
         "survivors": "5 Fig",
       },
       "5 Arm, 30 Inf;5 Fig, 3 AA;": {
-        "amount": 0.00019428521422277297,
+        "amount": 0.00019428521422277303,
         "casualties": "5 Arm, 30 Inf",
         "ipcLoss": 120,
         "retreaters": "",
@@ -31061,21 +31061,21 @@ exports[`Regression test for test38 1`] = `
         "survivors": "",
       },
       "5 Fig, 5 Arm, 30 Inf, 3 AA;;": {
-        "amount": 0.15763678922068577,
+        "amount": 0.1576367892206858,
         "casualties": "5 Fig, 5 Arm, 30 Inf, 3 AA",
         "ipcLoss": 185,
         "retreaters": "",
         "survivors": "",
       },
       "5 Inf, 1 AA;5 Fig, 5 Arm, 25 Inf, 2 AA;": {
-        "amount": 2.0133575471714123e-10,
+        "amount": 2.0133575471714118e-10,
         "casualties": "5 Inf, 1 AA",
         "ipcLoss": 20,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 25 Inf, 2 AA",
       },
       "5 Inf, 2 AA;5 Fig, 5 Arm, 25 Inf, 1 AA;": {
-        "amount": 3.308784299662094e-10,
+        "amount": 3.3087842996620935e-10,
         "casualties": "5 Inf, 2 AA",
         "ipcLoss": 25,
         "retreaters": "",
@@ -31110,7 +31110,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 24 Inf, 1 AA",
       },
       "6 Inf, 3 AA;5 Fig, 5 Arm, 24 Inf;": {
-        "amount": 1.8576641190730917e-9,
+        "amount": 1.8576641190730913e-9,
         "casualties": "6 Inf, 3 AA",
         "ipcLoss": 33,
         "retreaters": "",
@@ -31124,28 +31124,28 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 24 Inf, 3 AA",
       },
       "7 Inf, 1 AA;5 Fig, 5 Arm, 23 Inf, 2 AA;": {
-        "amount": 5.257400748750102e-9,
+        "amount": 5.257400748750104e-9,
         "casualties": "7 Inf, 1 AA",
         "ipcLoss": 26,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 23 Inf, 2 AA",
       },
       "7 Inf, 2 AA;5 Fig, 5 Arm, 23 Inf, 1 AA;": {
-        "amount": 8.63011430798541e-9,
+        "amount": 8.630114307985412e-9,
         "casualties": "7 Inf, 2 AA",
         "ipcLoss": 31,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 23 Inf, 1 AA",
       },
       "7 Inf, 3 AA;5 Fig, 5 Arm, 23 Inf;": {
-        "amount": 8.91220649221153e-9,
+        "amount": 8.912206492211536e-9,
         "casualties": "7 Inf, 3 AA",
         "ipcLoss": 36,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 23 Inf",
       },
       "7 Inf;5 Fig, 5 Arm, 23 Inf, 3 AA;": {
-        "amount": 1.3726036944847066e-9,
+        "amount": 1.3726036944847068e-9,
         "casualties": "7 Inf",
         "ipcLoss": 21,
         "retreaters": "",
@@ -31159,49 +31159,49 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 5 Arm, 22 Inf, 2 AA",
       },
       "8 Inf, 2 AA;5 Fig, 5 Arm, 22 Inf, 1 AA;": {
-        "amount": 3.537821899504291e-8,
+        "amount": 3.537821899504292e-8,
         "casualties": "8 Inf, 2 AA",
         "ipcLoss": 34,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 22 Inf, 1 AA",
       },
       "8 Inf, 3 AA;5 Fig, 5 Arm, 22 Inf;": {
-        "amount": 3.7222209043833265e-8,
+        "amount": 3.722220904383327e-8,
         "casualties": "8 Inf, 3 AA",
         "ipcLoss": 39,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 22 Inf",
       },
       "8 Inf;5 Fig, 5 Arm, 22 Inf, 3 AA;": {
-        "amount": 5.6244434983055374e-9,
+        "amount": 5.624443498305538e-9,
         "casualties": "8 Inf",
         "ipcLoss": 24,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 22 Inf, 3 AA",
       },
       "9 Inf, 1 AA;5 Fig, 5 Arm, 21 Inf, 2 AA;": {
-        "amount": 7.820253926161756e-8,
+        "amount": 7.820253926161758e-8,
         "casualties": "9 Inf, 1 AA",
         "ipcLoss": 32,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 21 Inf, 2 AA",
       },
       "9 Inf, 2 AA;5 Fig, 5 Arm, 21 Inf, 1 AA;": {
-        "amount": 1.2845408492443734e-7,
+        "amount": 1.284540849244374e-7,
         "casualties": "9 Inf, 2 AA",
         "ipcLoss": 37,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 21 Inf, 1 AA",
       },
       "9 Inf, 3 AA;5 Fig, 5 Arm, 21 Inf;": {
-        "amount": 1.3771480797973895e-7,
+        "amount": 1.3771480797973898e-7,
         "casualties": "9 Inf, 3 AA",
         "ipcLoss": 42,
         "retreaters": "",
         "survivors": "5 Fig, 5 Arm, 21 Inf",
       },
       "9 Inf;5 Fig, 5 Arm, 21 Inf, 3 AA;": {
-        "amount": 2.041089413494993e-8,
+        "amount": 2.0410894134949947e-8,
         "casualties": "9 Inf",
         "ipcLoss": 27,
         "retreaters": "",
@@ -31213,13 +31213,13 @@ exports[`Regression test for test38 1`] = `
   "defense": {
     "ipcLoss": [
       122.96444932533277,
-      150.35295568206251,
-      160.8787312231893,
+      150.35295568206254,
+      160.87873122318933,
     ],
     "survives": [
-      0.7231105421850312,
-      0.4609687824628183,
-      0.35078078854486283,
+      0.7231105421850313,
+      0.4609687824628184,
+      0.3507807885448629,
     ],
   },
   "profitDistribution": [
@@ -31230,39 +31230,39 @@ exports[`Regression test for test38 1`] = `
       },
       "-103": {
         "ipc": -103,
-        "prob": 0.046707319187071994,
+        "prob": 0.04670731918707201,
       },
       "-106": {
         "ipc": -106,
-        "prob": 0.04482167902356966,
+        "prob": 0.044821679023569684,
       },
       "-109": {
         "ipc": -109,
-        "prob": 0.04195142080972736,
+        "prob": 0.04195142080972737,
       },
       "-112": {
         "ipc": -112,
-        "prob": 0.038258835043307474,
+        "prob": 0.03825883504330746,
       },
       "-115": {
         "ipc": -115,
-        "prob": 0.03395804729205945,
+        "prob": 0.03395804729205946,
       },
       "-118": {
         "ipc": -118,
-        "prob": 0.029282660452682817,
+        "prob": 0.02928266045268283,
       },
       "-121": {
         "ipc": -121,
-        "prob": 0.024467235054305425,
+        "prob": 0.02446723505430541,
       },
       "-124": {
         "ipc": -124,
-        "prob": 0.019739451748564594,
+        "prob": 0.0197394517485646,
       },
       "-127": {
         "ipc": -127,
-        "prob": 0.015312552408574626,
+        "prob": 0.015312552408574624,
       },
       "-130": {
         "ipc": -130,
@@ -31270,27 +31270,27 @@ exports[`Regression test for test38 1`] = `
       },
       "-133": {
         "ipc": -133,
-        "prob": 0.008045629362351103,
+        "prob": 0.008045629362351106,
       },
       "-136": {
         "ipc": -136,
-        "prob": 0.005402195166618985,
+        "prob": 0.0054021951666189845,
       },
       "-139": {
         "ipc": -139,
-        "prob": 0.00342857157254044,
+        "prob": 0.003428571572540439,
       },
       "-142": {
         "ipc": -142,
-        "prob": 0.002049522312947529,
+        "prob": 0.0020495223129475266,
       },
       "-145": {
         "ipc": -145,
-        "prob": 0.0011501761343993301,
+        "prob": 0.0011501761343993293,
       },
       "-148": {
         "ipc": -148,
-        "prob": 0.000604034873628609,
+        "prob": 0.0006040348736286085,
       },
       "-15": {
         "ipc": -15,
@@ -31298,19 +31298,19 @@ exports[`Regression test for test38 1`] = `
       },
       "-151": {
         "ipc": -151,
-        "prob": 0.0002958647838548229,
+        "prob": 0.00029586478385482297,
       },
       "-154": {
         "ipc": -154,
-        "prob": 0.00013464997608526476,
+        "prob": 0.00013464997608526473,
       },
       "-157": {
         "ipc": -157,
-        "prob": 0.000056674346112630824,
+        "prob": 0.00005667434611263082,
       },
       "-160": {
         "ipc": -160,
-        "prob": 0.000021931342756672973,
+        "prob": 0.000021931342756672966,
       },
       "-163": {
         "ipc": -163,
@@ -31322,11 +31322,11 @@ exports[`Regression test for test38 1`] = `
       },
       "-169": {
         "ipc": -169,
-        "prob": 7.019208735413497e-7,
+        "prob": 7.0192087354135e-7,
       },
       "-172": {
         "ipc": -172,
-        "prob": 1.748929791133329e-7,
+        "prob": 1.7489297911333296e-7,
       },
       "-175": {
         "ipc": -175,
@@ -31338,11 +31338,11 @@ exports[`Regression test for test38 1`] = `
       },
       "-181": {
         "ipc": -181,
-        "prob": 9.35024469742141e-10,
+        "prob": 9.350244697421407e-10,
       },
       "-184": {
         "ipc": -184,
-        "prob": 9.650606945598274e-11,
+        "prob": 9.650606945598275e-11,
       },
       "-187": {
         "ipc": -187,
@@ -31362,7 +31362,7 @@ exports[`Regression test for test38 1`] = `
       },
       "-40": {
         "ipc": -40,
-        "prob": 0.02324212638545006,
+        "prob": 0.023242126385450056,
       },
       "-5": {
         "ipc": -5,
@@ -31370,7 +31370,7 @@ exports[`Regression test for test38 1`] = `
       },
       "-50": {
         "ipc": -50,
-        "prob": 0.028873920997253628,
+        "prob": 0.02887392099725363,
       },
       "-60": {
         "ipc": -60,
@@ -31390,11 +31390,11 @@ exports[`Regression test for test38 1`] = `
       },
       "-88": {
         "ipc": -88,
-        "prob": 0.04611927113317858,
+        "prob": 0.04611927113317859,
       },
       "-94": {
         "ipc": -94,
-        "prob": 0.04731811334688359,
+        "prob": 0.0473181133468836,
       },
       "1": {
         "ipc": 1,
@@ -31802,7 +31802,7 @@ exports[`Regression test for test38 1`] = `
       },
       "75": {
         "ipc": 75,
-        "prob": 0.01133844881890438,
+        "prob": 0.011338448818904378,
       },
       "76": {
         "ipc": 76,
@@ -31904,51 +31904,51 @@ exports[`Regression test for test38 1`] = `
     {
       "-1": {
         "ipc": -1,
-        "prob": 0.0016252180615357755,
+        "prob": 0.0016252180615357744,
       },
       "-10": {
         "ipc": -10,
-        "prob": 0.00028870577712698483,
+        "prob": 0.0002887057771269853,
       },
       "-13": {
         "ipc": -13,
-        "prob": 0.0001433628834788196,
+        "prob": 0.0001433628834788195,
       },
       "-16": {
         "ipc": -16,
-        "prob": 0.0000665367539936456,
+        "prob": 0.00006653675399364557,
       },
       "-19": {
         "ipc": -19,
-        "prob": 0.0000287501641533758,
+        "prob": 0.000028750164153375786,
       },
       "-22": {
         "ipc": -22,
-        "prob": 0.000011512694593774434,
+        "prob": 0.000011512694593774432,
       },
       "-25": {
         "ipc": -25,
-        "prob": 0.000004248603422553272,
+        "prob": 0.000004248603422553271,
       },
       "-28": {
         "ipc": -28,
-        "prob": 0.0000014350167145083332,
+        "prob": 0.0000014350167145083334,
       },
       "-31": {
         "ipc": -31,
-        "prob": 4.398427913241836e-7,
+        "prob": 4.398427913241837e-7,
       },
       "-34": {
         "ipc": -34,
-        "prob": 1.2104391169201547e-7,
+        "prob": 1.210439116920155e-7,
       },
       "-37": {
         "ipc": -37,
-        "prob": 2.951054672181234e-8,
+        "prob": 2.9510546721812354e-8,
       },
       "-4": {
         "ipc": -4,
-        "prob": 0.0009689581609252454,
+        "prob": 0.0009689581609252442,
       },
       "-40": {
         "ipc": -40,
@@ -31956,15 +31956,15 @@ exports[`Regression test for test38 1`] = `
       },
       "-43": {
         "ipc": -43,
-        "prob": 1.1321981520285094e-9,
+        "prob": 1.1321981520285092e-9,
       },
       "-46": {
         "ipc": -46,
-        "prob": 1.6823509604966852e-10,
+        "prob": 1.682350960496685e-10,
       },
       "-49": {
         "ipc": -49,
-        "prob": 1.9325110416290806e-11,
+        "prob": 1.9325110416290803e-11,
       },
       "-52": {
         "ipc": -52,
@@ -31972,11 +31972,11 @@ exports[`Regression test for test38 1`] = `
       },
       "-7": {
         "ipc": -7,
-        "prob": 0.0005452713131564912,
+        "prob": 0.000545271313156491,
       },
       "102": {
         "ipc": 102,
-        "prob": 0.016928563182728,
+        "prob": 0.016928563182728004,
       },
       "107": {
         "ipc": 107,
@@ -31984,19 +31984,19 @@ exports[`Regression test for test38 1`] = `
       },
       "11": {
         "ipc": 11,
-        "prob": 0.007730655571618815,
+        "prob": 0.007730655571618816,
       },
       "112": {
         "ipc": 112,
-        "prob": 0.009791050414692075,
+        "prob": 0.009791050414692078,
       },
       "117": {
         "ipc": 117,
-        "prob": 0.009189076015025735,
+        "prob": 0.009189076015025737,
       },
       "127": {
         "ipc": 127,
-        "prob": 0.005853885196067707,
+        "prob": 0.005853885196067708,
       },
       "131": {
         "ipc": 131,
@@ -32016,7 +32016,7 @@ exports[`Regression test for test38 1`] = `
       },
       "14": {
         "ipc": 14,
-        "prob": 0.010242802126089552,
+        "prob": 0.01024280212608955,
       },
       "141": {
         "ipc": 141,
@@ -32032,7 +32032,7 @@ exports[`Regression test for test38 1`] = `
       },
       "147": {
         "ipc": 147,
-        "prob": 0.0013756649595256434,
+        "prob": 0.0013756649595256436,
       },
       "149": {
         "ipc": 149,
@@ -32040,11 +32040,11 @@ exports[`Regression test for test38 1`] = `
       },
       "150": {
         "ipc": 150,
-        "prob": 0.0015881816823439354,
+        "prob": 0.0015881816823439356,
       },
       "153": {
         "ipc": 153,
-        "prob": 0.008702951848368716,
+        "prob": 0.008702951848368718,
       },
       "156": {
         "ipc": 156,
@@ -32064,7 +32064,7 @@ exports[`Regression test for test38 1`] = `
       },
       "162": {
         "ipc": 162,
-        "prob": 0.0018544262292681155,
+        "prob": 0.0018544262292681153,
       },
       "163": {
         "ipc": 163,
@@ -32076,7 +32076,7 @@ exports[`Regression test for test38 1`] = `
       },
       "166": {
         "ipc": 166,
-        "prob": 0.00985403163026809,
+        "prob": 0.009854031630268092,
       },
       "167": {
         "ipc": 167,
@@ -32084,11 +32084,11 @@ exports[`Regression test for test38 1`] = `
       },
       "169": {
         "ipc": 169,
-        "prob": 0.009574380425322406,
+        "prob": 0.00957438042532241,
       },
       "17": {
         "ipc": 17,
-        "prob": 0.01309713705524083,
+        "prob": 0.013097137055240822,
       },
       "170": {
         "ipc": 170,
@@ -32112,7 +32112,7 @@ exports[`Regression test for test38 1`] = `
       },
       "179": {
         "ipc": 179,
-        "prob": 0.01690246402192058,
+        "prob": 0.016902464021920575,
       },
       "182": {
         "ipc": 182,
@@ -32124,7 +32124,7 @@ exports[`Regression test for test38 1`] = `
       },
       "2": {
         "ipc": 2,
-        "prob": 0.0025813970708769515,
+        "prob": 0.00258139707087695,
       },
       "20": {
         "ipc": 20,
@@ -32136,11 +32136,11 @@ exports[`Regression test for test38 1`] = `
       },
       "26": {
         "ipc": 26,
-        "prob": 0.022898404248984542,
+        "prob": 0.022898404248984545,
       },
       "29": {
         "ipc": 29,
-        "prob": 0.026218650923311687,
+        "prob": 0.02621865092331169,
       },
       "32": {
         "ipc": 32,
@@ -32148,27 +32148,27 @@ exports[`Regression test for test38 1`] = `
       },
       "38": {
         "ipc": 38,
-        "prob": 0.03208539055729861,
+        "prob": 0.032085390557298615,
       },
       "44": {
         "ipc": 44,
-        "prob": 0.034155051956758456,
+        "prob": 0.03415505195675846,
       },
       "5": {
         "ipc": 5,
-        "prob": 0.0038961804078187054,
+        "prob": 0.0038961804078187045,
       },
       "50": {
         "ipc": 50,
-        "prob": 0.03522632487074298,
+        "prob": 0.03522632487074301,
       },
       "56": {
         "ipc": 56,
-        "prob": 0.03509193099887241,
+        "prob": 0.035091930998872416,
       },
       "62": {
         "ipc": 62,
-        "prob": 0.033758332908863736,
+        "prob": 0.03375833290886374,
       },
       "72": {
         "ipc": 72,
@@ -32176,7 +32176,7 @@ exports[`Regression test for test38 1`] = `
       },
       "8": {
         "ipc": 8,
-        "prob": 0.005608736556158609,
+        "prob": 0.005608736556158608,
       },
       "82": {
         "ipc": 82,
@@ -32190,11 +32190,11 @@ exports[`Regression test for test38 1`] = `
     {
       "-1": {
         "ipc": -1,
-        "prob": 0.0000013576713273361569,
+        "prob": 0.0000013576713273361563,
       },
       "-10": {
         "ipc": -10,
-        "prob": 6.680727017606348e-8,
+        "prob": 6.68072701760635e-8,
       },
       "-11": {
         "ipc": -11,
@@ -32206,19 +32206,19 @@ exports[`Regression test for test38 1`] = `
       },
       "-13": {
         "ipc": -13,
-        "prob": 2.0458751569137195e-8,
+        "prob": 2.045875156913721e-8,
       },
       "-14": {
         "ipc": -14,
-        "prob": 5.257400748750102e-9,
+        "prob": 5.257400748750104e-9,
       },
       "-15": {
         "ipc": -15,
-        "prob": 3.308784299662094e-10,
+        "prob": 3.3087842996620935e-10,
       },
       "-16": {
         "ipc": -16,
-        "prob": 5.629705342368823e-9,
+        "prob": 5.629705342368824e-9,
       },
       "-17": {
         "ipc": -17,
@@ -32226,23 +32226,23 @@ exports[`Regression test for test38 1`] = `
       },
       "-18": {
         "ipc": -18,
-        "prob": 4.9104496512376947e-11,
+        "prob": 4.910449651237693e-11,
       },
       "-19": {
         "ipc": -19,
-        "prob": 1.3726036944847066e-9,
+        "prob": 1.3726036944847068e-9,
       },
       "-2": {
         "ipc": -2,
-        "prob": 7.527964891590783e-7,
+        "prob": 7.527964891590781e-7,
       },
       "-20": {
         "ipc": -20,
-        "prob": 2.0133575471714123e-10,
+        "prob": 2.0133575471714118e-10,
       },
       "-21": {
         "ipc": -21,
-        "prob": 5.473805185621729e-12,
+        "prob": 5.473805185621728e-12,
       },
       "-22": {
         "ipc": -22,
@@ -32258,15 +32258,15 @@ exports[`Regression test for test38 1`] = `
       },
       "-26": {
         "ipc": -26,
-        "prob": 3.2669157058855746e-12,
+        "prob": 3.266915705885573e-12,
       },
       "-28": {
         "ipc": -28,
-        "prob": 7.82569019048246e-12,
+        "prob": 7.825690190482459e-12,
       },
       "-3": {
         "ipc": -3,
-        "prob": 1.2845408492443734e-7,
+        "prob": 1.284540849244374e-7,
       },
       "-4": {
         "ipc": -4,
@@ -32274,35 +32274,35 @@ exports[`Regression test for test38 1`] = `
       },
       "-5": {
         "ipc": -5,
-        "prob": 2.547577723922672e-7,
+        "prob": 2.5475777239226726e-7,
       },
       "-6": {
         "ipc": -6,
-        "prob": 3.537821899504291e-8,
+        "prob": 3.537821899504292e-8,
       },
       "-7": {
         "ipc": -7,
-        "prob": 1.9824202017873055e-7,
+        "prob": 1.9824202017873052e-7,
       },
       "-8": {
         "ipc": -8,
-        "prob": 7.820253926161756e-8,
+        "prob": 7.820253926161758e-8,
       },
       "-9": {
         "ipc": -9,
-        "prob": 8.63011430798541e-9,
+        "prob": 8.630114307985412e-9,
       },
       "0": {
         "ipc": 0,
-        "prob": 4.186542650409527e-7,
+        "prob": 4.1865426504095274e-7,
       },
       "1": {
         "ipc": 1,
-        "prob": 0.0000020348806042852283,
+        "prob": 0.000002034880604285228,
       },
       "10": {
         "ipc": 10,
-        "prob": 0.000025036204654829124,
+        "prob": 0.0000250362046548291,
       },
       "100": {
         "ipc": 100,
@@ -32310,11 +32310,11 @@ exports[`Regression test for test38 1`] = `
       },
       "105": {
         "ipc": 105,
-        "prob": 0.021686364515334698,
+        "prob": 0.021686364515334705,
       },
       "11": {
         "ipc": 11,
-        "prob": 0.000028200143252977945,
+        "prob": 0.000028200143252977935,
       },
       "110": {
         "ipc": 110,
@@ -32322,11 +32322,11 @@ exports[`Regression test for test38 1`] = `
       },
       "115": {
         "ipc": 115,
-        "prob": 0.01870455539386329,
+        "prob": 0.018704555393863294,
       },
       "12": {
         "ipc": 12,
-        "prob": 0.000019257655951283073,
+        "prob": 0.000019257655951283063,
       },
       "120": {
         "ipc": 120,
@@ -32334,35 +32334,35 @@ exports[`Regression test for test38 1`] = `
       },
       "125": {
         "ipc": 125,
-        "prob": 0.014872341735714134,
+        "prob": 0.014872341735714136,
       },
       "13": {
         "ipc": 13,
-        "prob": 0.00005010522333710634,
+        "prob": 0.00005010522333710643,
       },
       "130": {
         "ipc": 130,
-        "prob": 0.0000022538055845449745,
+        "prob": 0.0000022538055845449758,
       },
       "135": {
         "ipc": 135,
-        "prob": 0.01024832786596266,
+        "prob": 0.010248327865962662,
       },
       "14": {
         "ipc": 14,
-        "prob": 0.00005255409716814546,
+        "prob": 0.0000525540971681454,
       },
       "145": {
         "ipc": 145,
-        "prob": 0.00287146228403224,
+        "prob": 0.0028714622840322404,
       },
       "149": {
         "ipc": 149,
-        "prob": 0.0069536315321804395,
+        "prob": 0.00695363153218044,
       },
       "15": {
         "ipc": 15,
-        "prob": 0.00004135023465491787,
+        "prob": 0.00004135023465491782,
       },
       "153": {
         "ipc": 153,
@@ -32370,7 +32370,7 @@ exports[`Regression test for test38 1`] = `
       },
       "156": {
         "ipc": 156,
-        "prob": 0.000275730884075975,
+        "prob": 0.00027573088407597504,
       },
       "159": {
         "ipc": 159,
@@ -32378,11 +32378,11 @@ exports[`Regression test for test38 1`] = `
       },
       "16": {
         "ipc": 16,
-        "prob": 0.00009390021033416505,
+        "prob": 0.00009390021033416503,
       },
       "162": {
         "ipc": 162,
-        "prob": 0.0004356495584583165,
+        "prob": 0.00043564955845831657,
       },
       "163": {
         "ipc": 163,
@@ -32390,7 +32390,7 @@ exports[`Regression test for test38 1`] = `
       },
       "165": {
         "ipc": 165,
-        "prob": 0.00014098851832319075,
+        "prob": 0.00014098851832319078,
       },
       "166": {
         "ipc": 166,
@@ -32398,27 +32398,27 @@ exports[`Regression test for test38 1`] = `
       },
       "169": {
         "ipc": 169,
-        "prob": 0.01295692315521107,
+        "prob": 0.012956923155211072,
       },
       "17": {
         "ipc": 17,
-        "prob": 0.00009376657938048044,
+        "prob": 0.0000937665793804804,
       },
       "172": {
         "ipc": 172,
-        "prob": 0.00554778181055048,
+        "prob": 0.005547781810550482,
       },
       "173": {
         "ipc": 173,
-        "prob": 0.009357904955775532,
+        "prob": 0.009357904955775534,
       },
       "175": {
         "ipc": 175,
-        "prob": 0.0019179157243552475,
+        "prob": 0.0019179157243552484,
       },
       "176": {
         "ipc": 176,
-        "prob": 0.00966098035198793,
+        "prob": 0.009660980351987931,
       },
       "179": {
         "ipc": 179,
@@ -32426,11 +32426,11 @@ exports[`Regression test for test38 1`] = `
       },
       "18": {
         "ipc": 18,
-        "prob": 0.0000829116113800241,
+        "prob": 0.00008291161138002429,
       },
       "182": {
         "ipc": 182,
-        "prob": 0.022447574521344653,
+        "prob": 0.02244757452134466,
       },
       "185": {
         "ipc": 185,
@@ -32438,91 +32438,91 @@ exports[`Regression test for test38 1`] = `
       },
       "19": {
         "ipc": 19,
-        "prob": 0.00016526053826562389,
+        "prob": 0.00016526053826562367,
       },
       "2": {
         "ipc": 2,
-        "prob": 0.0000031798418591883796,
+        "prob": 0.0000031798418591883792,
       },
       "20": {
         "ipc": 20,
-        "prob": 0.00016094940372446168,
+        "prob": 0.00016094940372446154,
       },
       "21": {
         "ipc": 21,
-        "prob": 0.0001557487366091634,
+        "prob": 0.00015574873660916338,
       },
       "22": {
         "ipc": 22,
-        "prob": 0.00027390263252150557,
+        "prob": 0.0002739026325215054,
       },
       "23": {
         "ipc": 23,
-        "prob": 0.0002668730209072728,
+        "prob": 0.00026687302090727287,
       },
       "24": {
         "ipc": 24,
-        "prob": 0.0002749162717015657,
+        "prob": 0.00027491627170156543,
       },
       "25": {
         "ipc": 25,
-        "prob": 0.0004287123384885251,
+        "prob": 0.000428712338488525,
       },
       "26": {
         "ipc": 26,
-        "prob": 0.0004287316874450091,
+        "prob": 0.000428731687445009,
       },
       "27": {
         "ipc": 27,
-        "prob": 0.0004573011163827503,
+        "prob": 0.00045730111638274997,
       },
       "28": {
         "ipc": 28,
-        "prob": 0.0006355428739220732,
+        "prob": 0.000635542873922073,
       },
       "29": {
         "ipc": 29,
-        "prob": 0.0006684681869855511,
+        "prob": 0.0006684681869855507,
       },
       "3": {
         "ipc": 3,
-        "prob": 0.000001237836279166001,
+        "prob": 0.0000012378362791660003,
       },
       "30": {
         "ipc": 30,
-        "prob": 0.0007189726612913006,
+        "prob": 0.0007189726612913004,
       },
       "31": {
         "ipc": 31,
-        "prob": 0.0008950707965926928,
+        "prob": 0.0008950707965926926,
       },
       "32": {
         "ipc": 32,
-        "prob": 0.0010121832070414223,
+        "prob": 0.0010121832070414218,
       },
       "33": {
         "ipc": 33,
-        "prob": 0.0010717005283959063,
+        "prob": 0.001071700528395906,
       },
       "34": {
         "ipc": 34,
-        "prob": 0.0012013493263663966,
+        "prob": 0.0012013493263663968,
       },
       "35": {
         "ipc": 35,
-        "prob": 0.0014882740884030387,
+        "prob": 0.0014882740884030374,
       },
       "36": {
         "ipc": 36,
-        "prob": 0.0015194999093811968,
+        "prob": 0.0015194999093811965,
       },
       "37": {
         "ipc": 37,
-        "prob": 0.0015414992577289293,
+        "prob": 0.0015414992577289287,
       },
       "38": {
         "ipc": 38,
-        "prob": 0.0021243663985688953,
+        "prob": 0.0021243663985688944,
       },
       "39": {
         "ipc": 39,
@@ -32530,11 +32530,11 @@ exports[`Regression test for test38 1`] = `
       },
       "4": {
         "ipc": 4,
-        "prob": 0.000005065766871943085,
+        "prob": 0.0000050657668719430836,
       },
       "40": {
         "ipc": 40,
-        "prob": 0.0018965825805847241,
+        "prob": 0.0018965825805847237,
       },
       "41": {
         "ipc": 41,
@@ -32554,7 +32554,7 @@ exports[`Regression test for test38 1`] = `
       },
       "45": {
         "ipc": 45,
-        "prob": 0.003318426668366563,
+        "prob": 0.0033184266683665606,
       },
       "46": {
         "ipc": 46,
@@ -32574,11 +32574,11 @@ exports[`Regression test for test38 1`] = `
       },
       "5": {
         "ipc": 5,
-        "prob": 0.000006974934112305017,
+        "prob": 0.000006974934112305013,
       },
       "50": {
         "ipc": 50,
-        "prob": 0.006611968009279293,
+        "prob": 0.00661196800927929,
       },
       "51": {
         "ipc": 51,
@@ -32586,11 +32586,11 @@ exports[`Regression test for test38 1`] = `
       },
       "52": {
         "ipc": 52,
-        "prob": 0.0029818915461335953,
+        "prob": 0.0029818915461335958,
       },
       "53": {
         "ipc": 53,
-        "prob": 0.0075370797093598585,
+        "prob": 0.007537079709359857,
       },
       "54": {
         "ipc": 54,
@@ -32602,11 +32602,11 @@ exports[`Regression test for test38 1`] = `
       },
       "56": {
         "ipc": 56,
-        "prob": 0.010034267047942068,
+        "prob": 0.010034267047942065,
       },
       "57": {
         "ipc": 57,
-        "prob": 0.005644007351877331,
+        "prob": 0.0056440073518773315,
       },
       "59": {
         "ipc": 59,
@@ -32622,11 +32622,11 @@ exports[`Regression test for test38 1`] = `
       },
       "61": {
         "ipc": 61,
-        "prob": 0.0028443205392681002,
+        "prob": 0.002844320539268101,
       },
       "62": {
         "ipc": 62,
-        "prob": 0.014125247663167445,
+        "prob": 0.014125247663167447,
       },
       "65": {
         "ipc": 65,
@@ -32634,31 +32634,31 @@ exports[`Regression test for test38 1`] = `
       },
       "66": {
         "ipc": 66,
-        "prob": 0.005858595046763949,
+        "prob": 0.0058585950467639515,
       },
       "67": {
         "ipc": 67,
-        "prob": 0.0024989518892130323,
+        "prob": 0.002498951889213033,
       },
       "68": {
         "ipc": 68,
-        "prob": 0.0004167990871643638,
+        "prob": 0.00041679908716436403,
       },
       "7": {
         "ipc": 7,
-        "prob": 0.000011677544508629839,
+        "prob": 0.000011677544508629836,
       },
       "71": {
         "ipc": 71,
-        "prob": 0.017982162236370187,
+        "prob": 0.017982162236370194,
       },
       "72": {
         "ipc": 72,
-        "prob": 0.005492269770520458,
+        "prob": 0.005492269770520459,
       },
       "73": {
         "ipc": 73,
-        "prob": 0.0020576050092023005,
+        "prob": 0.002057605009202302,
       },
       "74": {
         "ipc": 74,
@@ -32670,54 +32670,54 @@ exports[`Regression test for test38 1`] = `
       },
       "78": {
         "ipc": 78,
-        "prob": 0.0048615664373668375,
+        "prob": 0.00486156643736684,
       },
       "79": {
         "ipc": 79,
-        "prob": 0.001574940902974982,
+        "prob": 0.0015749409029749825,
       },
       "8": {
         "ipc": 8,
-        "prob": 0.000014410722273598819,
+        "prob": 0.000014410722273598844,
       },
       "80": {
         "ipc": 80,
-        "prob": 0.00019428521422277297,
+        "prob": 0.00019428521422277303,
       },
       "83": {
         "ipc": 83,
-        "prob": 0.021678030706309675,
+        "prob": 0.02167803070630969,
       },
       "84": {
         "ipc": 84,
-        "prob": 0.0040070785793654895,
+        "prob": 0.00400707857936549,
       },
       "85": {
         "ipc": 85,
-        "prob": 0.0010992201020581934,
+        "prob": 0.0010992201020581936,
       },
       "89": {
         "ipc": 89,
-        "prob": 0.02274791663438648,
+        "prob": 0.02274791663438649,
       },
       "9": {
         "ipc": 9,
-        "prob": 0.000008343987623332108,
+        "prob": 0.000008343987623332103,
       },
       "90": {
         "ipc": 90,
-        "prob": 0.0030937360003601426,
+        "prob": 0.003093736000360144,
       },
       "95": {
         "ipc": 95,
-        "prob": 0.023456912692006324,
+        "prob": 0.02345691269200633,
       },
     },
   ],
   "rounds": [
     4.783364875324253,
-    1.8298891068100382,
-    0.9692453890095796,
+    1.829889106810038,
+    0.9692453890095797,
   ],
   "takesTerritory": [
     0.20016626551622646,
