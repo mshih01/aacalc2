@@ -10,6 +10,11 @@ import {
 import type { PwinMode } from './solve.js';
 import { test, expect } from 'vitest';
 
+expect.addSnapshotSerializer({
+  test: (val) => typeof val === 'number' && !Number.isInteger(val),
+  serialize: (val) => val.toFixed(14), // Adjust '5' to your desired precision
+});
+
 let out = [];
 let verbose = 0; // 0, 1, 2, 3
 
