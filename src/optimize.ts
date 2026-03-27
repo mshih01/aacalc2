@@ -51,6 +51,7 @@ function initArmy(army: Army, value: number): Army {
 export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   const solveType = input.solveType;
   const attDefType = input.attDefType;
+  const pwinMode = input.pwinMode ?? 'destroys';
   let armyRecommendOutput: ArmyRecommendOutput = {
     recommendations: { army: {}, cost: 0 },
   };
