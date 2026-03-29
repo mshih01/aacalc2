@@ -1,0 +1,388 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: #f2f6fb;
+  color: #1a1a1a;
+}
+
+.app {
+  max-width: 1024px;
+  margin: 28px auto;
+  padding: 0 18px 48px;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.mode-selector {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.mode-selector label {
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+form {
+  border: 1px solid #d8def4;
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+}
+
+form h2 {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+
+label {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+input[type='number'] {
+  width: 80px;
+  padding: 5px 8px;
+  border: 1px solid #b1b9d3;
+  border-radius: 4px;
+}
+
+.run-btn {
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.run-btn:hover {
+  background: #2563eb;
+}
+
+.results {
+  margin-top: 20px;
+  padding: 14px;
+  border: 1px solid #c7d3ee;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.results pre {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.error {
+  color: #b91c1c;
+  margin-top: 10px;
+}
+
+.summary p {
+  margin: 4px 0;
+}
+
+@media (max-width: 840px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ool-section {
+    flex-direction: column;
+  }
+
+  /* Advanced options grid */
+  .advanced-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Battle options grid */
+  .battle-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Sea controls grid (5 columns) */
+  .sea-controls-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Wave options grid (4 columns) */
+  .wave-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .app {
+    margin: 16px auto;
+    padding: 0 12px 24px;
+  }
+
+  h1 {
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+
+  /* Mode selector */
+  .mode-selector {
+    margin-bottom: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .mode-selector label {
+    font-size: 14px;
+  }
+
+  /* Input sizing for touch */
+  input[type='number'],
+  input[type='text'],
+  input[type='checkbox'],
+  select {
+    min-height: 40px;
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+
+  /* Labels for better readability */
+  label {
+    grid-template-columns: 1fr;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  /* Wave card styling */
+  .waves-section > div {
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .waves-section h2 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .waves-section h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  /* Full-width selects and inputs */
+  select {
+    width: 100% !important;
+  }
+
+  /* Run button */
+  .run-btn {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  /* Results */
+  .results {
+    margin-top: 16px;
+    padding: 12px;
+  }
+
+  .results pre {
+    font-size: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Wave layout mobile */
+  .wave-layout {
+    flex-direction: column !important;
+  }
+
+  .wave-layout > div,
+  .wave-layout > button {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  .wave-layout button {
+    margin-top: 0 !important;
+  }
+
+  /* Wave summary grid - more compact on mobile */
+  .wave-summary-grid {
+    gap: 4px !important;
+  }
+
+  .wave-summary-grid > div {
+    min-width: 70px !important;
+    flex: 0 1 auto !important;
+  }
+
+  .results h3 {
+    margin-bottom: 6px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    margin: 12px auto;
+    padding: 0 8px 16px;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  /* Even more compact on very small screens */
+  input[type='number'],
+  input[type='text'],
+  select {
+    min-height: 36px;
+    font-size: 16px;
+    padding: 6px 10px;
+  }
+
+  label {
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .waves-section > div {
+    padding: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .waves-section h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .mode-selector {
+    gap: 8px;
+  }
+}
+
+.ool-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.ool-section select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #b1b9d3;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.ool-summary {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #d6dce8;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+/* Mobile responsive grid wrapper */
+.responsive-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.responsive-grid.cols-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.responsive-grid.cols-4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.responsive-grid.cols-5 {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 1024px) {
+  .responsive-grid.cols-5 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .responsive-grid.cols-4 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-grid.cols-2,
+  .responsive-grid.cols-4,
+  .responsive-grid.cols-5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Floating label group */
+.floating-label-group {
+  position: relative;
+  margin-top: 8px;
+}
+
+.floating-label-group input,
+.floating-label-group select {
+  width: 100%;
+  padding: 8px 8px 4px;
+  border: 1px solid #b1b9d3;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.floating-label-group label {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 13px;
+  color: #999;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  margin: 0;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.floating-label-group input:focus ~ label,
+.floating-label-group input.has-value ~ label,
+.floating-label-group select:focus ~ label,
+.floating-label-group select ~ label {
+  top: -20px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.battle-options .floating-label-group {
+  position: relative;
+  margin-top: 8px;
+}
