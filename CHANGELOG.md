@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.0
+
+### Major Changes
+
+- 48b95bb: add frontend
+
 ## 1.0.34
 
 ### Patch Changes
