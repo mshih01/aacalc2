@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+      
+      - name: Build aacalc2
+        run: npm run build
+      
+      - name: Build frontend
+        run: cd frontend && npm run build
+      
+      - name: Copy root index.html to dist
+        run: |
+          mkdir -p frontend/dist-deploy
+          cp index.html frontend/dist-deploy/
+          cp -r frontend/dist/* frontend/dist-deploy/
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/dist-deploy
+          cname: aacalc2.com
