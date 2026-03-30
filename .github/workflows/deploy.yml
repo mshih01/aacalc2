@@ -26,14 +26,8 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
-      - name: Prepare deployment
-        run: |
-          mkdir -p publish/frontend
-          cp index.html publish/
-          cp -r frontend/dist/* publish/frontend/
-
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./publish
+          publish_dir: ./frontend/dist
