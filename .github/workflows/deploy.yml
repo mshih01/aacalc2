@@ -11,11 +11,8 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
       
@@ -37,17 +34,24 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
       
-      - name: Copy root index.html to dist
+      - name: Prepare deployment
         run: |
-          mkdir -p frontend/dist-deploy
-          cp index.html frontend/dist-deploy/
-          cp -r frontend/dist/* frontend/dist-deploy/
+          mkdir -p dist
+          cp index.html dist/
+          cp -r frontend/dist/* dist/
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./frontend/dist-deploy
-      
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
