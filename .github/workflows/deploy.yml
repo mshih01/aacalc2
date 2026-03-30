@@ -20,26 +20,20 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Install frontend dependencies
         run: cd frontend && npm install
-
-      - name: Build aacalc2
-        run: npm run build
 
       - name: Build frontend
         run: cd frontend && npm run build
 
       - name: Prepare deployment
         run: |
-          mkdir -p dist/frontend
-          cp index.html dist/
-          cp -r frontend/dist/* dist/frontend/
+          mkdir -p publish/frontend
+          cp index.html publish/
+          cp -r frontend/dist/* publish/frontend/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./publish
