@@ -397,12 +397,8 @@ input[type='number'] {
 
 @media (max-width: 768px) {
   .wave-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-  
-  .wave-layout button {
-    grid-column: 1;
-    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 }
