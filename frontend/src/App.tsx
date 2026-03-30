@@ -804,9 +804,9 @@ function App() {
               <div key={`wave-card-${waveIdx}`} style={{ border: '2px solid #333', borderRadius: '8px', padding: '15px', marginBottom: '15px', backgroundColor: '#f9f9f9' }}>
               <h2 style={{ marginTop: 0 }}>Wave {waveIdx + 1}</h2>
               
-              <div className="wave-layout" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '15px', alignItems: 'flex-start' }}>
+              <div className="wave-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) auto minmax(200px, 1fr)', gap: '20px', marginBottom: '15px', alignItems: 'start' }}>
                 {/* Attacker Column */}
-                <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
+                <div style={{}}>
                   <h3 style={{ marginBottom: '10px' }}>Attacker</h3>
                   
                   <div className="floating-label-group">
@@ -890,9 +890,7 @@ function App() {
                     setDefense(newDefense)
                   }}
                   style={{
-                    flex: '0 0 auto',
-                    alignSelf: 'flex-start',
-                    marginTop: '32px',
+                    alignSelf: 'center',
                     padding: '8px 12px',
                     backgroundColor: '#1d4ed8',
                     color: 'white',
@@ -908,7 +906,7 @@ function App() {
                 </button>
 
                 {/* Defender Column */}
-                <div style={{ flex: '1 1 45%', minWidth: '250px' }}>
+                <div style={{}}>
                   <h3 style={{ marginBottom: '10px' }}>Defender</h3>
                   
                   <div className="floating-label-group">
