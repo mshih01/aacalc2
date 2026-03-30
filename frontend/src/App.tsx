@@ -536,6 +536,11 @@ function App() {
     setCrashFighters({ 0: false, 1: false, 2: false })
   }, [mode])
 
+  // Clear results when any input changes
+  useEffect(() => {
+    setResult(null)
+  }, [attack, defense, attackOolPreset, defenseOolPreset, rounds, retreatThreshold, takesTerritory, aaLast, attackerSubmerge, defenderSubmerge, attackerDestroyerLast, defenderDestroyerLast, crashFighters, retreatExpectedIpcProfitThresholds, retreatPwinThresholds, retreatStrafeThresholds, retreatLoseAirProbabilityThresholds, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves])
+
   const runBattle = useCallback(() => {
     setError(null)
     try {
