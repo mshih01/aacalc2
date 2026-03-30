@@ -15,31 +15,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '24'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm install
-      
+
       - name: Install frontend dependencies
         run: cd frontend && npm install
-      
+
       - name: Build aacalc2
         run: npm run build
-      
+
       - name: Build frontend
         run: cd frontend && npm run build
-      
+
       - name: Prepare deployment
         run: |
           mkdir -p dist
           cp index.html dist/
           cp -r frontend/dist/* dist/
-      
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
