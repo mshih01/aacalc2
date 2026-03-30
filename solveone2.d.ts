@@ -1,3 +1,0 @@
-import type { general_problem } from './solve.js';
-export declare function solve_one_general_state_copy2(problem: general_problem, N: number, M: number, allow_same_state: boolean, numBombard: number, do_retreat_only: boolean, disable_retreat: boolean, onNextState?: (problem: general_problem, ii: number, prob: number, n: number, m: number, num_rounds: number) => void, onInitState?: (problem: general_problem, n: number, m: number) => number, onExitState?: (problem: general_problem, n: number, m: number) => void): void;
-//# sourceMappingURL=solveone2.d.ts.map
