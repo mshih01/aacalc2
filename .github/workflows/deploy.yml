@@ -26,6 +26,11 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
+      - name: Fix base paths in HTML
+        run: |
+          sed -i 's|src="/assets/|src="/aacalc2/assets/|g' frontend/dist/index.html
+          sed -i 's|href="/assets/|href="/aacalc2/assets/|g' frontend/dist/index.html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
