@@ -34,9 +34,9 @@ jobs:
 
       - name: Prepare deployment
         run: |
-          mkdir -p dist
+          mkdir -p dist/frontend
           cp index.html dist/
-          cp -r frontend/dist/* dist/
+          cp -r frontend/dist/* dist/frontend/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
