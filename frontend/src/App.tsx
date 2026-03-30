@@ -622,6 +622,77 @@ function App() {
         </label>
       </div>
 
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+        <button
+          onClick={() => {
+            // Reset all inputs to default
+            setAttack({ 0: {}, 1: {}, 2: {} })
+            setDefense({ 0: {}, 1: {}, 2: {} })
+            setAttackOolPreset({ 0: attackerOolPresets[mode][0].id, 1: attackerOolPresets[mode][0].id, 2: attackerOolPresets[mode][0].id })
+            setDefenseOolPreset({ 0: defenderOolPresets[mode][0].id, 1: defenderOolPresets[mode][0].id, 2: defenderOolPresets[mode][0].id })
+            setNumWaves(1)
+            setRounds({ 0: 'all', 1: 'all', 2: 'all' })
+            setRetreatThreshold({ 0: 0, 1: 0, 2: 0 })
+            setTakesTerritory({ 0: 0, 1: 0, 2: 0 })
+            setAaLast({ 0: false, 1: false, 2: false })
+            setAttackerSubmerge({ 0: false, 1: false, 2: false })
+            setAttackerDestroyerLast({ 0: false, 1: false, 2: false })
+            setDefenderSubmerge({ 0: false, 1: false, 2: false })
+            setDefenderDestroyerLast({ 0: false, 1: false, 2: false })
+            setCrashFighters({ 0: false, 1: false, 2: false })
+            setReteatExpectedIpcProfitThresholds({ 0: undefined, 1: undefined, 2: undefined })
+            setRetreatPwinThresholds({ 0: undefined, 1: undefined, 2: undefined })
+            setRetreatStrafeThresholds({ 0: undefined, 1: undefined, 2: undefined })
+            setRetreatLoseAirProbabilityThresholds({ 0: undefined, 1: undefined, 2: undefined })
+            setDiceMode('standard')
+            setAmphibious(false)
+            setTerritoryValue(0)
+            setIsDeadzone(false)
+            setInProgress(false)
+            setVerboseLevel(0)
+            setPruneThreshold(1e-12)
+            setReportPruneThreshold(1e-12)
+            setSortMode('ipc_cost')
+            setDecimalPlaces(2)
+            setResult(null)
+            setError('')
+          }}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#666',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Reset All
+        </button>
+        <button
+          onClick={() => {
+            // Reset only unit counts
+            setAttack({ 0: {}, 1: {}, 2: {} })
+            setDefense({ 0: {}, 1: {}, 2: {} })
+          }}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#999',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Reset Units
+        </button>
+      </div>
+
       <div style={{ marginBottom: '15px' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <input
