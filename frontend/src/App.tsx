@@ -99,6 +99,7 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
   const runtime = (endTime - startTime).toFixed(2)
   console.log('MultiwaveOutput:', output)
   console.log(`Runtime: ${runtime}ms`)
+  return output
 }
 
 function computeSbrBattle(input: BattleInput): MultiwaveOutput {
