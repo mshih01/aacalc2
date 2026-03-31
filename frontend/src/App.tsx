@@ -1067,7 +1067,7 @@ function App() {
                             setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Retreat if Number of Attacking Units Exceeds
+                        Retreat if Number of Attacking Units ≤
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1080,7 +1080,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Expected IPC Profit
+                        Expected IPC Profit &lt;
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1093,7 +1093,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Probability Wins Exceeds
+                        Probability Wins ≤
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1106,7 +1106,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Probability of Killing Defenders Exceeds
+                        Probability of Killing Defenders &gt;
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1119,7 +1119,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: 0});
                           }}
                         />
-                        Probability of Losing Air Exceeds
+                        Probability of Losing Air &gt;
                       </label>
                     </div>
                   </div>
@@ -1231,7 +1231,7 @@ function App() {
                             setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Retreat if Number of Attacking Units Exceeds
+                        Retreat if Number of Attacking Units ≤
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1244,7 +1244,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Expected IPC Profit
+                        Expected IPC Profit &lt;
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1257,7 +1257,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Probability Wins Exceeds
+                        Probability Wins ≤
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1270,7 +1270,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
                           }}
                         />
-                        Probability of Killing Defenders Exceeds
+                        Probability of Killing Defenders &gt;
                       </label>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
@@ -1283,7 +1283,7 @@ function App() {
                             setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: 0});
                           }}
                         />
-                        Probability of Losing Air Exceeds
+                        Probability of Losing Air &gt;
                       </label>
                     </div>
                   </div>
