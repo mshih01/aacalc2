@@ -93,9 +93,12 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
   }
 
   console.log('MultiwaveInput:', multiwaveInput)
+  const startTime = performance.now()
   const output = multiwaveExternal(multiwaveInput)
+  const endTime = performance.now()
+  const runtime = (endTime - startTime).toFixed(2)
   console.log('MultiwaveOutput:', output)
-  return output
+  console.log(`Runtime: ${runtime}ms`)
 }
 
 function computeSbrBattle(input: BattleInput): MultiwaveOutput {
@@ -122,8 +125,12 @@ function computeSbrBattle(input: BattleInput): MultiwaveOutput {
     reportPruneThreshold: 1e-12,
   }
   console.log('SBR Input:', sbrInput)
+  const startTime = performance.now()
   const output = sbrExternal(sbrInput)
+  const endTime = performance.now()
+  const runtime = (endTime - startTime).toFixed(2)
   console.log('SBR Output:', output)
+  console.log(`Runtime: ${runtime}ms`)
   return output
 }
 
