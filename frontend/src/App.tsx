@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   multiwaveExternal,
   sbrExternal,
@@ -377,6 +377,13 @@ const unitIds = [
 
 type UnitId = (typeof unitIds)[number]
 
+interface HistoryEntry {
+  id: string
+  name: string
+  timestamp: number
+  input: BattleInput
+}
+
 const unitNameMap: Record<string, string> = {
   inf: 'Infantry',
   art: 'Artillery',
@@ -504,6 +511,31 @@ function App() {
   })
   const [result, setResult] = useState<ReturnType<typeof computeBattle> | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [historyName, setHistoryName] = useState('')
+  const [showHistory, setShowHistory] = useState(false)
+  
+  // Refs to track when we need to run battle after loading history
+  const shouldRunBattleRef = useRef(false)
+  const loadedEntryNameRef = useRef<string | null>(null)
+  const isLoadingFromHistoryRef = useRef(false)
+
+  // Load history from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('battleHistory')
+    if (stored) {
+      try {
+        setHistory(JSON.parse(stored))
+      } catch (e) {
+        console.warn('Failed to load history from localStorage:', e)
+      }
+    }
+  }, [])
+
+  // Save history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('battleHistory', JSON.stringify(history))
+  }, [history])
 
   // Ensure units & presets stay in mode when switching modes
   useEffect(() => {
@@ -593,15 +625,133 @@ function App() {
       }
       const output = mode === 'sbr' ? computeSbrBattle(input) : computeBattle(input)
       setResult(output)
+
+      // Save to history if a name is provided AND we're not loading from history
+      if (historyName.trim() && !isLoadingFromHistoryRef.current) {
+        const trimmedName = historyName.trim()
+        const entry: HistoryEntry = {
+          id: trimmedName,
+          name: trimmedName,
+          timestamp: Date.now(),
+          input,
+        }
+        // Update existing entry with same name, or add new one
+        setHistory((prev) => {
+          const existingIndex = prev.findIndex((e) => e.id === trimmedName)
+          if (existingIndex >= 0) {
+            // Update existing entry and move to top
+            const updated = [...prev]
+            updated.splice(existingIndex, 1)
+            return [entry, ...updated]
+          } else {
+            // Add new entry, keep last 50
+            return [entry, ...prev.slice(0, 49)]
+          }
+        })
+        // Don't clear the name field - user can make more changes and save
+      }
     } catch (err) {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, attackOolPreset, defenseOolPreset, rounds, retreatThreshold, takesTerritory, aaLast, attackerSubmerge, defenderSubmerge, attackerDestroyerLast, defenderDestroyerLast, crashFighters, retreatExpectedIpcProfitThresholds, retreatPwinThresholds, retreatStrafeThresholds, retreatLoseAirProbabilityThresholds, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves])
+  }, [attack, defense, mode, attackOolPreset, defenseOolPreset, rounds, retreatThreshold, takesTerritory, aaLast, attackerSubmerge, defenderSubmerge, attackerDestroyerLast, defenderDestroyerLast, crashFighters, retreatExpectedIpcProfitThresholds, retreatPwinThresholds, retreatStrafeThresholds, retreatLoseAirProbabilityThresholds, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName])
+
+  const loadFromHistory = (entry: HistoryEntry) => {
+    // Set flag to prevent auto-saving when we run the battle
+    isLoadingFromHistoryRef.current = true
+    
+    const { input } = entry
+    
+    setMode(input.mode || 'land')
+    setNumWaves(input.numWaves || 1)
+    setAttack(input.attack || {})
+    setDefense(input.defense || {})
+    
+    // Reconstruct the OOL preset IDs from the unit arrays - find the matching preset
+    setAttackOolPreset((prev) => {
+      const next: Record<number, string> = {}
+      for (let i = 0; i < (input.numWaves || 1); i++) {
+        const ool = input.attackOol?.[i]
+        if (ool) {
+          // Find preset that matches this OOL
+          const matchingPreset = attackerOolPresets[input.mode || 'land'].find((p) =>
+            JSON.stringify(p.ool.sort()) === JSON.stringify([...ool].sort())
+          )
+          next[i] = matchingPreset?.id || prev[i] || 'inf-art-tnk-fig-bom'
+        } else {
+          next[i] = prev[i] || 'inf-art-tnk-fig-bom'
+        }
+      }
+      return next
+    })
+    setDefenseOolPreset((prev) => {
+      const next: Record<number, string> = {}
+      for (let i = 0; i < (input.numWaves || 1); i++) {
+        const ool = input.defenseOol?.[i]
+        if (ool) {
+          const matchingPreset = defenderOolPresets[input.mode || 'land'].find((p) =>
+            JSON.stringify(p.ool.sort()) === JSON.stringify([...ool].sort())
+          )
+          next[i] = matchingPreset?.id || prev[i] || 'aa-inf-art-tnk-bom-fig'
+        } else {
+          next[i] = prev[i] || 'aa-inf-art-tnk-bom-fig'
+        }
+      }
+      return next
+    })
+    setRounds(input.rounds as unknown as Record<number, string> || { 0: 'all', 1: 'all', 2: 'all' })
+    setRetreatThreshold(input.retreatThreshold || { 0: 0, 1: 0, 2: 0 })
+    setTakesTerritory(input.takesTerritory || { 0: 0, 1: 0, 2: 0 })
+    setAaLast(input.aaLast || { 0: false, 1: false, 2: false })
+    setAttackerSubmerge(input.attackerSubmerge || { 0: false, 1: false, 2: false })
+    setDefenderSubmerge(input.defenderSubmerge || { 0: false, 1: false, 2: false })
+    setAttackerDestroyerLast(input.attackerDestroyerLast || { 0: false, 1: false, 2: false })
+    setDefenderDestroyerLast(input.defenderDestroyerLast || { 0: false, 1: false, 2: false })
+    setCrashFighters(input.crashFighters || { 0: false, 1: false, 2: false })
+    setReteatExpectedIpcProfitThresholds(input.retreatExpectedIpcProfitThresholds || { 0: undefined, 1: undefined, 2: undefined })
+    setRetreatPwinThresholds(input.retreatPwinThresholds || { 0: undefined, 1: undefined, 2: undefined })
+    setRetreatStrafeThresholds(input.retreatStrafeThresholds || { 0: undefined, 1: undefined, 2: undefined })
+    setRetreatLoseAirProbabilityThresholds(input.retreatLoseAirProbabilityThresholds || { 0: undefined, 1: undefined, 2: undefined })
+    setDiceMode(input.diceMode || 'standard')
+    setTerritoryValue(input.territoryValue || 0)
+    setIsDeadzone(input.isDeadzone ?? false)
+    setInProgress(input.inProgress ?? false)
+    setVerboseLevel(input.verboseLevel || 0)
+    setPruneThreshold(input.pruneThreshold || 1e-12)
+    setReportPruneThreshold(input.reportPruneThreshold || 1e-12)
+    setSortMode(input.sortMode || 'ipc_cost')
+    // Note: amphibious and decimalPlaces are UI-only state, not saved in history
+    
+    // Store the loaded entry name to populate the field after state updates
+    loadedEntryNameRef.current = entry.name
+    
+    // Mark that we should run the battle after state updates
+    shouldRunBattleRef.current = true
+  }
+
+  // Effect to run battle and populate name field when loading from history
+  useEffect(() => {
+    if (shouldRunBattleRef.current) {
+      shouldRunBattleRef.current = false
+      runBattle()
+      // Reset the loading flag after runBattle completes
+      isLoadingFromHistoryRef.current = false
+    }
+    // Populate the "Save As" field with the loaded entry name
+    if (loadedEntryNameRef.current) {
+      setHistoryName(loadedEntryNameRef.current)
+      loadedEntryNameRef.current = null
+    }
+  }, [runBattle])
+
+  const deleteFromHistory = (id: string) => {
+    setHistory((prev) => prev.filter((e) => e.id !== id))
+  }
 
   return (
-    <main className="app">
-      <h1>aa1942calc2 frontend demo</h1>
+    <main className="app" style={{ display: 'flex', gap: '20px', minHeight: '100vh' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <h1>aa1942calc2 frontend demo</h1>
       <div className="mode-selector">
         <label>
           <input
@@ -703,6 +853,36 @@ function App() {
           }}
         >
           Reset Units
+        </button>
+      </div>
+
+      <div style={{ marginBottom: '15px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+        <div className="floating-label-group" style={{ flex: 1 }}>
+          <input
+            type="text"
+            value={historyName}
+            onChange={(e) => setHistoryName(e.target.value)}
+            placeholder=" "
+            maxLength={50}
+            className={historyName ? 'has-value' : ''}
+          />
+          <label>Save As</label>
+        </div>
+        <button
+          onClick={() => setShowHistory(!showHistory)}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#0066cc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {showHistory ? 'Hide' : 'Show'} History ({history.length})
         </button>
       </div>
 
@@ -1735,6 +1915,87 @@ function App() {
             )}
           </CollapsibleSection>
         </section>
+      )}
+      </div>
+
+      {/* History Side Panel */}
+      {showHistory && (
+        <div style={{
+          width: '300px',
+          borderLeft: '1px solid #ddd',
+          backgroundColor: '#f9f9f9',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
+        }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid #ddd', backgroundColor: '#f0f0f0' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>History ({history.length})</h3>
+            <button
+              onClick={() => setHistory([])}
+              style={{
+                fontSize: '11px',
+                padding: '4px 8px',
+                backgroundColor: '#ddd',
+                border: 'none',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                color: '#333'
+              }}
+            >
+              Clear All
+            </button>
+          </div>
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {history.length === 0 ? (
+              <div style={{ padding: '12px', color: '#999', fontSize: '12px' }}>No history yet</div>
+            ) : (
+              history.map((entry) => (
+                <div
+                  key={entry.id}
+                  style={{
+                    padding: '8px 12px',
+                    borderBottom: '1px solid #eee',
+                    fontSize: '13px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e9e9e9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                >
+                  <div
+                    onClick={() => loadFromHistory(entry)}
+                    style={{
+                      flex: 1,
+                      color: '#0066cc',
+                      cursor: 'pointer',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {entry.name}
+                  </div>
+                  <button
+                    onClick={() => deleteFromHistory(entry.id)}
+                    style={{
+                      padding: '2px 6px',
+                      backgroundColor: 'transparent',
+                      color: '#cc0000',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      minWidth: '24px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       )}
     </main>
   )
