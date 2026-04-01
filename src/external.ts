@@ -207,12 +207,28 @@ export type UnitStatsMap = Record<UnitIdentifier, UnitStats>;
 export function getUnitStatsMap(): UnitStatsMap {
   const um = new unit_manager(0, false);
   const stats: Partial<UnitStatsMap> = {};
-  
+
   const unitIds: UnitIdentifier[] = [
-    'aa', 'inf', 'art', 'arm', 'fig', 'bom', 'sub', 'tra', 'des', 'cru',
-    'acc', 'bat', 'bat1', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'
+    'aa',
+    'inf',
+    'art',
+    'arm',
+    'fig',
+    'bom',
+    'sub',
+    'tra',
+    'des',
+    'cru',
+    'acc',
+    'bat',
+    'bat1',
+    'dbat',
+    'ic',
+    'inf_a',
+    'art_a',
+    'arm_a',
   ];
-  
+
   for (const id of unitIds) {
     const ch = UnitIdentifier2UnitMap[id];
     if (ch) {
@@ -229,7 +245,7 @@ export function getUnitStatsMap(): UnitStatsMap {
       }
     }
   }
-  
+
   return stats as UnitStatsMap;
 }
 
