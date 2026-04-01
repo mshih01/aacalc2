@@ -92,12 +92,16 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
     do_roundless_eval: true,
   }
 
-  console.log('MultiwaveInput:', multiwaveInput)
+  if (input.verboseLevel && input.verboseLevel > 0) {
+    console.log('MultiwaveInput:', multiwaveInput)
+  }
   const startTime = performance.now()
   const output = multiwaveExternal(multiwaveInput)
   const endTime = performance.now()
   const runtime = (endTime - startTime).toFixed(2)
-  console.log('MultiwaveOutput:', output)
+  if (input.verboseLevel && input.verboseLevel > 0) {
+    console.log('MultiwaveOutput:', output)
+  }
   console.log(`Runtime: ${runtime}ms`)
   return output
 }
@@ -125,12 +129,16 @@ function computeSbrBattle(input: BattleInput): MultiwaveOutput {
     pruneThreshold: 1e-12,
     reportPruneThreshold: 1e-12,
   }
-  console.log('SBR Input:', sbrInput)
+  if (input.verboseLevel && input.verboseLevel > 0) {
+    console.log('SBR Input:', sbrInput)
+  }
   const startTime = performance.now()
   const output = sbrExternal(sbrInput)
   const endTime = performance.now()
   const runtime = (endTime - startTime).toFixed(2)
-  console.log('SBR Output:', output)
+  if (input.verboseLevel && input.verboseLevel > 0) {
+    console.log('SBR Output:', output)
+  }
   console.log(`Runtime: ${runtime}ms`)
   return output
 }
@@ -384,6 +392,67 @@ interface HistoryEntry {
   input: BattleInput
 }
 
+// Consolidated per-wave configuration
+interface WaveConfig {
+  attackOolPreset: string
+  defenseOolPreset: string
+  rounds: string
+  retreatThreshold: number
+  takesTerritory: number
+  aaLast: boolean
+  attackerSubmerge: boolean
+  defenderSubmerge: boolean
+  attackerDestroyerLast: boolean
+  defenderDestroyerLast: boolean
+  crashFighters: boolean
+  retreatExpectedIpcProfitThreshold?: number
+  retreatPwinThreshold?: number
+  retreatStrafeThreshold?: number
+  retreatLoseAirProbabilityThreshold?: number
+}
+
+const DEFAULT_WAVE_CONFIG: WaveConfig = {
+  attackOolPreset: 'inf-art-tnk-fig-bom',
+  defenseOolPreset: 'aa-inf-art-tnk-bom-fig',
+  rounds: 'all',
+  retreatThreshold: 0,
+  takesTerritory: 0,
+  aaLast: false,
+  attackerSubmerge: false,
+  defenderSubmerge: false,
+  attackerDestroyerLast: false,
+  defenderDestroyerLast: false,
+  crashFighters: false,
+}
+
+// Hook for managing per-wave state
+function useWaveState(initialWaves = 3) {
+  const [waveConfigs, setWaveConfigs] = useState<Record<number, WaveConfig>>(() => {
+    const config: Record<number, WaveConfig> = {}
+    for (let i = 0; i < initialWaves; i++) {
+      config[i] = { ...DEFAULT_WAVE_CONFIG }
+    }
+    return config
+  })
+
+  const updateWave = useCallback((waveIdx: number, updates: Partial<WaveConfig>) => {
+    setWaveConfigs(prev => ({
+      ...prev,
+      [waveIdx]: { ...prev[waveIdx], ...updates }
+    }))
+  }, [])
+
+  const resetWaves = useCallback((count: number) => {
+    const config: Record<number, WaveConfig> = {}
+    for (let i = 0; i < count; i++) {
+      config[i] = { ...DEFAULT_WAVE_CONFIG }
+    }
+    setWaveConfigs(config)
+  }, [])
+
+  return { waveConfigs, updateWave, resetWaves }
+}
+
 const unitNameMap: Record<string, string> = {
   inf: 'Infantry',
   art: 'Artillery',
@@ -401,6 +470,171 @@ const unitNameMap: Record<string, string> = {
   inf_a: 'Infantry (Amphibious)',
   art_a: 'Artillery (Amphibious)',
   arm_a: 'Tanks (Amphibious)',
+}
+
+interface HistoryPanelProps {
+  history: HistoryEntry[]
+  onLoad: (entry: HistoryEntry) => void
+  onDelete: (id: string) => void
+  onClearAll: () => void
+}
+
+function HistoryPanel({ history, onLoad, onDelete, onClearAll }: HistoryPanelProps) {
+  return (
+    <div style={{
+      width: '300px',
+      borderLeft: '1px solid #ddd',
+      backgroundColor: '#f9f9f9',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
+      <div style={{ padding: '12px', borderBottom: '1px solid #ddd', backgroundColor: '#f0f0f0' }}>
+        <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>History ({history.length})</h3>
+        <button
+          onClick={onClearAll}
+          style={{
+            fontSize: '11px',
+            padding: '4px 8px',
+            backgroundColor: '#ddd',
+            border: 'none',
+            borderRadius: '3px',
+            cursor: 'pointer',
+            color: '#333'
+          }}
+        >
+          Clear All
+        </button>
+      </div>
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        {history.length === 0 ? (
+          <div style={{ padding: '12px', color: '#999', fontSize: '12px' }}>No history yet</div>
+        ) : (
+          history.map((entry) => (
+            <div
+              key={entry.id}
+              style={{
+                padding: '8px 12px',
+                borderBottom: '1px solid #eee',
+                fontSize: '13px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e9e9e9')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            >
+              <div
+                onClick={() => onLoad(entry)}
+                style={{
+                  flex: 1,
+                  color: '#0066cc',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                {entry.name}
+              </div>
+              <button
+                onClick={() => onDelete(entry.id)}
+                style={{
+                  padding: '2px 6px',
+                  backgroundColor: 'transparent',
+                  color: '#cc0000',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  minWidth: '24px',
+                  textAlign: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
+interface ModeSelectorProps {
+  mode: BattleMode
+  onChange: (mode: BattleMode) => void
+}
+
+function ModeSelector({ mode, onChange }: ModeSelectorProps) {
+  return (
+    <div className="mode-selector">
+      <label>
+        <input
+          type="radio"
+          name="battleMode"
+          value="land"
+          checked={mode === 'land'}
+          onChange={() => onChange('land')}
+        />
+        Land
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="battleMode"
+          value="sea"
+          checked={mode === 'sea'}
+          onChange={() => onChange('sea')}
+        />
+        Sea
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="battleMode"
+          value="sbr"
+          checked={mode === 'sbr'}
+          onChange={() => onChange('sbr')}
+        />
+        SBR
+      </label>
+    </div>
+  )
+}
+
+interface ResetButtonsProps {
+  onResetAll: () => void
+  onResetUnits: () => void
+}
+
+function ResetButtons({ onResetAll, onResetUnits }: ResetButtonsProps) {
+  const buttonStyle = {
+    padding: '8px 12px',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: '600' as const,
+    whiteSpace: 'nowrap' as const,
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+      <button
+        onClick={onResetAll}
+        style={{ ...buttonStyle, backgroundColor: '#666' }}
+      >
+        Reset All
+      </button>
+      <button
+        onClick={onResetUnits}
+        style={{ ...buttonStyle, backgroundColor: '#999' }}
+      >
+        Reset Units
+      </button>
+    </div>
+  )
 }
 
 function getUnitName(unit: string): string {
@@ -752,109 +986,46 @@ function App() {
     <main className="app" style={{ display: 'flex', gap: '20px', minHeight: '100vh' }}>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <h1>aa1942calc2 frontend demo</h1>
-      <div className="mode-selector">
-        <label>
-          <input
-            type="radio"
-            name="battleMode"
-            value="land"
-            checked={mode === 'land'}
-            onChange={() => setMode('land')}
-          />
-          Land
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="battleMode"
-            value="sea"
-            checked={mode === 'sea'}
-            onChange={() => setMode('sea')}
-          />
-          Sea
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="battleMode"
-            value="sbr"
-            checked={mode === 'sbr'}
-            onChange={() => setMode('sbr')}
-          />
-          SBR
-        </label>
-      </div>
+      <ModeSelector mode={mode} onChange={setMode} />
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-        <button
-          onClick={() => {
-            // Reset all inputs to default
-            setAttack({ 0: {}, 1: {}, 2: {} })
-            setDefense({ 0: {}, 1: {}, 2: {} })
-            setAttackOolPreset({ 0: attackerOolPresets[mode][0].id, 1: attackerOolPresets[mode][0].id, 2: attackerOolPresets[mode][0].id })
-            setDefenseOolPreset({ 0: defenderOolPresets[mode][0].id, 1: defenderOolPresets[mode][0].id, 2: defenderOolPresets[mode][0].id })
-            setNumWaves(1)
-            setRounds({ 0: 'all', 1: 'all', 2: 'all' })
-            setRetreatThreshold({ 0: 0, 1: 0, 2: 0 })
-            setTakesTerritory({ 0: 0, 1: 0, 2: 0 })
-            setAaLast({ 0: false, 1: false, 2: false })
-            setAttackerSubmerge({ 0: false, 1: false, 2: false })
-            setAttackerDestroyerLast({ 0: false, 1: false, 2: false })
-            setDefenderSubmerge({ 0: false, 1: false, 2: false })
-            setDefenderDestroyerLast({ 0: false, 1: false, 2: false })
-            setCrashFighters({ 0: false, 1: false, 2: false })
-            setReteatExpectedIpcProfitThresholds({ 0: undefined, 1: undefined, 2: undefined })
-            setRetreatPwinThresholds({ 0: undefined, 1: undefined, 2: undefined })
-            setRetreatStrafeThresholds({ 0: undefined, 1: undefined, 2: undefined })
-            setRetreatLoseAirProbabilityThresholds({ 0: undefined, 1: undefined, 2: undefined })
-            setDiceMode('standard')
-            setAmphibious(false)
-            setTerritoryValue(0)
-            setIsDeadzone(false)
-            setInProgress(false)
-            setVerboseLevel(0)
-            setPruneThreshold(1e-12)
-            setReportPruneThreshold(1e-12)
-            setSortMode('ipc_cost')
-            setDecimalPlaces(2)
-            setResult(null)
-            setError('')
-          }}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#666',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Reset All
-        </button>
-        <button
-          onClick={() => {
-            // Reset only unit counts
-            setAttack({ 0: {}, 1: {}, 2: {} })
-            setDefense({ 0: {}, 1: {}, 2: {} })
-          }}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#999',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          Reset Units
-        </button>
-      </div>
+      <ResetButtons 
+        onResetAll={() => {
+          setAttack({ 0: {}, 1: {}, 2: {} })
+          setDefense({ 0: {}, 1: {}, 2: {} })
+          setAttackOolPreset({ 0: attackerOolPresets[mode][0].id, 1: attackerOolPresets[mode][0].id, 2: attackerOolPresets[mode][0].id })
+          setDefenseOolPreset({ 0: defenderOolPresets[mode][0].id, 1: defenderOolPresets[mode][0].id, 2: defenderOolPresets[mode][0].id })
+          setNumWaves(1)
+          setRounds({ 0: 'all', 1: 'all', 2: 'all' })
+          setRetreatThreshold({ 0: 0, 1: 0, 2: 0 })
+          setTakesTerritory({ 0: 0, 1: 0, 2: 0 })
+          setAaLast({ 0: false, 1: false, 2: false })
+          setAttackerSubmerge({ 0: false, 1: false, 2: false })
+          setAttackerDestroyerLast({ 0: false, 1: false, 2: false })
+          setDefenderSubmerge({ 0: false, 1: false, 2: false })
+          setDefenderDestroyerLast({ 0: false, 1: false, 2: false })
+          setCrashFighters({ 0: false, 1: false, 2: false })
+          setReteatExpectedIpcProfitThresholds({ 0: undefined, 1: undefined, 2: undefined })
+          setRetreatPwinThresholds({ 0: undefined, 1: undefined, 2: undefined })
+          setRetreatStrafeThresholds({ 0: undefined, 1: undefined, 2: undefined })
+          setRetreatLoseAirProbabilityThresholds({ 0: undefined, 1: undefined, 2: undefined })
+          setDiceMode('standard')
+          setAmphibious(false)
+          setTerritoryValue(0)
+          setIsDeadzone(false)
+          setInProgress(false)
+          setVerboseLevel(0)
+          setPruneThreshold(1e-12)
+          setReportPruneThreshold(1e-12)
+          setSortMode('ipc_cost')
+          setDecimalPlaces(2)
+          setResult(null)
+          setError('')
+        }}
+        onResetUnits={() => {
+          setAttack({ 0: {}, 1: {}, 2: {} })
+          setDefense({ 0: {}, 1: {}, 2: {} })
+        }}
+      />
 
       <div style={{ marginBottom: '15px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
         <div className="floating-label-group" style={{ flex: 1 }}>
@@ -1920,82 +2091,12 @@ function App() {
 
       {/* History Side Panel */}
       {showHistory && (
-        <div style={{
-          width: '300px',
-          borderLeft: '1px solid #ddd',
-          backgroundColor: '#f9f9f9',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid #ddd', backgroundColor: '#f0f0f0' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>History ({history.length})</h3>
-            <button
-              onClick={() => setHistory([])}
-              style={{
-                fontSize: '11px',
-                padding: '4px 8px',
-                backgroundColor: '#ddd',
-                border: 'none',
-                borderRadius: '3px',
-                cursor: 'pointer',
-                color: '#333'
-              }}
-            >
-              Clear All
-            </button>
-          </div>
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            {history.length === 0 ? (
-              <div style={{ padding: '12px', color: '#999', fontSize: '12px' }}>No history yet</div>
-            ) : (
-              history.map((entry) => (
-                <div
-                  key={entry.id}
-                  style={{
-                    padding: '8px 12px',
-                    borderBottom: '1px solid #eee',
-                    fontSize: '13px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#e9e9e9')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                >
-                  <div
-                    onClick={() => loadFromHistory(entry)}
-                    style={{
-                      flex: 1,
-                      color: '#0066cc',
-                      cursor: 'pointer',
-                      fontWeight: '500'
-                    }}
-                  >
-                    {entry.name}
-                  </div>
-                  <button
-                    onClick={() => deleteFromHistory(entry.id)}
-                    style={{
-                      padding: '2px 6px',
-                      backgroundColor: 'transparent',
-                      color: '#cc0000',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      minWidth: '24px',
-                      textAlign: 'center'
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+        <HistoryPanel 
+          history={history}
+          onLoad={loadFromHistory}
+          onDelete={deleteFromHistory}
+          onClearAll={() => setHistory([])}
+        />
       )}
     </main>
   )
