@@ -655,83 +655,10 @@ function App() {
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  // Per-wave state
-  const [attackOolPreset, setAttackOolPreset] = useState<Record<number, string>>({
-    0: 'inf-art-tnk-fig-bom',
-    1: 'inf-art-tnk-fig-bom',
-    2: 'inf-art-tnk-fig-bom',
-  })
-  const [defenseOolPreset, setDefenseOolPreset] = useState<Record<number, string>>({
-    0: 'aa-inf-art-tnk-bom-fig',
-    1: 'aa-inf-art-tnk-bom-fig',
-    2: 'aa-inf-art-tnk-bom-fig',
-  })
-  const [rounds, setRounds] = useState<Record<number, string>>({
-    0: 'all',
-    1: 'all',
-    2: 'all',
-  })
-  const [retreatThreshold, setRetreatThreshold] = useState<Record<number, number>>({
-    0: 0,
-    1: 0,
-    2: 0,
-  })
-  const [takesTerritory, setTakesTerritory] = useState<Record<number, number>>({
-    0: 0,
-    1: 0,
-    2: 0,
-  })
-  const [aaLast, setAaLast] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  // Sea-specific controls
-  const [attackerSubmerge, setAttackerSubmerge] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  const [attackerDestroyerLast, setAttackerDestroyerLast] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  const [defenderSubmerge, setDefenderSubmerge] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  const [defenderDestroyerLast, setDefenderDestroyerLast] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  const [crashFighters, setCrashFighters] = useState<Record<number, boolean>>({
-    0: false,
-    1: false,
-    2: false,
-  })
-  const [retreatExpectedIpcProfitThresholds, setReteatExpectedIpcProfitThresholds] = useState<Record<number, number | undefined>>({
-    0: undefined,
-    1: undefined,
-    2: undefined,
-  })
-  const [retreatPwinThresholds, setRetreatPwinThresholds] = useState<Record<number, number | undefined>>({
-    0: undefined,
-    1: undefined,
-    2: undefined,
-  })
-  const [retreatStrafeThresholds, setRetreatStrafeThresholds] = useState<Record<number, number | undefined>>({
-    0: undefined,
-    1: undefined,
-    2: undefined,
-  })
-  const [retreatLoseAirProbabilityThresholds, setRetreatLoseAirProbabilityThresholds] = useState<Record<number, number | undefined>>({
-    0: undefined,
-    1: undefined,
-    2: undefined,
-  })
+  
+  // Per-wave state consolidated via hook
+  const { waveConfigs, updateWave, resetWaves } = useWaveState(3)
+  
   // Units per wave
   const [attack, setAttack] = useState<Record<number, Record<string, number>>>({
     0: {},
@@ -788,32 +715,21 @@ function App() {
       }
       return next
     })
-    setAttackOolPreset((prev) => ({
-      0: attackerOolPresets[mode][0].id,
-      1: attackerOolPresets[mode][0].id,
-      2: attackerOolPresets[mode][0].id,
-    }))
-    setDefenseOolPreset((prev) => ({
-      0: defenderOolPresets[mode][0].id,
-      1: defenderOolPresets[mode][0].id,
-      2: defenderOolPresets[mode][0].id,
-    }))
+    // Reset wave configs to defaults, then set appropriate presets for this mode
+    resetWaves(3)
+    for (let i = 0; i < 3; i++) {
+      updateWave(i, {
+        attackOolPreset: attackerOolPresets[mode][0].id,
+        defenseOolPreset: defenderOolPresets[mode][0].id,
+      })
+    }
     setNumWaves(mode === 'sbr' ? 1 : 1)
-    setRounds({ 0: 'all', 1: 'all', 2: 'all' })
-    setRetreatThreshold({ 0: 0, 1: 0, 2: 0 })
-    setTakesTerritory({ 0: 0, 1: 0, 2: 0 })
-    setAaLast({ 0: false, 1: false, 2: false })
-    setAttackerSubmerge({ 0: false, 1: false, 2: false })
-    setAttackerDestroyerLast({ 0: false, 1: false, 2: false })
-    setDefenderSubmerge({ 0: false, 1: false, 2: false })
-    setDefenderDestroyerLast({ 0: false, 1: false, 2: false })
-    setCrashFighters({ 0: false, 1: false, 2: false })
-  }, [mode])
+  }, [mode, resetWaves, updateWave])
 
   // Clear results when any input changes
   useEffect(() => {
     setResult(null)
-  }, [attack, defense, attackOolPreset, defenseOolPreset, rounds, retreatThreshold, takesTerritory, aaLast, attackerSubmerge, defenderSubmerge, attackerDestroyerLast, defenderDestroyerLast, crashFighters, retreatExpectedIpcProfitThresholds, retreatPwinThresholds, retreatStrafeThresholds, retreatLoseAirProbabilityThresholds, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves])
+  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves])
 
   const runBattle = useCallback(() => {
     setError(null)
@@ -822,10 +738,36 @@ function App() {
       const attackOolRecord: Record<number, UnitId[]> = {}
       const defenseOolRecord: Record<number, UnitId[]> = {}
       const roundsNum: Record<number, number> = {}
+      const retreatThresholdRecord: Record<number, number> = {}
+      const takesTerritoryRecord: Record<number, number> = {}
+      const aaLastRecord: Record<number, boolean> = {}
+      const attackerSubmergeRecord: Record<number, boolean> = {}
+      const defenderSubmergeRecord: Record<number, boolean> = {}
+      const attackerDestroyerLastRecord: Record<number, boolean> = {}
+      const defenderDestroyerLastRecord: Record<number, boolean> = {}
+      const crashFightersRecord: Record<number, boolean> = {}
+      const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
+      const retreatPwinRecord: Record<number, number | undefined> = {}
+      const retreatStrafeRecord: Record<number, number | undefined> = {}
+      const retreatLoseAirRecord: Record<number, number | undefined> = {}
+      
       for (let i = 0; i < numWaves; i++) {
-        attackOolRecord[i] = attackerOolPresets[mode].find((o) => o.id === attackOolPreset[i])?.ool || []
-        defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === defenseOolPreset[i])?.ool || []
-        roundsNum[i] = rounds[i] === 'all' ? 100 : parseInt(rounds[i])
+        const config = waveConfigs[i]
+        attackOolRecord[i] = attackerOolPresets[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
+        defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
+        roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
+        retreatThresholdRecord[i] = config.retreatThreshold
+        takesTerritoryRecord[i] = config.takesTerritory
+        aaLastRecord[i] = config.aaLast
+        attackerSubmergeRecord[i] = config.attackerSubmerge
+        defenderSubmergeRecord[i] = config.defenderSubmerge
+        attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
+        defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
+        crashFightersRecord[i] = config.crashFighters
+        retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
+        retreatPwinRecord[i] = config.retreatPwinThreshold
+        retreatStrafeRecord[i] = config.retreatStrafeThreshold
+        retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
       }
       
       const input: BattleInput = {
@@ -834,14 +776,14 @@ function App() {
         attackOol: attackOolRecord,
         defenseOol: defenseOolRecord,
         rounds: roundsNum,
-        retreatThreshold,
-        takesTerritory,
-        aaLast,
-        attackerSubmerge,
-        defenderSubmerge,
-        attackerDestroyerLast,
-        defenderDestroyerLast,
-        crashFighters,
+        retreatThreshold: retreatThresholdRecord,
+        takesTerritory: takesTerritoryRecord,
+        aaLast: aaLastRecord,
+        attackerSubmerge: attackerSubmergeRecord,
+        defenderSubmerge: defenderSubmergeRecord,
+        attackerDestroyerLast: attackerDestroyerLastRecord,
+        defenderDestroyerLast: defenderDestroyerLastRecord,
+        crashFighters: crashFightersRecord,
         mode,
         diceMode,
         inProgress,
@@ -849,10 +791,10 @@ function App() {
         pruneThreshold,
         reportPruneThreshold,
         sortMode,
-        retreatExpectedIpcProfitThresholds,
-        retreatPwinThresholds,
-        retreatStrafeThresholds,
-        retreatLoseAirProbabilityThresholds,
+        retreatExpectedIpcProfitThresholds: retreatExpectedIpcProfitRecord,
+        retreatPwinThresholds: retreatPwinRecord,
+        retreatStrafeThresholds: retreatStrafeRecord,
+        retreatLoseAirProbabilityThresholds: retreatLoseAirRecord,
         territoryValue,
         isDeadzone,
         numWaves,
@@ -888,7 +830,7 @@ function App() {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, attackOolPreset, defenseOolPreset, rounds, retreatThreshold, takesTerritory, aaLast, attackerSubmerge, defenderSubmerge, attackerDestroyerLast, defenderDestroyerLast, crashFighters, retreatExpectedIpcProfitThresholds, retreatPwinThresholds, retreatStrafeThresholds, retreatLoseAirProbabilityThresholds, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName])
+  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName])
 
   const loadFromHistory = (entry: HistoryEntry) => {
     // Set flag to prevent auto-saving when we run the battle
@@ -901,51 +843,45 @@ function App() {
     setAttack(input.attack || {})
     setDefense(input.defense || {})
     
-    // Reconstruct the OOL preset IDs from the unit arrays - find the matching preset
-    setAttackOolPreset((prev) => {
-      const next: Record<number, string> = {}
-      for (let i = 0; i < (input.numWaves || 1); i++) {
-        const ool = input.attackOol?.[i]
-        if (ool) {
-          // Find preset that matches this OOL
-          const matchingPreset = attackerOolPresets[input.mode || 'land'].find((p) =>
-            JSON.stringify(p.ool.sort()) === JSON.stringify([...ool].sort())
+    // Populate per-wave configs
+    const numWavesToLoad = input.numWaves || 1
+    for (let i = 0; i < numWavesToLoad; i++) {
+      const attackOol = input.attackOol?.[i]
+      const defenseOol = input.defenseOol?.[i]
+      
+      // Find matching presets for OOL arrays
+      const mode = input.mode || 'land'
+      const attackingPreset = attackOol 
+        ? attackerOolPresets[mode].find((p) =>
+            JSON.stringify(p.ool.sort()) === JSON.stringify([...attackOol].sort())
           )
-          next[i] = matchingPreset?.id || prev[i] || 'inf-art-tnk-fig-bom'
-        } else {
-          next[i] = prev[i] || 'inf-art-tnk-fig-bom'
-        }
-      }
-      return next
-    })
-    setDefenseOolPreset((prev) => {
-      const next: Record<number, string> = {}
-      for (let i = 0; i < (input.numWaves || 1); i++) {
-        const ool = input.defenseOol?.[i]
-        if (ool) {
-          const matchingPreset = defenderOolPresets[input.mode || 'land'].find((p) =>
-            JSON.stringify(p.ool.sort()) === JSON.stringify([...ool].sort())
+        : undefined
+      
+      const defenderPreset = defenseOol
+        ? defenderOolPresets[mode].find((p) =>
+            JSON.stringify(p.ool.sort()) === JSON.stringify([...defenseOol].sort())
           )
-          next[i] = matchingPreset?.id || prev[i] || 'aa-inf-art-tnk-bom-fig'
-        } else {
-          next[i] = prev[i] || 'aa-inf-art-tnk-bom-fig'
-        }
-      }
-      return next
-    })
-    setRounds(input.rounds as unknown as Record<number, string> || { 0: 'all', 1: 'all', 2: 'all' })
-    setRetreatThreshold(input.retreatThreshold || { 0: 0, 1: 0, 2: 0 })
-    setTakesTerritory(input.takesTerritory || { 0: 0, 1: 0, 2: 0 })
-    setAaLast(input.aaLast || { 0: false, 1: false, 2: false })
-    setAttackerSubmerge(input.attackerSubmerge || { 0: false, 1: false, 2: false })
-    setDefenderSubmerge(input.defenderSubmerge || { 0: false, 1: false, 2: false })
-    setAttackerDestroyerLast(input.attackerDestroyerLast || { 0: false, 1: false, 2: false })
-    setDefenderDestroyerLast(input.defenderDestroyerLast || { 0: false, 1: false, 2: false })
-    setCrashFighters(input.crashFighters || { 0: false, 1: false, 2: false })
-    setReteatExpectedIpcProfitThresholds(input.retreatExpectedIpcProfitThresholds || { 0: undefined, 1: undefined, 2: undefined })
-    setRetreatPwinThresholds(input.retreatPwinThresholds || { 0: undefined, 1: undefined, 2: undefined })
-    setRetreatStrafeThresholds(input.retreatStrafeThresholds || { 0: undefined, 1: undefined, 2: undefined })
-    setRetreatLoseAirProbabilityThresholds(input.retreatLoseAirProbabilityThresholds || { 0: undefined, 1: undefined, 2: undefined })
+        : undefined
+      
+      updateWave(i, {
+        attackOolPreset: attackingPreset?.id || DEFAULT_WAVE_CONFIG.attackOolPreset,
+        defenseOolPreset: defenderPreset?.id || DEFAULT_WAVE_CONFIG.defenseOolPreset,
+        rounds: (input.rounds?.[i]?.toString() ?? 'all') as unknown as string,
+        retreatThreshold: input.retreatThreshold?.[i] ?? 0,
+        takesTerritory: input.takesTerritory?.[i] ?? 0,
+        aaLast: input.aaLast?.[i] ?? false,
+        attackerSubmerge: input.attackerSubmerge?.[i] ?? false,
+        defenderSubmerge: input.defenderSubmerge?.[i] ?? false,
+        attackerDestroyerLast: input.attackerDestroyerLast?.[i] ?? false,
+        defenderDestroyerLast: input.defenderDestroyerLast?.[i] ?? false,
+        crashFighters: input.crashFighters?.[i] ?? false,
+        retreatExpectedIpcProfitThreshold: input.retreatExpectedIpcProfitThresholds?.[i],
+        retreatPwinThreshold: input.retreatPwinThresholds?.[i],
+        retreatStrafeThreshold: input.retreatStrafeThresholds?.[i],
+        retreatLoseAirProbabilityThreshold: input.retreatLoseAirProbabilityThresholds?.[i],
+      })
+    }
+    
     setDiceMode(input.diceMode || 'standard')
     setTerritoryValue(input.territoryValue || 0)
     setIsDeadzone(input.isDeadzone ?? false)
@@ -992,22 +928,8 @@ function App() {
         onResetAll={() => {
           setAttack({ 0: {}, 1: {}, 2: {} })
           setDefense({ 0: {}, 1: {}, 2: {} })
-          setAttackOolPreset({ 0: attackerOolPresets[mode][0].id, 1: attackerOolPresets[mode][0].id, 2: attackerOolPresets[mode][0].id })
-          setDefenseOolPreset({ 0: defenderOolPresets[mode][0].id, 1: defenderOolPresets[mode][0].id, 2: defenderOolPresets[mode][0].id })
+          resetWaves(3)
           setNumWaves(1)
-          setRounds({ 0: 'all', 1: 'all', 2: 'all' })
-          setRetreatThreshold({ 0: 0, 1: 0, 2: 0 })
-          setTakesTerritory({ 0: 0, 1: 0, 2: 0 })
-          setAaLast({ 0: false, 1: false, 2: false })
-          setAttackerSubmerge({ 0: false, 1: false, 2: false })
-          setAttackerDestroyerLast({ 0: false, 1: false, 2: false })
-          setDefenderSubmerge({ 0: false, 1: false, 2: false })
-          setDefenderDestroyerLast({ 0: false, 1: false, 2: false })
-          setCrashFighters({ 0: false, 1: false, 2: false })
-          setReteatExpectedIpcProfitThresholds({ 0: undefined, 1: undefined, 2: undefined })
-          setRetreatPwinThresholds({ 0: undefined, 1: undefined, 2: undefined })
-          setRetreatStrafeThresholds({ 0: undefined, 1: undefined, 2: undefined })
-          setRetreatLoseAirProbabilityThresholds({ 0: undefined, 1: undefined, 2: undefined })
           setDiceMode('standard')
           setAmphibious(false)
           setTerritoryValue(0)
@@ -1246,8 +1168,8 @@ function App() {
                   
                   <div className="floating-label-group">
                     <select 
-                      value={attackOolPreset[waveIdx] || 'inf-art-tnk-fig-bom'} 
-                      onChange={(e) => setAttackOolPreset({...attackOolPreset, [waveIdx]: e.target.value})}
+                      value={waveConfigs[waveIdx]?.attackOolPreset || 'inf-art-tnk-fig-bom'} 
+                      onChange={(e) => updateWave(waveIdx, { attackOolPreset: e.target.value })}
                     >
                       {attackerOolPresets[mode].map((preset) => (
                         <option key={preset.id} value={preset.id}>
@@ -1346,8 +1268,8 @@ function App() {
                   
                   <div className="floating-label-group">
                     <select 
-                      value={defenseOolPreset[waveIdx] || 'aa-inf-art-tnk-bom-fig'} 
-                      onChange={(e) => setDefenseOolPreset({...defenseOolPreset, [waveIdx]: e.target.value})}
+                      value={waveConfigs[waveIdx]?.defenseOolPreset || 'aa-inf-art-tnk-bom-fig'} 
+                      onChange={(e) => updateWave(waveIdx, { defenseOolPreset: e.target.value })}
                     >
                       {defenderOolPresets[mode].map((preset) => (
                         <option key={preset.id} value={preset.id}>
