@@ -1319,8 +1319,8 @@ function App() {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     <div className="floating-label-group">
                       <select 
-                        value={rounds[waveIdx] || 'all'} 
-                        onChange={(e) => setRounds({...rounds, [waveIdx]: e.target.value})}
+                        value={waveConfigs[waveIdx]?.rounds || 'all'} 
+                        onChange={(e) => updateWave(waveIdx, { rounds: e.target.value })}
                       >
                         <option value="all">All</option>
                         <option value="1">1</option>
@@ -1340,12 +1340,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatPwinThresholds[waveIdx] === undefined && retreatStrafeThresholds[waveIdx] === undefined && retreatLoseAirProbabilityThresholds[waveIdx] === undefined && retreatExpectedIpcProfitThresholds[waveIdx] === undefined}
+                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined}
                           onChange={() => {
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined, retreatExpectedIpcProfitThreshold: undefined });
                           }}
                         />
                         Retreat if Number of Attacking Units ≤
@@ -1353,12 +1350,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatExpectedIpcProfitThresholds[waveIdx] !== undefined && retreatPwinThresholds[waveIdx] === undefined && retreatStrafeThresholds[waveIdx] === undefined && retreatLoseAirProbabilityThresholds[waveIdx] === undefined}
+                          checked={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: 0});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: 0, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Expected IPC Profit &lt;
@@ -1366,12 +1360,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatPwinThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: 0});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: 0, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Probability Wins ≤
@@ -1379,12 +1370,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatStrafeThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: 0});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: 0, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Probability of Killing Defenders &gt;
@@ -1392,12 +1380,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatLoseAirProbabilityThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: 0});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: 0 });
                           }}
                         />
                         Probability of Losing Air &gt;
@@ -1409,8 +1394,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={attackerSubmerge[waveIdx] || false}
-                          onChange={(e) => setAttackerSubmerge({...attackerSubmerge, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.attackerSubmerge || false}
+                          onChange={(e) => updateWave(waveIdx, { attackerSubmerge: e.target.checked })}
                         />
                         Attacker Submerge Sub
                       </label>
@@ -1419,8 +1404,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={attackerDestroyerLast[waveIdx] || false}
-                          onChange={(e) => setAttackerDestroyerLast({...attackerDestroyerLast, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.attackerDestroyerLast || false}
+                          onChange={(e) => updateWave(waveIdx, { attackerDestroyerLast: e.target.checked })}
                         />
                         Attacker Destroyer Last
                       </label>
@@ -1429,8 +1414,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={defenderSubmerge[waveIdx] || false}
-                          onChange={(e) => setDefenderSubmerge({...defenderSubmerge, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.defenderSubmerge || false}
+                          onChange={(e) => updateWave(waveIdx, { defenderSubmerge: e.target.checked })}
                         />
                         Defender Submerge Sub
                       </label>
@@ -1439,8 +1424,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={defenderDestroyerLast[waveIdx] || false}
-                          onChange={(e) => setDefenderDestroyerLast({...defenderDestroyerLast, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.defenderDestroyerLast || false}
+                          onChange={(e) => updateWave(waveIdx, { defenderDestroyerLast: e.target.checked })}
                         />
                         Defender Destroyer Last
                       </label>
@@ -1449,8 +1434,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={crashFighters[waveIdx] || false}
-                          onChange={(e) => setCrashFighters({...crashFighters, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.crashFighters || false}
+                          onChange={(e) => updateWave(waveIdx, { crashFighters: e.target.checked })}
                         />
                         Crash Fighters
                       </label>
@@ -1462,8 +1447,8 @@ function App() {
                   <div className="wave-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
                     <div className="floating-label-group">
                       <select 
-                        value={rounds[waveIdx] || 'all'} 
-                        onChange={(e) => setRounds({...rounds, [waveIdx]: e.target.value})}
+                        value={waveConfigs[waveIdx]?.rounds || 'all'} 
+                        onChange={(e) => updateWave(waveIdx, { rounds: e.target.value })}
                       >
                         <option value="all">All</option>
                         <option value="1">1</option>
@@ -1480,9 +1465,9 @@ function App() {
                       <input 
                         type="number" 
                         min={0}
-                        value={takesTerritory[waveIdx] || ''}
-                        onChange={(e) => setTakesTerritory({...takesTerritory, [waveIdx]: Number(e.target.value) || 0})}
-                        className={takesTerritory[waveIdx] ? 'has-value' : ''}
+                        value={waveConfigs[waveIdx]?.takesTerritory || ''}
+                        onChange={(e) => updateWave(waveIdx, { takesTerritory: Number(e.target.value) || 0 })}
+                        className={waveConfigs[waveIdx]?.takesTerritory ? 'has-value' : ''}
                         style={{ width: '100%' }}
                       />
                       <label>Takes Territory</label>
@@ -1491,8 +1476,8 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="checkbox"
-                          checked={aaLast[waveIdx] || false}
-                          onChange={(e) => setAaLast({...aaLast, [waveIdx]: e.target.checked})}
+                          checked={waveConfigs[waveIdx]?.aaLast || false}
+                          onChange={(e) => updateWave(waveIdx, { aaLast: e.target.checked })}
                         />
                         AA 2nd Last
                       </label>
@@ -1504,12 +1489,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatPwinThresholds[waveIdx] === undefined && retreatStrafeThresholds[waveIdx] === undefined && retreatLoseAirProbabilityThresholds[waveIdx] === undefined && retreatExpectedIpcProfitThresholds[waveIdx] === undefined}
+                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined}
                           onChange={() => {
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined, retreatExpectedIpcProfitThreshold: undefined });
                           }}
                         />
                         Retreat if Number of Attacking Units ≤
@@ -1517,12 +1499,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatExpectedIpcProfitThresholds[waveIdx] !== undefined && retreatPwinThresholds[waveIdx] === undefined && retreatStrafeThresholds[waveIdx] === undefined && retreatLoseAirProbabilityThresholds[waveIdx] === undefined}
+                          checked={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: 0});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: 0, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Expected IPC Profit &lt;
@@ -1530,12 +1509,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatPwinThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: 0});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: 0, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Probability Wins ≤
@@ -1543,12 +1519,9 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatStrafeThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: 0});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: undefined});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: 0, retreatLoseAirProbabilityThreshold: undefined });
                           }}
                         />
                         Probability of Killing Defenders &gt;
@@ -1556,83 +1529,80 @@ function App() {
                       <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
                         <input
                           type="radio"
-                          checked={retreatLoseAirProbabilityThresholds[waveIdx] !== undefined}
+                          checked={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined}
                           onChange={() => {
-                            setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: undefined});
-                            setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: undefined});
-                            setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: undefined});
-                            setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: 0});
+                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: 0 });
                           }}
                         />
                         Probability of Losing Air &gt;
                       </label>
                     </div>
                   </div>
-                  {retreatPwinThresholds[waveIdx] === undefined && retreatStrafeThresholds[waveIdx] === undefined && retreatLoseAirProbabilityThresholds[waveIdx] === undefined && retreatExpectedIpcProfitThresholds[waveIdx] === undefined && (
+                  {waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined && (
                     <div style={{ marginBottom: '10px' }}>
                       <div className="floating-label-group">
                         <input 
                           type="number" 
                           min={0}
-                          value={retreatThreshold[waveIdx] || ''}
-                          onChange={(e) => setRetreatThreshold({...retreatThreshold, [waveIdx]: Number(e.target.value) || 0})}
-                          className={retreatThreshold[waveIdx] ? 'has-value' : ''}
+                          value={waveConfigs[waveIdx]?.retreatThreshold || ''}
+                          onChange={(e) => updateWave(waveIdx, { retreatThreshold: Number(e.target.value) || 0 })}
+                          className={waveConfigs[waveIdx]?.retreatThreshold ? 'has-value' : ''}
                           style={{ width: '100%' }}
                         />
                         <label>Threshold</label>
                       </div>
                     </div>
                   )}
-                  {retreatExpectedIpcProfitThresholds[waveIdx] !== undefined && (
+                  {waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && (
                     <div style={{ marginBottom: '10px' }}>
                       <div className="floating-label-group">
                         <input 
                           type="number" 
                           step="any"
-                          value={retreatExpectedIpcProfitThresholds[waveIdx]}
-                          onChange={(e) => setReteatExpectedIpcProfitThresholds({...retreatExpectedIpcProfitThresholds, [waveIdx]: Number(e.target.value)})}
+                          value={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold}
+                          onChange={(e) => updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: Number(e.target.value) })}
                           style={{ width: '100%' }}
                         />
                         <label>Threshold</label>
                       </div>
                     </div>
                   )}
-                  {retreatPwinThresholds[waveIdx] !== undefined && (
+                  {waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined && (
                     <div style={{ marginBottom: '10px' }}>
                       <div className="floating-label-group">
                         <input 
                           type="number" 
                           step="any"
-                          value={retreatPwinThresholds[waveIdx]}
-                          onChange={(e) => setRetreatPwinThresholds({...retreatPwinThresholds, [waveIdx]: Number(e.target.value)})}
+                          value={waveConfigs[waveIdx]?.retreatPwinThreshold}
+                          onChange={(e) => updateWave(waveIdx, { retreatPwinThreshold: Number(e.target.value) })}
                           style={{ width: '100%' }}
                         />
                         <label>Threshold</label>
                       </div>
                     </div>
                   )}
-                  {retreatStrafeThresholds[waveIdx] !== undefined && (
+                  {waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined && (
                     <div style={{ marginBottom: '10px' }}>
                       <div className="floating-label-group">
                         <input 
                           type="number" 
                           step="any"
-                          value={retreatStrafeThresholds[waveIdx]}
-                          onChange={(e) => setRetreatStrafeThresholds({...retreatStrafeThresholds, [waveIdx]: Number(e.target.value)})}
+                          value={waveConfigs[waveIdx]?.retreatStrafeThreshold}
+                          onChange={(e) => updateWave(waveIdx, { retreatStrafeThreshold: Number(e.target.value) })}
                           style={{ width: '100%' }}
                         />
                         <label>Threshold</label>
                       </div>
                     </div>
                   )}
-                  {retreatLoseAirProbabilityThresholds[waveIdx] !== undefined && (
+                  {waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined && (
                     <div style={{ marginBottom: '10px' }}>
                       <div className="floating-label-group">
                         <input 
                           type="number" 
                           step="any"
-                          value={retreatLoseAirProbabilityThresholds[waveIdx]}
-                          onChange={(e) => setRetreatLoseAirProbabilityThresholds({...retreatLoseAirProbabilityThresholds, [waveIdx]: Number(e.target.value)})}
+                          value={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold}
+                          onChange={(e) => updateWave(waveIdx, { retreatLoseAirProbabilityThreshold: Number(e.target.value) })}
                           style={{ width: '100%' }}
                         />
                         <label>Threshold</label>
@@ -1647,19 +1617,18 @@ function App() {
                 key={`swap-wave-${waveIdx}`}
                 onClick={() => {
                   const newAttack = { ...attack }
-                  const newAttackOol = { ...attackOolPreset }
                   
                   const temp = { ...(attack[waveIdx] || {}) }
-                  const tempOol = attackOolPreset[waveIdx] || 'inf-art-tnk-fig-bom'
+                  const tempConfig = { ...waveConfigs[waveIdx] }
+                  const nextConfig = { ...waveConfigs[waveIdx + 1] }
                   
                   newAttack[waveIdx] = { ...(attack[waveIdx + 1] || {}) }
-                  newAttackOol[waveIdx] = attackOolPreset[waveIdx + 1] || 'inf-art-tnk-fig-bom'
-                  
                   newAttack[waveIdx + 1] = temp
-                  newAttackOol[waveIdx + 1] = tempOol
                   
                   setAttack(newAttack)
-                  setAttackOolPreset(newAttackOol)
+                  // Update both wave configs
+                  updateWave(waveIdx, nextConfig)
+                  updateWave(waveIdx + 1, tempConfig)
                 }}
                 style={{
                   margin: '10px auto',
@@ -1753,10 +1722,10 @@ function App() {
 
       <div className="ool-summary">
         <p>
-          Attacker OOL: {attackerOolPresets[mode].find((p) => p.id === attackOolPreset)?.label}
+          Attacker OOL: {attackerOolPresets[mode].find((p) => p.id === waveConfigs[0]?.attackOolPreset)?.label}
         </p>
         <p>
-          Defender OOL: {defenderOolPresets[mode].find((p) => p.id === defenseOolPreset)?.label}
+          Defender OOL: {defenderOolPresets[mode].find((p) => p.id === waveConfigs[0]?.defenseOolPreset)?.label}
         </p>
       </div>
 
