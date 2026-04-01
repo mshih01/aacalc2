@@ -704,6 +704,7 @@ function App() {
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [histogramZoom, setHistogramZoom] = useState(1)
   
   // Per-wave state consolidated via hook
   const { waveConfigs, updateWave, resetWaves } = useWaveState(3)
@@ -729,6 +730,7 @@ function App() {
   const shouldRunBattleRef = useRef(false)
   const loadedEntryNameRef = useRef<string | null>(null)
   const isLoadingFromHistoryRef = useRef(false)
+  const histogramScrollRef = useRef<HTMLDivElement>(null)
 
   // Load history from localStorage on mount
   useEffect(() => {
@@ -1710,46 +1712,109 @@ function App() {
             {/* Profit Distribution Histogram */}
             {result.profitDistribution?.[0] && (
               <div style={{ marginTop: '20px' }}>
-                <h4 style={{ fontSize: '14px', marginBottom: '15px', color: '#333' }}>IPC Profit Distribution Chart</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={Object.entries(
-                      Object.entries(result.profitDistribution[0])
-                        .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
-                          const ipc = parseFloat(ipcStr);
-                          const binSize = 3;
-                          const binKey = Math.floor(ipc / binSize) * binSize;
-                          bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
-                          return bins;
-                        }, {})
-                    )
-                      .sort(([aKey], [bKey]) => parseInt(aKey) - parseInt(bKey))
-                      .map(([binKey, prob]) => ({
-                        ipc: parseInt(binKey),
-                        ipcRange: `${binKey}-${parseInt(binKey) + 2}`,
-                        probability: prob,
-                      }))}
-                    margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="ipc" 
-                      label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
-                    />
-                    <YAxis 
-                      label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
-                    />
-                    <Tooltip 
-                      formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
-                      labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
-                    />
-                    <Bar 
-                      dataKey="probability" 
-                      fill="#1976d2" 
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h4 style={{ fontSize: '14px', margin: 0, color: '#333' }}>IPC Profit Distribution Chart</h4>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      onClick={() => setHistogramZoom(z => Math.max(1, z - 0.2))}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        backgroundColor: '#f0f0f0',
+                        border: '1px solid #ccc',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      − Zoom Out
+                    </button>
+                    <span style={{ fontSize: '12px', color: '#666', minWidth: '50px', textAlign: 'center' }}>
+                      {(histogramZoom * 100).toFixed(0)}%
+                    </span>
+                    <button
+                      onClick={() => setHistogramZoom(z => Math.min(3, z + 0.2))}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        backgroundColor: '#f0f0f0',
+                        border: '1px solid #ccc',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Zoom In +
+                    </button>
+                    <button
+                      onClick={() => {
+                        setHistogramZoom(1)
+                        if (histogramScrollRef.current) {
+                          histogramScrollRef.current.scrollLeft = 0
+                        }
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '12px',
+                        backgroundColor: '#f0f0f0',
+                        border: '1px solid #ccc',
+                        borderRadius: '3px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+                <div
+                  ref={histogramScrollRef}
+                  style={{
+                    overflowX: histogramZoom > 1 ? 'auto' : 'hidden',
+                    overflowY: 'hidden',
+                    borderRadius: '4px',
+                    backgroundColor: '#fafafa',
+                  }}
+                >
+                  <div style={{ width: `${100 * histogramZoom}%`, minWidth: '100%' }}>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart
+                        data={Object.entries(
+                          Object.entries(result.profitDistribution[0])
+                            .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
+                              const ipc = parseFloat(ipcStr);
+                              const binSize = 3;
+                              const binKey = Math.floor(ipc / binSize) * binSize;
+                              bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
+                              return bins;
+                            }, {})
+                        )
+                          .sort(([aKey], [bKey]) => parseInt(aKey) - parseInt(bKey))
+                          .map(([binKey, prob]) => ({
+                            ipc: parseInt(binKey),
+                            ipcRange: `${binKey}-${parseInt(binKey) + 2}`,
+                            probability: prob,
+                          }))}
+                        margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="ipc" 
+                          label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
+                        />
+                        <YAxis 
+                          label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
+                        />
+                        <Tooltip 
+                          formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
+                          labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
+                        />
+                        <Bar 
+                          dataKey="probability" 
+                          fill="#1976d2" 
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
             )}
           </CollapsibleSection>
