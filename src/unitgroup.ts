@@ -337,7 +337,7 @@ export class unit_manager {
       0,
       0,
       0,
-      2,
+      1,
       false,
       false,
       false,

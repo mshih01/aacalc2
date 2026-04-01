@@ -194,6 +194,45 @@ export interface MultiwaveOutput {
 
 export type MultiEvalOutput = multieval_output;
 
+export interface UnitStats {
+  cost: number;
+  att: number;
+  def: number;
+  hits: number;
+}
+
+export type UnitStatsMap = Record<UnitIdentifier, UnitStats>;
+
+// Export unit stats lookup table for frontend
+export function getUnitStatsMap(): UnitStatsMap {
+  const um = new unit_manager(0, false);
+  const stats: Partial<UnitStatsMap> = {};
+  
+  const unitIds: UnitIdentifier[] = [
+    'aa', 'inf', 'art', 'arm', 'fig', 'bom', 'sub', 'tra', 'des', 'cru',
+    'acc', 'bat', 'bat1', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'
+  ];
+  
+  for (const id of unitIds) {
+    const ch = UnitIdentifier2UnitMap[id];
+    if (ch) {
+      try {
+        const stat = um.get_stat(ch);
+        stats[id] = {
+          cost: stat.cost,
+          att: stat.att,
+          def: stat.def,
+          hits: stat.hits,
+        };
+      } catch {
+        // Skip units that don't exist
+      }
+    }
+  }
+  
+  return stats as UnitStatsMap;
+}
+
 interface unit_counts {
   num_air: number;
   num_subs: number;

@@ -10,6 +10,7 @@ import './App.css'
 import { MODES, DEFAULT_OOL_PRESETS } from './constants'
 import { SeaModeSection } from './components/SeaModeSection'
 import { LandModeSection } from './components/LandModeSection'
+import { UnitSummaryDisplay } from './components/UnitSummaryDisplay'
 
 // Frontend wrapper types
 interface BattleInput {
@@ -644,6 +645,51 @@ function getUnitName(unit: string): string {
   return unitNameMap[unit] || unit.toUpperCase()
 }
 
+/**
+ * Convert a Record of unit counts to a unit string
+ * e.g., { inf: 3, art: 2, fig: 1 } → "3i2a1f"
+ */
+function getUnitString(units: Record<string, number>): string {
+  const unitMap: Record<string, string> = {
+    inf: 'i',
+    art: 'a',
+    arm: 't',
+    fig: 'f',
+    bom: 'b',
+    aa: 'c',
+    sub: 'S',
+    tra: 'T',
+    des: 'D',
+    cru: 'C',
+    acc: 'A',
+    bat: 'B',
+    dbat: 'F',
+    ic: 'p',
+    inf_a: 'j',
+    art_a: 'g',
+    arm_a: 'u',
+  };
+  
+  const unitOrder = ['inf', 'art', 'arm', 'fig', 'bom', 'aa', 'sub', 'tra', 'des', 'cru', 'acc', 'bat', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'];
+  let result = '';
+  
+  for (const unitId of unitOrder) {
+    if (unitId in units && units[unitId] > 0) {
+      const count = units[unitId];
+      const unitChar = unitMap[unitId];
+      if (unitChar) {
+        if (count === 1) {
+          result += unitChar;
+        } else {
+          result += `${count}${unitChar}`;
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+
 function App() {
   const [mode, setMode] = useState<BattleMode>('land')
   const [numWaves, setNumWaves] = useState(1)
@@ -1215,6 +1261,12 @@ function App() {
                       })}
                     </div>
                   </div>
+                  <UnitSummaryDisplay 
+                    title="Attacker" 
+                    unitString={getUnitString(attack[waveIdx] || {})} 
+                    isAttacker={true}
+                    isLandMode={mode === 'land'}
+                  />
                 </div>
 
                 {/* Swap Button */}
@@ -1313,6 +1365,12 @@ function App() {
                       })}
                     </div>
                   </div>
+                  <UnitSummaryDisplay 
+                    title="Defender" 
+                    unitString={getUnitString(defense[waveIdx] || {})} 
+                    isAttacker={false}
+                    isLandMode={mode === 'land'}
+                  />
                 </div>
               </div>
 
