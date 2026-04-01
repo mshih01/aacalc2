@@ -7,6 +7,9 @@ import {
 } from 'aacalc2'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import './App.css'
+import { MODES, DEFAULT_OOL_PRESETS } from './constants'
+import { SeaModeSection } from './components/SeaModeSection'
+import { LandModeSection } from './components/LandModeSection'
 
 // Frontend wrapper types
 interface BattleInput {
@@ -393,7 +396,7 @@ interface HistoryEntry {
 }
 
 // Consolidated per-wave configuration
-interface WaveConfig {
+export interface WaveConfig {
   attackOolPreset: string
   defenseOolPreset: string
   rounds: string
@@ -1315,301 +1318,17 @@ function App() {
 
               {/* Wave Options */}
               {mode === 'sea' ? (
-                <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                    <div className="floating-label-group">
-                      <select 
-                        value={waveConfigs[waveIdx]?.rounds || 'all'} 
-                        onChange={(e) => updateWave(waveIdx, { rounds: e.target.value })}
-                      >
-                        <option value="all">All</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                      </select>
-                      <label>Rounds</label>
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: '#666', fontWeight: '500' }}>Retreat Options:</label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined, retreatExpectedIpcProfitThreshold: undefined });
-                          }}
-                        />
-                        Retreat if Number of Attacking Units ≤
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: 0, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Expected IPC Profit &lt;
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: 0, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Probability Wins ≤
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: 0, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Probability of Killing Defenders &gt;
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: 0 });
-                          }}
-                        />
-                        Probability of Losing Air &gt;
-                      </label>
-                    </div>
-                  </div>
-                  <div className="sea-controls-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '10px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.attackerSubmerge || false}
-                          onChange={(e) => updateWave(waveIdx, { attackerSubmerge: e.target.checked })}
-                        />
-                        Attacker Submerge Sub
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.attackerDestroyerLast || false}
-                          onChange={(e) => updateWave(waveIdx, { attackerDestroyerLast: e.target.checked })}
-                        />
-                        Attacker Destroyer Last
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.defenderSubmerge || false}
-                          onChange={(e) => updateWave(waveIdx, { defenderSubmerge: e.target.checked })}
-                        />
-                        Defender Submerge Sub
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.defenderDestroyerLast || false}
-                          onChange={(e) => updateWave(waveIdx, { defenderDestroyerLast: e.target.checked })}
-                        />
-                        Defender Destroyer Last
-                      </label>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.crashFighters || false}
-                          onChange={(e) => updateWave(waveIdx, { crashFighters: e.target.checked })}
-                        />
-                        Crash Fighters
-                      </label>
-                    </div>
-                  </div>
-                </div>
+                <SeaModeSection
+                  waveIdx={waveIdx}
+                  config={waveConfigs[waveIdx]}
+                  onUpdate={(updates) => updateWave(waveIdx, updates)}
+                />
               ) : (
-                <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-                  <div className="wave-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                    <div className="floating-label-group">
-                      <select 
-                        value={waveConfigs[waveIdx]?.rounds || 'all'} 
-                        onChange={(e) => updateWave(waveIdx, { rounds: e.target.value })}
-                      >
-                        <option value="all">All</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                      </select>
-                      <label>Rounds</label>
-                    </div>
-                    <div className="floating-label-group">
-                      <input 
-                        type="number" 
-                        min={0}
-                        value={waveConfigs[waveIdx]?.takesTerritory || ''}
-                        onChange={(e) => updateWave(waveIdx, { takesTerritory: Number(e.target.value) || 0 })}
-                        className={waveConfigs[waveIdx]?.takesTerritory ? 'has-value' : ''}
-                        style={{ width: '100%' }}
-                      />
-                      <label>Takes Territory</label>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="checkbox"
-                          checked={waveConfigs[waveIdx]?.aaLast || false}
-                          onChange={(e) => updateWave(waveIdx, { aaLast: e.target.checked })}
-                        />
-                        AA 2nd Last
-                      </label>
-                    </div>
-                  </div>
-                  <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: '#666', fontWeight: '500' }}>Retreat Options:</label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined, retreatExpectedIpcProfitThreshold: undefined });
-                          }}
-                        />
-                        Retreat if Number of Attacking Units ≤
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: 0, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Expected IPC Profit &lt;
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: 0, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Probability Wins ≤
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: 0, retreatLoseAirProbabilityThreshold: undefined });
-                          }}
-                        />
-                        Probability of Killing Defenders &gt;
-                      </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                        <input
-                          type="radio"
-                          checked={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined}
-                          onChange={() => {
-                            updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: undefined, retreatPwinThreshold: undefined, retreatStrafeThreshold: undefined, retreatLoseAirProbabilityThreshold: 0 });
-                          }}
-                        />
-                        Probability of Losing Air &gt;
-                      </label>
-                    </div>
-                  </div>
-                  {waveConfigs[waveIdx]?.retreatPwinThreshold === undefined && waveConfigs[waveIdx]?.retreatStrafeThreshold === undefined && waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold === undefined && waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold === undefined && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="floating-label-group">
-                        <input 
-                          type="number" 
-                          min={0}
-                          value={waveConfigs[waveIdx]?.retreatThreshold || ''}
-                          onChange={(e) => updateWave(waveIdx, { retreatThreshold: Number(e.target.value) || 0 })}
-                          className={waveConfigs[waveIdx]?.retreatThreshold ? 'has-value' : ''}
-                          style={{ width: '100%' }}
-                        />
-                        <label>Threshold</label>
-                      </div>
-                    </div>
-                  )}
-                  {waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold !== undefined && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="floating-label-group">
-                        <input 
-                          type="number" 
-                          step="any"
-                          value={waveConfigs[waveIdx]?.retreatExpectedIpcProfitThreshold}
-                          onChange={(e) => updateWave(waveIdx, { retreatExpectedIpcProfitThreshold: Number(e.target.value) })}
-                          style={{ width: '100%' }}
-                        />
-                        <label>Threshold</label>
-                      </div>
-                    </div>
-                  )}
-                  {waveConfigs[waveIdx]?.retreatPwinThreshold !== undefined && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="floating-label-group">
-                        <input 
-                          type="number" 
-                          step="any"
-                          value={waveConfigs[waveIdx]?.retreatPwinThreshold}
-                          onChange={(e) => updateWave(waveIdx, { retreatPwinThreshold: Number(e.target.value) })}
-                          style={{ width: '100%' }}
-                        />
-                        <label>Threshold</label>
-                      </div>
-                    </div>
-                  )}
-                  {waveConfigs[waveIdx]?.retreatStrafeThreshold !== undefined && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="floating-label-group">
-                        <input 
-                          type="number" 
-                          step="any"
-                          value={waveConfigs[waveIdx]?.retreatStrafeThreshold}
-                          onChange={(e) => updateWave(waveIdx, { retreatStrafeThreshold: Number(e.target.value) })}
-                          style={{ width: '100%' }}
-                        />
-                        <label>Threshold</label>
-                      </div>
-                    </div>
-                  )}
-                  {waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold !== undefined && (
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="floating-label-group">
-                        <input 
-                          type="number" 
-                          step="any"
-                          value={waveConfigs[waveIdx]?.retreatLoseAirProbabilityThreshold}
-                          onChange={(e) => updateWave(waveIdx, { retreatLoseAirProbabilityThreshold: Number(e.target.value) })}
-                          style={{ width: '100%' }}
-                        />
-                        <label>Threshold</label>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <LandModeSection
+                  waveIdx={waveIdx}
+                  config={waveConfigs[waveIdx]}
+                  onUpdate={(updates) => updateWave(waveIdx, updates)}
+                />
               )}
 
               {waveIdx < numWaves - 1 && (
