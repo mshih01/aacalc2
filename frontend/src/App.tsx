@@ -5,7 +5,7 @@ import {
   type MultiwaveInput,
   type MultiwaveOutput,
 } from 'aacalc2'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 import './App.css'
 import { MODES, DEFAULT_OOL_PRESETS } from './constants'
 import { SeaModeSection } from './components/SeaModeSection'
@@ -688,6 +688,15 @@ function getUnitString(units: Record<string, number>): string {
   }
   
   return result;
+}
+
+// Helper function to identify percentile rows
+// Helper function to get percentile color
+function getPercentileColor(percentile: number | undefined): { bg: string; border: string } {
+  if (percentile) {
+    return { bg: '#fff3e0', border: '#ff9800' }  // Light orange background, orange border
+  }
+  return { bg: 'transparent', border: 'transparent' }
 }
 
 function App() {
@@ -1599,30 +1608,50 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {result.casualtiesInfo['attack'] && Object.entries(result.casualtiesInfo['attack'])
-                  .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
-                  .map(([outcome, info], idx, sortedEntries) => {
-                  const cumulativeProb = sortedEntries
-                    .slice(0, idx + 1)
-                    .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100;
-                  const reverseProb = sortedEntries
-                    .slice(idx)
-                    .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100;
+                {result.casualtiesInfo['attack'] && (() => {
+                  const sortedEntries = Object.entries(result.casualtiesInfo['attack'])
+                    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
+                  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
+                  const percentiles = [5, 32, 50, 68, 95]
                   
-                  return (
-                    <tr key={`att-${outcome}-${idx}`} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.retreaters}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
-                        {info.ipcLoss.toFixed(1)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                  return sortedEntries.map(([outcome, info], idx) => {
+                    const cumulativeProb = sortedEntries
+                      .slice(0, idx + 1)
+                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+                    const reverseProb = sortedEntries
+                      .slice(idx)
+                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+                    
+                    // Identify percentile
+                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+                    const prevPercentage = idx > 0 
+                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
+                      : 0
+                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+                    
+                    return (
+                      <tr 
+                        key={`att-${outcome}-${idx}`}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: colors.bg,
+                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+                        }}
+                      >
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.retreaters}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
+                          {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
+                        </td>
+                      </tr>
+                    );
+                  })
+                })()}
               </tbody>
             </table>
           </CollapsibleSection>
@@ -1641,29 +1670,49 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {result.casualtiesInfo['defense'] && Object.entries(result.casualtiesInfo['defense'])
-                  .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
-                  .map(([outcome, info], idx, sortedEntries) => {
-                  const cumulativeProb = sortedEntries
-                    .slice(0, idx + 1)
-                    .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100;
-                  const reverseProb = sortedEntries
-                    .slice(idx)
-                    .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100;
+                {result.casualtiesInfo['defense'] && (() => {
+                  const sortedEntries = Object.entries(result.casualtiesInfo['defense'])
+                    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
+                  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
+                  const percentiles = [5, 32, 50, 68, 95]
                   
-                  return (
-                    <tr key={`def-${outcome}-${idx}`} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
-                        {info.ipcLoss.toFixed(1)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                  return sortedEntries.map(([outcome, info], idx) => {
+                    const cumulativeProb = sortedEntries
+                      .slice(0, idx + 1)
+                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+                    const reverseProb = sortedEntries
+                      .slice(idx)
+                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+                    
+                    // Identify percentile
+                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+                    const prevPercentage = idx > 0 
+                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
+                      : 0
+                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+                    
+                    return (
+                      <tr 
+                        key={`def-${outcome}-${idx}`}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: colors.bg,
+                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+                        }}
+                      >
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
+                          {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
+                        </td>
+                      </tr>
+                    );
+                  })
+                })()}
               </tbody>
             </table>
           </CollapsibleSection>
@@ -1679,33 +1728,53 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {result.profitDistribution?.[0] && Object.entries(result.profitDistribution[0])
-                  .sort(([ipcStrA], [ipcStrB]) => {
-                    const ipcA = parseFloat(ipcStrA);
-                    const ipcB = parseFloat(ipcStrB);
-                    return ipcA - ipcB;
-                  })
-                  .map(([ipcStr, profitInfo], idx, sortedEntries) => {
-                  const probValue = (profitInfo as any).prob || 0;
-                  const cumulativeProb = sortedEntries
-                    .slice(0, idx + 1)
-                    .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100;
-                  const reverseProb = sortedEntries
-                    .slice(idx)
-                    .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100;
+                {result.profitDistribution?.[0] && (() => {
+                  const sortedEntries = Object.entries(result.profitDistribution[0])
+                    .sort(([ipcStrA], [ipcStrB]) => {
+                      const ipcA = parseFloat(ipcStrA);
+                      const ipcB = parseFloat(ipcStrB);
+                      return ipcA - ipcB;
+                    })
+                  const totalProb = sortedEntries.reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0)
+                  const percentiles = [5, 32, 50, 68, 95]
                   
-                  const ipcValue = (profitInfo as any).ipc ?? 0;
-                  return (
-                    <tr key={`${ipcStr}-${idx}`} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(probValue * 100).toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                      <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', fontWeight: '500', color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
-                        {ipcValue.toFixed(1)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                  return sortedEntries.map(([ipcStr, profitInfo], idx) => {
+                    const probValue = (profitInfo as any).prob || 0
+                    const cumulativeProb = sortedEntries
+                      .slice(0, idx + 1)
+                      .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
+                    const reverseProb = sortedEntries
+                      .slice(idx)
+                      .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
+                    
+                    // Identify percentile
+                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+                    const prevPercentage = idx > 0 
+                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) / totalProb) * 100
+                      : 0
+                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+                    
+                    const ipcValue = (profitInfo as any).ipc ?? 0
+                    return (
+                      <tr 
+                        key={`${ipcStr}-${idx}`}
+                        style={{
+                          borderBottom: '1px solid #eee',
+                          backgroundColor: colors.bg,
+                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+                        }}
+                      >
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(probValue * 100).toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', fontWeight: '500', color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
+                          {ipcValue.toFixed(1)} {percentile && `📊 ${percentile}%`}
+                        </td>
+                      </tr>
+                    );
+                  })
+                })()}
               </tbody>
             </table>
 
@@ -1775,43 +1844,117 @@ function App() {
                 >
                   <div style={{ width: `${100 * histogramZoom}%`, minWidth: '100%' }}>
                     <ResponsiveContainer width="100%" height={300}>
-                      <BarChart
-                        data={Object.entries(
-                          Object.entries(result.profitDistribution[0])
-                            .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
-                              const ipc = parseFloat(ipcStr);
-                              const binSize = 3;
-                              const binKey = Math.floor(ipc / binSize) * binSize;
-                              bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
-                              return bins;
-                            }, {})
-                        )
+                      {(() => {
+                        const binned = Object.entries(result.profitDistribution[0])
+                          .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
+                            const ipc = parseFloat(ipcStr);
+                            const binSize = 3;
+                            const binKey = Math.floor(ipc / binSize) * binSize;
+                            bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
+                            return bins;
+                          }, {})
+                        
+                        const sorted = Object.entries(binned)
                           .sort(([aKey], [bKey]) => parseInt(aKey) - parseInt(bKey))
                           .map(([binKey, prob]) => ({
                             ipc: parseInt(binKey),
                             ipcRange: `${binKey}-${parseInt(binKey) + 2}`,
                             probability: prob,
-                          }))}
-                        margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="ipc" 
-                          label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
-                        />
-                        <YAxis 
-                          label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
-                        />
-                        <Tooltip 
-                          formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
-                          labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
-                        />
-                        <Bar 
-                          dataKey="probability" 
-                          fill="#1976d2" 
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
+                          }))
+                        
+                        // Calculate cumulative sums and identify percentiles
+                        const totalProb = sorted.reduce((sum, item) => sum + item.probability, 0)
+                        const percentiles = [5, 32, 50, 68, 95]
+                        let cumulativeLeft = 0
+                        
+                        const chartData = sorted.map((item, index) => {
+                          cumulativeLeft += item.probability
+                          const cumulativeRight = totalProb - cumulativeLeft + item.probability
+                          
+                          // Check if this bar contains any percentile boundary
+                          const percentileAt = percentiles.find(p => {
+                            const prevCum = cumulativeLeft - item.probability
+                            return prevCum < p && cumulativeLeft >= p
+                          })
+                          
+                          return {
+                            ...item,
+                            cumulativeLeft,
+                            cumulativeRight,
+                            percentileAt,
+                          }
+                        })
+
+                        return (
+                          <BarChart
+                            data={chartData}
+                            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis 
+                              dataKey="ipc" 
+                              label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
+                            />
+                            <YAxis 
+                              label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
+                            />
+                            <Tooltip 
+                              formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
+                              labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload;
+                                  return (
+                                    <div style={{
+                                      backgroundColor: '#fff',
+                                      border: '1px solid #ccc',
+                                      borderRadius: '4px',
+                                      padding: '8px',
+                                      fontSize: '12px',
+                                      color: '#333',
+                                    }}>
+                                      <p style={{ margin: '0 0 4px 0', fontWeight: 'bold' }}>
+                                        IPC {data.ipcRange}
+                                      </p>
+                                      <p style={{ margin: '2px 0' }}>
+                                        Probability: {data.probability.toFixed(decimalPlaces)}%
+                                      </p>
+                                      <p style={{ margin: '2px 0', color: '#666' }}>
+                                        Sum ≤ {data.ipc + 2}: {data.cumulativeLeft.toFixed(decimalPlaces)}%
+                                      </p>
+                                      <p style={{ margin: '2px 0', color: '#666' }}>
+                                        Sum ≥ {data.ipc}: {data.cumulativeRight.toFixed(decimalPlaces)}%
+                                      </p>
+                                      {data.percentileAt && (
+                                        <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', color: '#f44336' }}>
+                                          📊 {data.percentileAt}th Percentile
+                                        </p>
+                                      )}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Bar 
+                              dataKey="probability" 
+                              fill="#1976d2" 
+                              radius={[4, 4, 0, 0]}
+                            >
+                              {chartData.map((entry, index) => {
+                                return (
+                                  <Cell
+                                    key={`cell-${index}`}
+                                    fill={entry.percentileAt ? '#ff9800' : '#1976d2'}
+                                    stroke={entry.percentileAt ? '#000' : 'none'}
+                                    strokeWidth={entry.percentileAt ? 2 : 0}
+                                  />
+                                )
+                              })}
+                            </Bar>
+                          </BarChart>
+                        )
+                      })()}
                     </ResponsiveContainer>
                   </div>
                 </div>
