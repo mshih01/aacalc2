@@ -7,6 +7,7 @@ export { armyRecommend } from './optimize.js';
 export type {
   ArmyRecommendInput,
   ArmyRecommendOutput,
+  Recommendation,
   OptimizeMode,
   SolveType,
 } from './optimize.js';

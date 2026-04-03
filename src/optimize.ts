@@ -514,7 +514,6 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       break;
     }
   }
-  console.log(process.memoryUsage());
   return armyRecommendOutput;
 }
 
