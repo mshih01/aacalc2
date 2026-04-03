@@ -2024,6 +2024,8 @@ for (let i = 0; i < 20; i++) {
     let input: ArmyRecommendInput = {
       ...input2,
       targetPercentage: 0.9,
+      optimizeMode: 'targetWinPercentage',
+      numRecommendations: 1,
       attDefType: 'attacker',
       pwinMode: 'destroys',
       //solveType: 'gridSearch',
@@ -2039,8 +2041,8 @@ for (let i = 0; i < 20; i++) {
     let t1 = performance.now() - t0;
     out.push([
       solveType,
-      output.recommendations.army,
-      output.recommendations.cost,
+      output.recommendations[0].army,
+      output.recommendations[0].cost,
       t1,
     ]);
   }

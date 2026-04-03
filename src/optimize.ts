@@ -25,18 +25,24 @@ export type SolveType =
   | 'gridSearch'
   | 'fuzzyBinarySearch';
 
+// maxProfit only works with SolveTyep exhaust
+export type OptimizeMode = 'targetWinPercentage' | 'maxProfit';
+
 export interface ArmyRecommendInput extends MultiwaveInput {
   attDefType: AttDefType;
+  optimizeMode: OptimizeMode;
+  numRecommendations: number; // only with optimizeMode maxProfit.  >=1
   targetPercentage: number; // target percentage for attacker to win or defender to hold.
   pwinMode?: PwinMode;
   solveType?: SolveType;
 }
 
+export interface Recommendation {
+  army: Army;
+  cost: number; // either ipc_cost -- or the ipc profit.
+}
 export interface ArmyRecommendOutput {
-  recommendations: {
-    army: Army;
-    cost: number;
-  };
+  recommendations: Recommendation[];
 }
 
 function initArmy(army: Army, value: number): Army {
@@ -52,9 +58,15 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   const solveType = input.solveType;
   const attDefType = input.attDefType;
   const pwinMode = input.pwinMode ?? 'destroys';
+  const optimizeMode = input.optimizeMode;
+  const numRecommendations = input.numRecommendations;
   let armyRecommendOutput: ArmyRecommendOutput = {
-    recommendations: { army: {}, cost: 0 },
+    recommendations: [{ army: {}, cost: 0 }],
   };
+  if (optimizeMode == 'maxProfit' && solveType != 'exhaust') {
+    console.error('maxProfit optimizeMode only works with exhaust solveType');
+    return armyRecommendOutput;
+  }
 
   let maxArmy: Army;
   let minArmy: Army;
@@ -114,7 +126,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     }
     case 'exhaust': {
       // brute force
-      let out: [Army, number, number][] = [];
+      let out: [Army, number, number, number][] = [];
       for (let i = 0; i < armies.length; i++) {
         const [army, cost, AS, DS] = armies[i];
         const myinput: MultiwaveInput = {
@@ -125,33 +137,58 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         } else {
           myinput.wave_info[0].attack.units = army;
         }
-        myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
-        myinput.wave_info[0].retreat_pwin_threshold = undefined;
+        //myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
+        //myinput.wave_info[0].retreat_pwin_threshold = undefined;
         const output = multiwaveExternal(myinput);
         const survive =
           attDefType == 'defender'
             ? output.defense.survives[0]
             : output.attack.survives[0];
+        const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
         console.log(myinput);
         console.log(output.complexity);
-        out.push([army, survive, cost]);
+        out.push([army, survive, cost, profit]);
       }
-      out.sort((a: any[], b: any[]) => {
-        const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
-        const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
-        if (av != bv) {
-          return bv - av;
-        } else {
-          return Number(b[2]) - Number(a[2]);
+      if (optimizeMode == 'targetWinPercentage') {
+        out.sort((a: any[], b: any[]) => {
+          const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
+          const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
+          if (av != bv) {
+            return bv - av;
+          } else {
+            return Number(b[2]) - Number(a[2]);
+          }
+        });
+        armyRecommendOutput.recommendations = [
+          {
+            army: out[0][0],
+            cost: out[0][2],
+          },
+        ];
+      } else {
+        // maxProfit
+        out.sort((a: any[], b: any[]) => {
+          const av: number = Number(a[3]);
+          const bv: number = Number(b[3]);
+          if (av != bv) {
+            return bv - av;
+          } else {
+            return Number(b[2]) - Number(a[2]);
+          }
+        });
+        // numRecommendations
+        for (let i = 0; i < numRecommendations; i++) {
+          armyRecommendOutput.recommendations.push({
+            army: out[i][0],
+            cost: out[i][3],
+          });
         }
-      });
+      }
+      /*
       for (let k = 0; k < out.length; k++) {
         console.log(JSON.stringify(out[k]));
       }
-      armyRecommendOutput.recommendations = {
-        army: out[0][0],
-        cost: out[0][2],
-      };
+      */
       break;
     }
     case 'fuzzyBinarySearch':
@@ -320,10 +357,12 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         }
       }
 
-      armyRecommendOutput.recommendations = {
-        army: bestArmy[0],
-        cost: bestArmy[1],
-      };
+      armyRecommendOutput.recommendations = [
+        {
+          army: bestArmy[0],
+          cost: bestArmy[1],
+        },
+      ];
       console.log('Optimized Integer Parameters:', bestArmy);
       console.log('Minimum value found:', bestArmy[1]);
       console.log('iterations', iter);
@@ -470,7 +509,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       console.log(mymap.size, 'map size');
       const bestArmy = getArmy(finalParams);
       const cost = getArmyCost(bestArmy);
-      armyRecommendOutput.recommendations = { army: bestArmy, cost: cost };
+      armyRecommendOutput.recommendations = [{ army: bestArmy, cost: cost }];
 
       break;
     }
