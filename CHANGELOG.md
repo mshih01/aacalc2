@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.1
+
+### Patch Changes
+
+- a4e2c01: bug fix
+
 ## 2.0.0
 
 ### Major Changes
