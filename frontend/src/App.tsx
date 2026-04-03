@@ -6,11 +6,15 @@ import {
   type MultiwaveOutput,
 } from 'aacalc2'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import ReactGA from 'react-ga4'
 import './App.css'
 import { MODES, DEFAULT_OOL_PRESETS } from './constants'
 import { SeaModeSection } from './components/SeaModeSection'
 import { LandModeSection } from './components/LandModeSection'
 import { UnitSummaryDisplay } from './components/UnitSummaryDisplay'
+
+// Initialize Google Analytics
+ReactGA.initialize('G-XFRR47N18Q')
 
 // Frontend wrapper types
 interface BattleInput {
@@ -861,6 +865,13 @@ function App() {
       }
       const output = mode === 'sbr' ? computeSbrBattle(input) : computeBattle(input)
       setResult(output)
+      
+      // Track battle calculation in Google Analytics
+      ReactGA.event({
+        category: 'battle',
+        action: 'calculate',
+        label: `${mode}-${numWaves}wave${diceMode !== 'standard' ? `-${diceMode}` : ''}`,
+      })
 
       // Save to history if a name is provided AND we're not loading from history
       if (historyName.trim() && !isLoadingFromHistoryRef.current) {
