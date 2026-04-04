@@ -154,14 +154,14 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
             : output.attack.survives[0];
         const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
         if (input.verbose_level && input.verbose_level > 2) {
-        console.log(
-          myinput,
-          output,
-          output.complexity,
-          profit,
-          survive,
-          'input, output, complexity, profit, survive',
-        );
+          console.log(
+            myinput,
+            output,
+            output.complexity,
+            profit,
+            survive,
+            'input, output, complexity, profit, survive',
+          );
         }
         out.push([army, survive, cost, profit]);
       }
@@ -202,9 +202,9 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         }
       }
       if (input.verbose_level && input.verbose_level > 2) {
-      for (let k = 0; k < out.length; k++) {
-        console.log(JSON.stringify(out[k]));
-      }
+        for (let k = 0; k < out.length; k++) {
+          console.log(JSON.stringify(out[k]));
+        }
       }
       break;
     }
@@ -221,11 +221,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         }
       });
       if (input.verbose_level && input.verbose_level > 2) {
-      console.log('sorted 1');
-      for (let i = 0; i < armies.length; i++) {
-        console.log(i, JSON.stringify(armies[i]));
+        console.log('sorted 1');
+        for (let i = 0; i < armies.length; i++) {
+          console.log(i, JSON.stringify(armies[i]));
+        }
       }
-    }
       let low = 0;
       let high = armies.length - 1;
       let iter = 0;
@@ -306,14 +306,14 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           }
         }
         if (input.verbose_level && input.verbose_level > 2) {
-        console.log(
-          low,
-          high,
-          lowPower,
-          highPower,
-          'lowIndex, highIndex, lowPower, highPower',
-        );
-      }
+          console.log(
+            low,
+            high,
+            lowPower,
+            highPower,
+            'lowIndex, highIndex, lowPower, highPower',
+          );
+        }
         if (allSurvive) {
           high = midIndexArray[0] - 1;
           highPower =
@@ -331,10 +331,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       let bestArmy = armies[high];
       let bestPower = attDefType == 'attacker' ? bestArmy[2] : bestArmy[3];
       bestPower = bestPower * 1.0 - 2;
-        if (input.verbose_level && input.verbose_level > 0) {
-      console.log('bestArmy', bestArmy);
-      console.log('iterations', iter);
-        }
+      if (input.verbose_level && input.verbose_level > 0) {
+        console.log('bestArmy', bestArmy);
+        console.log('iterations', iter);
+      }
       armies.sort((a: any[], b: any[]) => {
         const av: number =
           attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
@@ -348,12 +348,12 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           return Number(a[1]) - Number(b[1]);
         }
       });
-        if (input.verbose_level && input.verbose_level > 2) {
-      console.log('sorted 2');
-      for (let i = 0; i < armies.length; i++) {
-        console.log(i, JSON.stringify(armies[i]));
+      if (input.verbose_level && input.verbose_level > 2) {
+        console.log('sorted 2');
+        for (let i = 0; i < armies.length; i++) {
+          console.log(i, JSON.stringify(armies[i]));
+        }
       }
-    }
       for (let i = 0; i < armies.length; i++) {
         const [army, cost, AS, DS] = armies[i];
         const myinput: MultiwaveInput = {
@@ -370,7 +370,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         iter++;
 
         if (input.verbose_level && input.verbose_level > 0) {
-        console.log(iter, 'iter');
+          console.log(iter, 'iter');
         }
         //console.log(myinput.wave_info[0].attack.units);
         //console.log(myinput.wave_info[0].defense.units);
