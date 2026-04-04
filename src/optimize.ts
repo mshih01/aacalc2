@@ -81,10 +81,14 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     stepArmy = initArmy(maxArmy, 1);
   }
   const armies = getSubArmies(maxArmy, minArmy, stepArmy);
-  console.log(armies.length, 'armies length');
-  console.log(maxArmy, minArmy, stepArmy);
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(armies.length, 'armies length');
+    console.log(maxArmy, minArmy, stepArmy);
+  }
   const surviveThreshold = input.targetPercentage;
-  console.log(input);
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(input);
+  }
   switch (solveType) {
     case 'multiEval': {
       let armylist = armies.map((tuple) => tuple[0]);
@@ -100,8 +104,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       let output = multiEvalExternal(multiEvalInput);
       let t1 = performance.now() - t0;
       console.timeEnd(description);
-      console.log(input);
-      console.log(output);
+      if (input.verbose_level && input.verbose_level > 0) {
+        console.log(input);
+        console.log(output);
+      }
 
       let multiEvalResult = output.resultList.map((tuple) => [
         tuple[0],
@@ -118,9 +124,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           return Number(b[3]) - Number(a[3]);
         }
       });
-      console.log(multiEvalResult);
-      for (let k = 0; k < multiEvalResult.length; k++) {
-        console.log(JSON.stringify(multiEvalResult[k]));
+      if (input.verbose_level && input.verbose_level > 0) {
+        console.log(multiEvalResult);
+        for (let k = 0; k < multiEvalResult.length; k++) {
+          console.log(JSON.stringify(multiEvalResult[k]));
+        }
       }
       break;
     }
@@ -145,6 +153,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
             ? output.defense.survives[0]
             : output.attack.survives[0];
         const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+        if (input.verbose_level && input.verbose_level > 2) {
         console.log(
           myinput,
           output,
@@ -153,6 +162,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           survive,
           'input, output, complexity, profit, survive',
         );
+        }
         out.push([army, survive, cost, profit]);
       }
       if (optimizeMode == 'targetWinPercentage') {
@@ -183,6 +193,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           }
         });
         // numRecommendations
+        armyRecommendOutput.recommendations = [];
         for (let i = 0; i < numRecommendations; i++) {
           armyRecommendOutput.recommendations.push({
             army: out[i][0],
@@ -190,11 +201,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           });
         }
       }
-      /*
+      if (input.verbose_level && input.verbose_level > 2) {
       for (let k = 0; k < out.length; k++) {
         console.log(JSON.stringify(out[k]));
       }
-      */
+      }
       break;
     }
     case 'fuzzyBinarySearch':
@@ -209,10 +220,12 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           return Number(a[1]) - Number(b[1]);
         }
       });
+      if (input.verbose_level && input.verbose_level > 2) {
       console.log('sorted 1');
       for (let i = 0; i < armies.length; i++) {
         console.log(i, JSON.stringify(armies[i]));
       }
+    }
       let low = 0;
       let high = armies.length - 1;
       let iter = 0;
@@ -292,6 +305,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
             allSurvive = false;
           }
         }
+        if (input.verbose_level && input.verbose_level > 2) {
         console.log(
           low,
           high,
@@ -299,6 +313,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           highPower,
           'lowIndex, highIndex, lowPower, highPower',
         );
+      }
         if (allSurvive) {
           high = midIndexArray[0] - 1;
           highPower =
@@ -316,8 +331,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       let bestArmy = armies[high];
       let bestPower = attDefType == 'attacker' ? bestArmy[2] : bestArmy[3];
       bestPower = bestPower * 1.0 - 2;
+        if (input.verbose_level && input.verbose_level > 0) {
       console.log('bestArmy', bestArmy);
       console.log('iterations', iter);
+        }
       armies.sort((a: any[], b: any[]) => {
         const av: number =
           attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
@@ -331,10 +348,12 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           return Number(a[1]) - Number(b[1]);
         }
       });
+        if (input.verbose_level && input.verbose_level > 2) {
       console.log('sorted 2');
       for (let i = 0; i < armies.length; i++) {
         console.log(i, JSON.stringify(armies[i]));
       }
+    }
       for (let i = 0; i < armies.length; i++) {
         const [army, cost, AS, DS] = armies[i];
         const myinput: MultiwaveInput = {
@@ -349,7 +368,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         myinput.wave_info[0].retreat_pwin_threshold = undefined;
         const output = multiwaveExternal(myinput);
         iter++;
+
+        if (input.verbose_level && input.verbose_level > 0) {
         console.log(iter, 'iter');
+        }
         //console.log(myinput.wave_info[0].attack.units);
         //console.log(myinput.wave_info[0].defense.units);
         //console.log(output);
@@ -382,8 +404,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         myinput.wave_info[0].attack.units = army;
       }
       const output = multiwaveExternal(myinput);
-      console.log(myinput);
-      console.log(output);
+      if (input.verbose_level && input.verbose_level > 0) {
+        console.log(myinput);
+        console.log(output);
+      }
 
       break;
     case 'linearSearch':
