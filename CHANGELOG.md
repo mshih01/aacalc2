@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.4
+
+### Patch Changes
+
+- 3f54d49: army recommendation cleanup console logging.
+
 ## 2.0.3
 
 ### Patch Changes
