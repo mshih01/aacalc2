@@ -147,10 +147,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
         console.log(
           myinput,
+          output,
           output.complexity,
           profit,
           survive,
-          'input, complexity, profit, survive',
+          'input, output, complexity, profit, survive',
         );
         out.push([army, survive, cost, profit]);
       }
