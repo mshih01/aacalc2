@@ -12,17 +12,18 @@ import { MODES, DEFAULT_OOL_PRESETS } from './constants'
 import { SeaModeSection } from './components/SeaModeSection'
 import { LandModeSection } from './components/LandModeSection'
 import { UnitSummaryDisplay } from './components/UnitSummaryDisplay'
+import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
 
 // Frontend wrapper types
-interface BattleInput {
+export interface BattleInput {
   attack: Record<number, Record<string, number>>
   defense: Record<number, Record<string, number>>
   attackOol?: Record<number, UnitId[]>
   defenseOol?: Record<number, UnitId[]>
-  rounds?: Record<number, number>
+  rounds?: Record<number, number | string>
   retreatThreshold?: Record<number, number>
   takesTerritory?: Record<number, number>
   aaLast?: Record<number, boolean>
@@ -53,7 +54,9 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
   const wave_info = Array.from({ length: numWaves }, (_, waveIdx) => {
     const attackOol = input.attackOol?.[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
     const defenseOol = input.defenseOol?.[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
-    const roundsNum = input.rounds?.[waveIdx] ?? 100
+    const roundsNum = input.rounds?.[waveIdx] 
+      ? (input.rounds[waveIdx] === 'all' ? 100 : Number(input.rounds[waveIdx]))
+      : 100
     
     return {
       attack: {
@@ -1514,6 +1517,42 @@ function App() {
           </div>
         </section>
       )}
+
+      <ArmyRecommendSection 
+        battleInput={{
+          attack,
+          defense,
+          attackOol: Object.values(waveConfigs).map((wc) => attackerOolPresets[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []),
+          defenseOol: Object.values(waveConfigs).map((wc) => defenderOolPresets[mode].find((p) => p.id === wc.defenseOolPreset)?.ool || []),
+          rounds: Object.values(waveConfigs).map((wc) => wc.rounds),
+          retreatThreshold: Object.values(waveConfigs).map((wc) => wc.retreatThreshold),
+          takesTerritory: Object.values(waveConfigs).map((wc) => wc.takesTerritory),
+          aaLast: Object.values(waveConfigs).map((wc) => wc.aaLast),
+          attackerSubmerge: Object.values(waveConfigs).map((wc) => wc.attackerSubmerge),
+          defenderSubmerge: Object.values(waveConfigs).map((wc) => wc.defenderSubmerge),
+          attackerDestroyerLast: Object.values(waveConfigs).map((wc) => wc.attackerDestroyerLast),
+          defenderDestroyerLast: Object.values(waveConfigs).map((wc) => wc.defenderDestroyerLast),
+          crashFighters: Object.values(waveConfigs).map((wc) => wc.crashFighters),
+          diceMode,
+          inProgress,
+          verboseLevel,
+          pruneThreshold,
+          reportPruneThreshold,
+          sortMode,
+          retreatExpectedIpcProfitThresholds: Object.values(waveConfigs).map((wc) => wc.retreatExpectedIpcProfitThreshold),
+          retreatPwinThresholds: Object.values(waveConfigs).map((wc) => wc.retreatPwinThreshold),
+          retreatStrafeThresholds: Object.values(waveConfigs).map((wc) => wc.retreatStrafeThreshold),
+          retreatLoseAirProbabilityThresholds: Object.values(waveConfigs).map((wc) => wc.retreatLoseAirProbabilityThreshold),
+          mode,
+          territoryValue,
+          isDeadzone,
+          numWaves,
+        }}
+        waveIdx={0}
+        onRecommendationResult={(result) => {
+          console.log('Army Recommendation Result:', result)
+        }}
+      />
 
       <button className="run-btn" onClick={runBattle}>
         Evaluate Battle
