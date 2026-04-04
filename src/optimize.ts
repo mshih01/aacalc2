@@ -145,8 +145,13 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
             ? output.defense.survives[0]
             : output.attack.survives[0];
         const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-        console.log(myinput);
-        console.log(output.complexity);
+        console.log(
+          myinput,
+          output.complexity,
+          profit,
+          survive,
+          'input, complexity, profit, survive',
+        );
         out.push([army, survive, cost, profit]);
       }
       if (optimizeMode == 'targetWinPercentage') {
