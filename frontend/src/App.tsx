@@ -719,6 +719,7 @@ function App() {
   const [reportPruneThreshold, setReportPruneThreshold] = useState(1e-12)
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
   const [decimalPlaces, setDecimalPlaces] = useState(2)
+  const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [histogramZoom, setHistogramZoom] = useState(1)
   
@@ -1014,6 +1015,7 @@ function App() {
           setReportPruneThreshold(1e-12)
           setSortMode('ipc_cost')
           setDecimalPlaces(2)
+          setIpcLossDecimalPlaces(2)
           setResult(null)
           setError('')
         }}
@@ -1142,6 +1144,18 @@ function App() {
                   style={{ width: '100%' }}
                 />
                 <label>Probability Decimal Places</label>
+              </div>
+              <div className="floating-label-group">
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={ipcLossDecimalPlaces}
+                  onChange={(e) => setIpcLossDecimalPlaces(Math.max(0, Math.min(10, Number(e.target.value) || 2)))}
+                  className={ipcLossDecimalPlaces !== 2 ? 'has-value' : ''}
+                  style={{ width: '100%' }}
+                />
+                <label>IPC Loss Decimal Places</label>
               </div>
             </div>
           </div>
@@ -1550,7 +1564,16 @@ function App() {
         }}
         waveIdx={0}
         onRecommendationResult={(result) => {
-          console.log('Army Recommendation Result:', result)
+          if (verboseLevel && verboseLevel > 0) {
+            console.log('Army Recommendation Result:', result)
+          }
+        }}
+        onArmyCopy={(army, attDefType, waveIdx) => {
+          if (attDefType === 'attacker') {
+            setAttack({ ...attack, [waveIdx]: army })
+          } else {
+            setDefense({ ...defense, [waveIdx]: army })
+          }
         }}
       />
 
@@ -1603,16 +1626,16 @@ function App() {
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '115px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>{waveIdx > 0 ? 'Δ Atk IPC' : 'Atk IPC Loss'}</div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f', lineHeight: '1.2' }}>{attackLossDelta.toFixed(1)}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f', lineHeight: '1.2' }}>{attackLossDelta.toFixed(ipcLossDecimalPlaces)}</div>
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '115px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>{waveIdx > 0 ? 'Δ Def IPC' : 'Def IPC Loss'}</div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f', lineHeight: '1.2' }}>{defenseLossDelta.toFixed(1)}</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#d32f2f', lineHeight: '1.2' }}>{defenseLossDelta.toFixed(ipcLossDecimalPlaces)}</div>
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '115px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>{waveIdx > 0 ? 'Δ Profit' : 'Atk Profit'}</div>
                     <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#1976d2', lineHeight: '1.2' }}>
-                      {profitDelta.toFixed(1)}
+                      {profitDelta.toFixed(ipcLossDecimalPlaces)}
                     </div>
                   </div>
                 </div>
@@ -1627,16 +1650,16 @@ function App() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Attacker IPC Loss</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.attack.ipcLoss[numWaves - 1] ?? 0).toFixed(1)}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.attack.ipcLoss[numWaves - 1] ?? 0).toFixed(ipcLossDecimalPlaces)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Defender IPC Loss</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.defense.ipcLoss[numWaves - 1] ?? 0).toFixed(1)}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.defense.ipcLoss[numWaves - 1] ?? 0).toFixed(ipcLossDecimalPlaces)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Attacker Profit</div>
                   <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1976d2' }}>
-                    {((result.defense.ipcLoss[numWaves - 1] ?? 0) - (result.attack.ipcLoss[numWaves - 1] ?? 0)).toFixed(1)}
+                    {((result.defense.ipcLoss[numWaves - 1] ?? 0) - (result.attack.ipcLoss[numWaves - 1] ?? 0)).toFixed(ipcLossDecimalPlaces)}
                   </div>
                 </div>
               </div>

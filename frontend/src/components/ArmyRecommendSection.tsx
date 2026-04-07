@@ -19,9 +19,10 @@ interface ArmyRecommendSectionProps {
   battleInput: BattleInput
   waveIdx?: number
   onRecommendationResult?: (results: Recommendation[]) => void
+  onArmyCopy?: (army: Record<string, number>, attDefType: 'attacker' | 'defender', waveIdx: number) => void
 }
 
-export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendationResult }: ArmyRecommendSectionProps) {
+export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendationResult, onArmyCopy }: ArmyRecommendSectionProps) {
   const [config, setConfig] = useState<ArmyRecommendConfig>({
     optimizeMode: 'targetWinPercentage',
     targetPercentage: 0.90,
@@ -235,9 +236,24 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
                   )
                 ))}
               </div>
-              <div style={{ fontSize: '16px', fontWeight: '600', color: '#090' }}>
+              <div style={{ fontSize: '16px', fontWeight: '600', color: '#090', marginBottom: '10px' }}>
                 {config.optimizeMode === 'maxProfit' ? 'IPC Profit' : 'Cost'}: {result.cost} IPC
               </div>
+              <button
+                onClick={() => onArmyCopy?.(result.army, config.attDefType, waveIdx)}
+                style={{
+                  padding: '8px 12px',
+                  backgroundColor: '#090',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                }}
+              >
+                Copy to {config.attDefType === 'attacker' ? 'Attacker' : 'Defender'}
+              </button>
             </div>
           ))}
         </div>
