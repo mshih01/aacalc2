@@ -165,7 +165,7 @@ interface CollapsibleSectionProps {
   headerColor?: string
 }
 
-function CollapsibleSection({ title, children, defaultOpen = true, headerColor = '#1976d2' }: CollapsibleSectionProps) {
+function CollapsibleSection({ title, children, defaultOpen = false, headerColor = '#1976d2' }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
@@ -720,6 +720,7 @@ function App() {
   const [reportPruneThreshold, setReportPruneThreshold] = useState(1e-12)
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
   const [complexityThreshold, setComplexityThreshold] = useState(200000)
+  const [instantaneousEvaluationThreshold, setInstantaneousEvaluationThreshold] = useState(10000)
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -801,7 +802,153 @@ function App() {
   useEffect(() => {
     setResult(null)
     setComplexityWarning(null)
-  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold])
+  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold, instantaneousEvaluationThreshold])
+
+  // Helper function to build multiwave input for complexity calculation
+  const buildMultiwaveInputForComplexity = useCallback((
+    inputAttack: Record<number, Record<string, number>>,
+    inputDefense: Record<number, Record<string, number>>,
+    attackOolRecord: Record<number, UnitId[]>,
+    defenseOolRecord: Record<number, UnitId[]>,
+    roundsNum: Record<number, number>,
+    takesTerritoryRecord: Record<number, number>,
+    aaLastRecord: Record<number, boolean>,
+    attackerSubmergeRecord: Record<number, boolean>,
+    defenderSubmergeRecord: Record<number, boolean>,
+    attackerDestroyerLastRecord: Record<number, boolean>,
+    defenderDestroyerLastRecord: Record<number, boolean>,
+    crashFightersRecord: Record<number, boolean>,
+    retreatThresholdRecord: Record<number, number>,
+    retreatExpectedIpcProfitRecord: Record<number, number | undefined>,
+    retreatPwinRecord: Record<number, number | undefined>,
+    retreatStrafeRecord: Record<number, number | undefined>,
+    retreatLoseAirRecord: Record<number, number | undefined>
+  ): MultiwaveInput => {
+    return {
+      wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
+        const attackOol = attackOolRecord[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
+        const defenseOol = defenseOolRecord[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
+        const waves = roundsNum[waveIdx] 
+          ? (roundsNum[waveIdx] === 100 ? 100 : Number(roundsNum[waveIdx]))
+          : 100
+        return {
+          attack: {
+            units: inputAttack[waveIdx] || {},
+            ool: attackOol as any,
+            takes: takesTerritoryRecord[waveIdx] ?? 0,
+            aaLast: aaLastRecord[waveIdx] ?? false,
+          },
+          defense: {
+            units: inputDefense[waveIdx] || {},
+            ool: defenseOol as any,
+            takes: 0,
+            aaLast: aaLastRecord[waveIdx] ?? false,
+          },
+          att_submerge: attackerSubmergeRecord[waveIdx] ?? false,
+          def_submerge: defenderSubmergeRecord[waveIdx] ?? false,
+          att_dest_last: attackerDestroyerLastRecord[waveIdx] ?? false,
+          def_dest_last: defenderDestroyerLastRecord[waveIdx] ?? false,
+          is_crash_fighters: crashFightersRecord[waveIdx] ?? false,
+          rounds: waves,
+          retreat_threshold: retreatThresholdRecord[waveIdx] ?? 0,
+          retreat_expected_ipc_profit_threshold: retreatExpectedIpcProfitRecord[waveIdx],
+          retreat_pwin_threshold: retreatPwinRecord[waveIdx],
+          retreat_strafe_threshold: retreatStrafeRecord[waveIdx],
+          retreat_lose_air_probability: retreatLoseAirRecord[waveIdx],
+          pwinMode: 'takes' as const,
+        }
+      }),
+      debug: false,
+      prune_threshold: pruneThreshold ?? 1e-12,
+      report_prune_threshold: reportPruneThreshold ?? 1e-12,
+      is_naval: mode === 'sea',
+      in_progress: inProgress ?? false,
+      num_runs: 1,
+      verbose_level: verboseLevel ?? 0,
+      diceMode: diceMode ?? 'standard',
+      sortMode: sortMode ?? 'unit_count',
+      territory_value: territoryValue ?? 0,
+      is_deadzone: isDeadzone ?? false,
+      retreat_round_zero: false,
+      do_roundless_eval: true,
+    }
+  }, [numWaves, pruneThreshold, reportPruneThreshold, mode, inProgress, verboseLevel, diceMode, sortMode, territoryValue, isDeadzone])
+
+  // Auto-evaluate if complexity is below instantaneous evaluation threshold (with debounce)
+  useEffect(() => {
+    // Debounce timer: wait 1000ms after inputs stop changing before evaluating
+    const timer = setTimeout(() => {
+      // Build per-wave OOL records
+      const attackOolRecord: Record<number, UnitId[]> = {}
+      const defenseOolRecord: Record<number, UnitId[]> = {}
+      const roundsNum: Record<number, number> = {}
+      const retreatThresholdRecord: Record<number, number> = {}
+      const takesTerritoryRecord: Record<number, number> = {}
+      const aaLastRecord: Record<number, boolean> = {}
+      const attackerSubmergeRecord: Record<number, boolean> = {}
+      const defenderSubmergeRecord: Record<number, boolean> = {}
+      const attackerDestroyerLastRecord: Record<number, boolean> = {}
+      const defenderDestroyerLastRecord: Record<number, boolean> = {}
+      const crashFightersRecord: Record<number, boolean> = {}
+      const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
+      const retreatPwinRecord: Record<number, number | undefined> = {}
+      const retreatStrafeRecord: Record<number, number | undefined> = {}
+      const retreatLoseAirRecord: Record<number, number | undefined> = {}
+      
+      for (let i = 0; i < numWaves; i++) {
+        const config = waveConfigs[i]
+        attackOolRecord[i] = attackerOolPresets[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
+        defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
+        roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
+        retreatThresholdRecord[i] = config.retreatThreshold
+        takesTerritoryRecord[i] = config.takesTerritory
+        aaLastRecord[i] = config.aaLast
+        attackerSubmergeRecord[i] = config.attackerSubmerge
+        defenderSubmergeRecord[i] = config.defenderSubmerge
+        attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
+        defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
+        crashFightersRecord[i] = config.crashFighters
+        retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
+        retreatPwinRecord[i] = config.retreatPwinThreshold
+        retreatStrafeRecord[i] = config.retreatStrafeThreshold
+        retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
+      }
+      
+      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(
+        attack,
+        defense,
+        attackOolRecord,
+        defenseOolRecord,
+        roundsNum,
+        takesTerritoryRecord,
+        aaLastRecord,
+        attackerSubmergeRecord,
+        defenderSubmergeRecord,
+        attackerDestroyerLastRecord,
+        defenderDestroyerLastRecord,
+        crashFightersRecord,
+        retreatThresholdRecord,
+        retreatExpectedIpcProfitRecord,
+        retreatPwinRecord,
+        retreatStrafeRecord,
+        retreatLoseAirRecord
+      )
+      
+      const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
+      
+      // If complexity is below instantaneous evaluation threshold, auto-evaluate
+      if (complexity < instantaneousEvaluationThreshold) {
+        // Trigger runBattle by simulating a click
+        const evalBtn = document.querySelector('.run-btn') as HTMLButtonElement
+        if (evalBtn) {
+          evalBtn.click()
+        }
+      }
+    }, 1000) // 1000ms debounce delay
+
+    // Clear the timeout if inputs change again before it fires
+    return () => clearTimeout(timer)
+  }, [attack, defense, waveConfigs, mode, numWaves, instantaneousEvaluationThreshold, buildMultiwaveInputForComplexity])
 
   const runBattle = useCallback(() => {
     setError(null)
@@ -874,54 +1021,25 @@ function App() {
       }
       
       // Check complexity before evaluating the battle
-      const multiwaveInputForComplexity: MultiwaveInput = {
-        wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
-          const attackOol = input.attackOol?.[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
-          const defenseOol = input.defenseOol?.[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
-          const roundsNum = input.rounds?.[waveIdx] 
-            ? (input.rounds[waveIdx] === 'all' ? 100 : Number(input.rounds[waveIdx]))
-            : 100
-          return {
-            attack: {
-              units: input.attack[waveIdx] || {},
-              ool: attackOol as any,
-              takes: input.takesTerritory?.[waveIdx] ?? 0,
-              aaLast: input.aaLast?.[waveIdx] ?? false,
-            },
-            defense: {
-              units: input.defense[waveIdx] || {},
-              ool: defenseOol as any,
-              takes: 0,
-              aaLast: input.aaLast?.[waveIdx] ?? false,
-            },
-            att_submerge: input.attackerSubmerge?.[waveIdx] ?? false,
-            def_submerge: input.defenderSubmerge?.[waveIdx] ?? false,
-            att_dest_last: input.attackerDestroyerLast?.[waveIdx] ?? false,
-            def_dest_last: input.defenderDestroyerLast?.[waveIdx] ?? false,
-            is_crash_fighters: input.crashFighters?.[waveIdx] ?? false,
-            rounds: roundsNum,
-            retreat_threshold: input.retreatThreshold?.[waveIdx] ?? 0,
-            retreat_expected_ipc_profit_threshold: input.retreatExpectedIpcProfitThresholds?.[waveIdx],
-            retreat_pwin_threshold: input.retreatPwinThresholds?.[waveIdx],
-            retreat_strafe_threshold: input.retreatStrafeThresholds?.[waveIdx],
-            retreat_lose_air_probability: input.retreatLoseAirProbabilityThresholds?.[waveIdx],
-            pwinMode: 'takes' as const,
-          }
-        }),
-        debug: false,
-        prune_threshold: input.pruneThreshold ?? 1e-12,
-        report_prune_threshold: input.reportPruneThreshold ?? 1e-12,
-        is_naval: input.mode === 'sea',
-        in_progress: input.inProgress ?? false,
-        num_runs: 1,
-        verbose_level: input.verboseLevel ?? 0,
-        diceMode: input.diceMode ?? 'standard',
-        sortMode: input.sortMode ?? 'unit_count',
-        territory_value: input.territoryValue ?? 0,
-        is_deadzone: input.isDeadzone ?? false,
-        retreat_round_zero: false,
-        do_roundless_eval: true,
-      }
+      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(
+        attack,
+        defense,
+        attackOolRecord,
+        defenseOolRecord,
+        roundsNum,
+        takesTerritoryRecord,
+        aaLastRecord,
+        attackerSubmergeRecord,
+        defenderSubmergeRecord,
+        attackerDestroyerLastRecord,
+        defenderDestroyerLastRecord,
+        crashFightersRecord,
+        retreatThresholdRecord,
+        retreatExpectedIpcProfitRecord,
+        retreatPwinRecord,
+        retreatStrafeRecord,
+        retreatLoseAirRecord
+      )
       
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
       if (complexity > complexityThreshold) {
@@ -1076,6 +1194,8 @@ function App() {
           setVerboseLevel(0)
           setPruneThreshold(1e-12)
           setReportPruneThreshold(1e-12)
+          setComplexityThreshold(200000)
+          setInstantaneousEvaluationThreshold(10000)
           setSortMode('ipc_cost')
           setDecimalPlaces(2)
           setIpcLossDecimalPlaces(2)
@@ -1196,6 +1316,18 @@ function App() {
                   style={{ width: '100%' }}
                 />
                 <label>Complexity Threshold</label>
+              </div>
+              <div className="floating-label-group">
+                <input
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={instantaneousEvaluationThreshold}
+                  onChange={(e) => setInstantaneousEvaluationThreshold(Math.max(0, Number(e.target.value) || 10000))}
+                  className={instantaneousEvaluationThreshold !== 10000 ? 'has-value' : ''}
+                  style={{ width: '100%' }}
+                />
+                <label>Instantaneous Evaluation Threshold</label>
               </div>
               <div className="floating-label-group">
                 <select
@@ -1607,6 +1739,7 @@ function App() {
         </section>
       )}
 
+	  <CollapsibleSection title="Army Recommendation Input" >
       <ArmyRecommendSection 
         battleInput={{
           attack,
@@ -1651,11 +1784,13 @@ function App() {
           }
         }}
       />
+          </CollapsibleSection>
 
       <button className="run-btn" onClick={runBattle}>
         Evaluate Battle
       </button>
 
+   {/*
       <div className="ool-summary">
         <p>
           Attacker OOL: {attackerOolPresets[mode].find((p) => p.id === waveConfigs[0]?.attackOolPreset)?.label}
@@ -1664,6 +1799,7 @@ function App() {
           Defender OOL: {defenderOolPresets[mode].find((p) => p.id === waveConfigs[0]?.defenseOolPreset)?.label}
         </p>
       </div>
+*/}
 
       {error && <p className="error">Error: {error}</p>}
       
@@ -1943,7 +2079,9 @@ function App() {
                 })()}
               </tbody>
             </table>
+          </CollapsibleSection>
 
+          <CollapsibleSection title="IPC Profit Distribution Histogram" defaultOpen={true}  headerColor="#1976d2">
             {/* Profit Distribution Histogram */}
             {result.profitDistribution?.[0] && (
               <div style={{ marginTop: '20px' }}>
