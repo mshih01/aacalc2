@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   multiwaveExternal,
   sbrExternal,
+  multiwaveComplexityFastV2,
   type MultiwaveInput,
   type MultiwaveOutput,
 } from 'aacalc2'
@@ -718,6 +719,7 @@ function App() {
   const [pruneThreshold, setPruneThreshold] = useState(1e-12)
   const [reportPruneThreshold, setReportPruneThreshold] = useState(1e-12)
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
+  const [complexityThreshold, setComplexityThreshold] = useState(200000)
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -739,6 +741,7 @@ function App() {
   })
   const [result, setResult] = useState<ReturnType<typeof computeBattle> | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [complexityWarning, setComplexityWarning] = useState<{ complexity: number; threshold: number } | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>([])
   const [historyName, setHistoryName] = useState('')
   const [showHistory, setShowHistory] = useState(false)
@@ -794,13 +797,15 @@ function App() {
     setNumWaves(mode === 'sbr' ? 1 : 1)
   }, [mode, resetWaves, updateWave])
 
-  // Clear results when any input changes
+  // Clear results and complexity warning when any input changes
   useEffect(() => {
     setResult(null)
-  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves])
+    setComplexityWarning(null)
+  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold])
 
   const runBattle = useCallback(() => {
     setError(null)
+    setComplexityWarning(null)
     try {
       // Build per-wave OOL records
       const attackOolRecord: Record<number, UnitId[]> = {}
@@ -867,6 +872,64 @@ function App() {
         isDeadzone,
         numWaves,
       }
+      
+      // Check complexity before evaluating the battle
+      const multiwaveInputForComplexity: MultiwaveInput = {
+        wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
+          const attackOol = input.attackOol?.[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
+          const defenseOol = input.defenseOol?.[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
+          const roundsNum = input.rounds?.[waveIdx] 
+            ? (input.rounds[waveIdx] === 'all' ? 100 : Number(input.rounds[waveIdx]))
+            : 100
+          return {
+            attack: {
+              units: input.attack[waveIdx] || {},
+              ool: attackOol as any,
+              takes: input.takesTerritory?.[waveIdx] ?? 0,
+              aaLast: input.aaLast?.[waveIdx] ?? false,
+            },
+            defense: {
+              units: input.defense[waveIdx] || {},
+              ool: defenseOol as any,
+              takes: 0,
+              aaLast: input.aaLast?.[waveIdx] ?? false,
+            },
+            att_submerge: input.attackerSubmerge?.[waveIdx] ?? false,
+            def_submerge: input.defenderSubmerge?.[waveIdx] ?? false,
+            att_dest_last: input.attackerDestroyerLast?.[waveIdx] ?? false,
+            def_dest_last: input.defenderDestroyerLast?.[waveIdx] ?? false,
+            is_crash_fighters: input.crashFighters?.[waveIdx] ?? false,
+            rounds: roundsNum,
+            retreat_threshold: input.retreatThreshold?.[waveIdx] ?? 0,
+            retreat_expected_ipc_profit_threshold: input.retreatExpectedIpcProfitThresholds?.[waveIdx],
+            retreat_pwin_threshold: input.retreatPwinThresholds?.[waveIdx],
+            retreat_strafe_threshold: input.retreatStrafeThresholds?.[waveIdx],
+            retreat_lose_air_probability: input.retreatLoseAirProbabilityThresholds?.[waveIdx],
+            pwinMode: 'takes' as const,
+          }
+        }),
+        debug: false,
+        prune_threshold: input.pruneThreshold ?? 1e-12,
+        report_prune_threshold: input.reportPruneThreshold ?? 1e-12,
+        is_naval: input.mode === 'sea',
+        in_progress: input.inProgress ?? false,
+        num_runs: 1,
+        verbose_level: input.verboseLevel ?? 0,
+        diceMode: input.diceMode ?? 'standard',
+        sortMode: input.sortMode ?? 'unit_count',
+        territory_value: input.territoryValue ?? 0,
+        is_deadzone: input.isDeadzone ?? false,
+        retreat_round_zero: false,
+        do_roundless_eval: true,
+      }
+      
+      const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
+      if (complexity > complexityThreshold) {
+        setComplexityWarning({ complexity, threshold: complexityThreshold })
+        setResult(null)
+        return
+      }
+      
       const output = mode === 'sbr' ? computeSbrBattle(input) : computeBattle(input)
       setResult(output)
       
@@ -1121,6 +1184,18 @@ function App() {
                   style={{ width: '100%' }}
                 />
                 <label>Report Prune Threshold</label>
+              </div>
+              <div className="floating-label-group">
+                <input
+                  type="number"
+                  min="0"
+                  step="10000"
+                  value={complexityThreshold}
+                  onChange={(e) => setComplexityThreshold(Math.max(0, Number(e.target.value) || 200000))}
+                  className={complexityThreshold !== 200000 ? 'has-value' : ''}
+                  style={{ width: '100%' }}
+                />
+                <label>Complexity Threshold</label>
               </div>
               <div className="floating-label-group">
                 <select
@@ -1591,6 +1666,24 @@ function App() {
       </div>
 
       {error && <p className="error">Error: {error}</p>}
+      
+      {complexityWarning && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffc107',
+          borderRadius: '4px',
+          padding: '12px 15px',
+          marginBottom: '15px',
+          color: '#856404'
+        }}>
+          <strong>⚠️ Complexity Warning</strong>
+          <p style={{ margin: '8px 0 0 0' }}>
+            Input complexity ({complexityWarning.complexity.toLocaleString()}) exceeds threshold ({complexityWarning.threshold.toLocaleString()}). 
+            This battle may take a very long time to evaluate due to the N^4 complexity of the algorithm. 
+            Consider increasing the <strong>Complexity Threshold</strong> in Advanced Options if you wish to evaluate this battle anyway.
+          </p>
+        </div>
+      )}
 
       {result && (
         <section className="results">
