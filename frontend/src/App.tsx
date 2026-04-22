@@ -15,6 +15,9 @@ import { LandModeSection } from './components/LandModeSection'
 import { UnitSummaryDisplay } from './components/UnitSummaryDisplay'
 import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 
+// Configuration Constants
+const MAX_WAVES = 4
+
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
 
@@ -499,7 +502,7 @@ const DEFAULT_WAVE_CONFIG: WaveConfig = {
 }
 
 // Hook for managing per-wave state
-function useWaveState(initialWaves = 3) {
+function useWaveState(initialWaves = MAX_WAVES) {
   const [waveConfigs, setWaveConfigs] = useState<Record<number, WaveConfig>>(() => {
     const config: Record<number, WaveConfig> = {}
     for (let i = 0; i < initialWaves; i++) {
@@ -789,18 +792,22 @@ function App() {
   const [toast, setToast] = useState<{ message: string } | null>(null)
   
   // Per-wave state consolidated via hook
-  const { waveConfigs, updateWave, resetWaves } = useWaveState(3)
+  const { waveConfigs, updateWave, resetWaves } = useWaveState(MAX_WAVES)
   
   // Units per wave
-  const [attack, setAttack] = useState<Record<number, Record<string, number>>>({
-    0: {},
-    1: {},
-    2: {},
+  const [attack, setAttack] = useState<Record<number, Record<string, number>>>(() => {
+    const initial: Record<number, Record<string, number>> = {}
+    for (let i = 0; i < MAX_WAVES; i++) {
+      initial[i] = {}
+    }
+    return initial
   })
-  const [defense, setDefense] = useState<Record<number, Record<string, number>>>({
-    0: {},
-    1: {},
-    2: {},
+  const [defense, setDefense] = useState<Record<number, Record<string, number>>>(() => {
+    const initial: Record<number, Record<string, number>> = {}
+    for (let i = 0; i < MAX_WAVES; i++) {
+      initial[i] = {}
+    }
+    return initial
   })
   const [result, setResult] = useState<ReturnType<typeof computeBattle> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -845,21 +852,21 @@ function App() {
     const allowed = new Set(modeUnitMap[mode])
     setAttack((prev) => {
       const next: Record<number, Record<string, number>> = {}
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < MAX_WAVES; i++) {
         next[i] = Object.fromEntries(Object.entries(prev[i] || {}).filter(([k]) => allowed.has(k as UnitId)))
       }
       return next
     })
     setDefense((prev) => {
       const next: Record<number, Record<string, number>> = {}
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < MAX_WAVES; i++) {
         next[i] = Object.fromEntries(Object.entries(prev[i] || {}).filter(([k]) => allowed.has(k as UnitId)))
       }
       return next
     })
     // Reset wave configs to defaults, then set appropriate presets for this mode
-    resetWaves(3)
-    for (let i = 0; i < 3; i++) {
+    resetWaves(MAX_WAVES)
+    for (let i = 0; i < MAX_WAVES; i++) {
       updateWave(i, {
         attackOolPreset: attackerOolPresets[mode][0].id,
         defenseOolPreset: defenderOolPresets[mode][0].id,
@@ -1250,9 +1257,13 @@ function App() {
 
       <ResetButtons 
         onResetAll={() => {
-          setAttack({ 0: {}, 1: {}, 2: {} })
-          setDefense({ 0: {}, 1: {}, 2: {} })
-          resetWaves(3)
+          const initial: Record<number, Record<string, number>> = {}
+          for (let i = 0; i < MAX_WAVES; i++) {
+            initial[i] = {}
+          }
+          setAttack(initial)
+          setDefense({ ...initial })
+          resetWaves(MAX_WAVES)
           setNumWaves(1)
           setDiceMode('standard')
           setAmphibious(false)
@@ -1271,8 +1282,12 @@ function App() {
           setError('')
         }}
         onResetUnits={() => {
-          setAttack({ 0: {}, 1: {}, 2: {} })
-          setDefense({ 0: {}, 1: {}, 2: {} })
+          const initial: Record<number, Record<string, number>> = {}
+          for (let i = 0; i < MAX_WAVES; i++) {
+            initial[i] = {}
+          }
+          setAttack(initial)
+          setDefense({ ...initial })
         }}
       />
 
@@ -1532,9 +1547,9 @@ function App() {
                 value={numWaves} 
                 onChange={(e) => setNumWaves(parseInt(e.target.value))}
               >
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-                <option value={3}>3</option>
+                {Array.from({ length: MAX_WAVES }, (_, i) => i + 1).map((wave) => (
+                  <option key={wave} value={wave}>{wave}</option>
+                ))}
               </select>
               <label>Waves</label>
             </div>
