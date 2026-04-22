@@ -18,6 +18,67 @@ import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
 
+// URL Sharing Utilities
+function encodeStateToUrl(input: BattleInput): string {
+  const jsonString = JSON.stringify(input)
+  const encoded = btoa(jsonString)
+  const baseUrl = window.location.origin + window.location.pathname
+  return `${baseUrl}?state=${encoded}`
+}
+
+function decodeStateFromUrl(): BattleInput | null {
+  try {
+    const params = new URLSearchParams(window.location.search)
+    const encoded = params.get('state')
+    if (!encoded) return null
+    const jsonString = atob(encoded)
+    const input = JSON.parse(jsonString) as BattleInput
+    return input
+  } catch (error) {
+    console.warn('Failed to decode state from URL:', error)
+    return null
+  }
+}
+
+// Toast Notification Component
+interface ToastProps {
+  message: string
+  duration?: number
+}
+
+function Toast({ message, duration = 2000 }: ToastProps) {
+  const [opacity, setOpacity] = useState(1)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setOpacity(0)
+    }, duration)
+
+    return () => clearTimeout(timer)
+  }, [duration])
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        backgroundColor: '#323232',
+        color: 'white',
+        padding: '12px 20px',
+        borderRadius: '4px',
+        boxShadow: '0 3px 5px -1px rgba(0,0,0,0.3)',
+        opacity,
+        transition: 'opacity 0.3s ease',
+        zIndex: 9999,
+        fontSize: '14px',
+      }}
+    >
+      {message}
+    </div>
+  )
+}
+
 // Frontend wrapper types
 export interface BattleInput {
   attack: Record<number, Record<string, number>>
@@ -725,6 +786,7 @@ function App() {
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [histogramZoom, setHistogramZoom] = useState(1)
+  const [toast, setToast] = useState<{ message: string } | null>(null)
   
   // Per-wave state consolidated via hook
   const { waveConfigs, updateWave, resetWaves } = useWaveState(3)
@@ -762,6 +824,14 @@ function App() {
       } catch (e) {
         console.warn('Failed to load history from localStorage:', e)
       }
+    }
+  }, [])
+
+  // Load state from URL on mount
+  useEffect(() => {
+    const sharedInput = decodeStateFromUrl()
+    if (sharedInput) {
+      loadFromHistoryInput(sharedInput)
     }
   }, [])
 
@@ -1093,7 +1163,12 @@ function App() {
     isLoadingFromHistoryRef.current = true
     
     const { input } = entry
-    
+    loadFromHistoryInput(input)
+    loadedEntryNameRef.current = entry.name
+    shouldRunBattleRef.current = true
+  }
+
+  const loadFromHistoryInput = (input: BattleInput) => {
     setMode(input.mode || 'land')
     setNumWaves(input.numWaves || 1)
     setAttack(input.attack || {})
@@ -1146,13 +1221,6 @@ function App() {
     setPruneThreshold(input.pruneThreshold || 1e-12)
     setReportPruneThreshold(input.reportPruneThreshold || 1e-12)
     setSortMode(input.sortMode || 'ipc_cost')
-    // Note: amphibious and decimalPlaces are UI-only state, not saved in history
-    
-    // Store the loaded entry name to populate the field after state updates
-    loadedEntryNameRef.current = entry.name
-    
-    // Mark that we should run the battle after state updates
-    shouldRunBattleRef.current = true
   }
 
   // Effect to run battle and populate name field when loading from history
@@ -1220,6 +1288,93 @@ function App() {
           />
           <label>Save As</label>
         </div>
+        <button
+          onClick={() => {
+            const shareUrl = encodeStateToUrl({
+              attack,
+              defense,
+              attackOol: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [
+                  idx,
+                  attackerOolPresets[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []
+                ])
+              ),
+              defenseOol: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [
+                  idx,
+                  defenderOolPresets[mode].find((p) => p.id === wc.defenseOolPreset)?.ool || []
+                ])
+              ),
+              rounds: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.rounds])
+              ),
+              retreatThreshold: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatThreshold])
+              ),
+              takesTerritory: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.takesTerritory])
+              ),
+              aaLast: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.aaLast])
+              ),
+              attackerSubmerge: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.attackerSubmerge])
+              ),
+              defenderSubmerge: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.defenderSubmerge])
+              ),
+              attackerDestroyerLast: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.attackerDestroyerLast])
+              ),
+              defenderDestroyerLast: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.defenderDestroyerLast])
+              ),
+              crashFighters: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.crashFighters])
+              ),
+              diceMode,
+              inProgress,
+              verboseLevel,
+              pruneThreshold,
+              reportPruneThreshold,
+              sortMode,
+              retreatExpectedIpcProfitThresholds: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatExpectedIpcProfitThreshold])
+              ),
+              retreatPwinThresholds: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatPwinThreshold])
+              ),
+              retreatStrafeThresholds: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatStrafeThreshold])
+              ),
+              retreatLoseAirProbabilityThresholds: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatLoseAirProbabilityThreshold])
+              ),
+              mode,
+              territoryValue,
+              isDeadzone,
+              numWaves,
+            })
+            navigator.clipboard.writeText(shareUrl).then(() => {
+              setToast({ message: '✓ Share link copied to clipboard!' })
+            }).catch(() => {
+              setToast({ message: '✗ Failed to copy link' })
+            })
+          }}
+          style={{
+            padding: '8px 12px',
+            backgroundColor: '#28a745',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            fontWeight: '600',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          Share
+        </button>
         <button
           onClick={() => setShowHistory(!showHistory)}
           style={{
@@ -2278,6 +2433,9 @@ function App() {
           onClearAll={() => setHistory([])}
         />
       )}
+
+      {/* Toast Notification */}
+      {toast && <Toast message={toast.message} />}
     </main>
   )
 }
