@@ -219,6 +219,40 @@ function computeSbrBattle(input: BattleInput): MultiwaveOutput {
   return output
 }
 
+// Validation helper: Check if both attacker and defender have units in all waves
+function validateArmySizes(
+  attack: Record<number, Record<string, number>>,
+  defense: Record<number, Record<string, number>>,
+  numWaves: number
+): { valid: boolean; error?: string } {
+  for (let waveIdx = 0; waveIdx < numWaves; waveIdx++) {
+    const attackUnits = attack[waveIdx] || {}
+    const defenseUnits = defense[waveIdx] || {}
+    
+    // Count total units for attacker
+    const attackerTotal = Object.values(attackUnits).reduce((sum, count) => sum + (count || 0), 0)
+    
+    // Count total units for defender
+    const defenderTotal = Object.values(defenseUnits).reduce((sum, count) => sum + (count || 0), 0)
+    
+    if (attackerTotal === 0) {
+      return {
+        valid: false,
+        error: `Wave ${waveIdx + 1}: Attacker must have at least one unit`,
+      }
+    }
+    
+    if (defenderTotal === 0) {
+      return {
+        valid: false,
+        error: `Wave ${waveIdx + 1}: Defender must have at least one unit`,
+      }
+    }
+  }
+  
+  return { valid: true }
+}
+
 type BattleMode = 'land' | 'sea' | 'sbr'
 
 // CollapsibleSection Component
@@ -955,6 +989,13 @@ function App() {
   useEffect(() => {
     // Debounce timer: wait 1000ms after inputs stop changing before evaluating
     const timer = setTimeout(() => {
+      // Validate army sizes before attempting to evaluate
+      const validation = validateArmySizes(attack, defense, numWaves)
+      if (!validation.valid) {
+        // Don't show error during auto-evaluate, just skip it
+        return
+      }
+      
       // Build per-wave OOL records
       const attackOolRecord: Record<number, UnitId[]> = {}
       const defenseOolRecord: Record<number, UnitId[]> = {}
@@ -1031,6 +1072,13 @@ function App() {
     setError(null)
     setComplexityWarning(null)
     try {
+      // Validate army sizes before attempting to evaluate
+      const validation = validateArmySizes(attack, defense, numWaves)
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid army configuration')
+        return
+      }
+      
       // Build per-wave OOL records
       const attackOolRecord: Record<number, UnitId[]> = {}
       const defenseOolRecord: Record<number, UnitId[]> = {}
