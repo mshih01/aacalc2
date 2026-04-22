@@ -4,22 +4,31 @@
 
 Axis and Allies odds calculator with advanced features.
 - math based probability computation
+	- generally faster than aa1942calc for most battles, and more accurate.
 - basic capabilites
     - land / sea battles with sub/destroyer/air rules.
     - aa guns, shore bombardments
     - custom order of loss
-- awesome advanced features inspired by popovitsj's aa1942calc.com.
+- advanced features inspired by popovitsj's aa1942calc.com.
     - multiwave calculation
-    - amphibious assaults with planned retreat
+    - amphibious assaults with planned retreat (e.g. 1 or 2 rounds battle -- and then retreat non-amphibious units)
     - standard - biased - lowluck dice
     - strategic bombing analysis.
-- advanced features:
+- new features enabled by the math based approach.
     - retreat if the exepcted profit is too low.
         - consider the territory is a deadzone
         - consider the territory value for the EV analysis.
     - retreat if the probability of winning is too low (takes / kills)
     - retreat if the probability of losing air is too high
     - retreat if the probability of destroying the defender is too high (strafe / attack to retreat)
+	- army recommendation.
+		- target win percentage
+			- Given an attacking army, defending army, target percentage, and a side to optimize.
+				- recommend a subset of the defending army that meets target percentage to defend.
+				- recommend a subset of the attacking army that meets target percentage to win. 
+		- maximum ipc profit.
+			- Given an attacking army, defending army.  set the retreat mode to expected profit mode.  set the territory to is_deadzone
+				- recommend the army that maximizes expected profit.  With EV retreat, and is_deadzone, army smaller than maximum army size may be optimal
 
 ## Future work:
 
@@ -34,10 +43,6 @@ Axis and Allies odds calculator with advanced features.
 - Take and hold analysis... In multiwave -- switch sides in between waves to model takes and hold.
 
 - Army recommendation.   
-    - Given an attacking army and defending army, and a target percentage
-        - recommend a subset of the defending army that meets target percentage to defend.
-        - recommend a subset of the attacking army that meets target percentage to win.
-
     - Multi-territory defense analysis: (For VC win analysis)
         - Need to optimize odds to hold 3 or more territories.
         - Input:  
@@ -193,3 +198,16 @@ the state is either 0 or the final probability that we end in this state.
         - From any state -- reach any casualty state with a single table lookup dereference.
             - e.g.  remove 5 sub hits.   remove 8 plane hits.    remove 10 naval hits.
     - The graph nodes are ordered in the node array so that all parent nodes are earlier than all child nodes.
+
+- optimize.ts  -- army recommendation engine...
+	- exhaustive search			(currently used for max profit)
+	- multi-eval accelerated exhaustive search
+	- fuzzy binary search		(currently used for target percentage)
+	- grid search 
+	- linear search
+
+- multiwave.ts -- multi-wave 
+
+- multieval.ts -- multi-eval.  solve multiple armies at one time to take advantage of subproblem reuse.
+		It leads to 10X runtime improvement -- but also large memory overhead.  
+		Curerntly abandoned -- approach in optimize.ts is used instead.
