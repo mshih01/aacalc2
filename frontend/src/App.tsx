@@ -103,6 +103,7 @@ export interface BattleInput {
   pruneThreshold?: number
   reportPruneThreshold?: number
   sortMode?: 'unit_count' | 'ipc_cost'
+  retreatModes: Record<number, string >
   retreatExpectedIpcProfitThresholds?: Record<number, number | undefined>
   retreatPwinThresholds?: Record<number, number | undefined>
   retreatStrafeThresholds?: Record<number, number | undefined>
@@ -526,6 +527,7 @@ export interface WaveConfig {
   attackerDestroyerLast: boolean
   defenderDestroyerLast: boolean
   crashFighters: boolean
+  retreatMode: string
   retreatExpectedIpcProfitThreshold?: number
   retreatPwinThreshold?: number
   retreatStrafeThreshold?: number
@@ -544,6 +546,7 @@ const DEFAULT_WAVE_CONFIG: WaveConfig = {
   attackerDestroyerLast: false,
   defenderDestroyerLast: false,
   crashFighters: false,
+  retreatMode: 'unitCount',
 }
 
 // Hook for managing per-wave state
@@ -894,6 +897,11 @@ function App() {
 
   // Ensure units & presets stay in mode when switching modes
   useEffect(() => {
+    // Skip reset if we're in the middle of loading from history
+    if (isLoadingFromHistoryRef.current) {
+      return
+    }
+    
     const allowed = new Set(modeUnitMap[mode])
     setAttack((prev) => {
       const next: Record<number, Record<string, number>> = {}
@@ -1102,6 +1110,7 @@ function App() {
       const attackerDestroyerLastRecord: Record<number, boolean> = {}
       const defenderDestroyerLastRecord: Record<number, boolean> = {}
       const crashFightersRecord: Record<number, boolean> = {}
+      const retreatModeRecord: Record<number, string> = {}
       const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
       const retreatPwinRecord: Record<number, number | undefined> = {}
       const retreatStrafeRecord: Record<number, number | undefined> = {}
@@ -1120,6 +1129,7 @@ function App() {
         attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
         defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
         crashFightersRecord[i] = config.crashFighters
+        retreatModeRecord[i] = config.retreatMode || 'unitCount'
         retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
         retreatPwinRecord[i] = config.retreatPwinThreshold
         retreatStrafeRecord[i] = config.retreatStrafeThreshold
@@ -1140,6 +1150,7 @@ function App() {
         attackerDestroyerLast: attackerDestroyerLastRecord,
         defenderDestroyerLast: defenderDestroyerLastRecord,
         crashFighters: crashFightersRecord,
+        retreatModes: retreatModeRecord,
         mode,
         diceMode,
         inProgress,
@@ -1235,6 +1246,7 @@ function App() {
   }
 
   const loadFromHistoryInput = (input: BattleInput) => {
+    isLoadingFromHistoryRef.current = true
     setMode(input.mode || 'land')
     setNumWaves(input.numWaves || 1)
     setAttack(input.attack || {})
@@ -1246,25 +1258,47 @@ function App() {
       const attackOol = input.attackOol?.[i]
       const defenseOol = input.defenseOol?.[i]
       
-      // Find matching presets for OOL arrays
+      // Find matching presets for OOL arrays (without mutating original arrays)
       const mode = input.mode || 'land'
       const attackingPreset = attackOol 
         ? attackerOolPresets[mode].find((p) =>
-            JSON.stringify(p.ool.sort()) === JSON.stringify([...attackOol].sort())
+            JSON.stringify(p.ool) === JSON.stringify(attackOol)
           )
         : undefined
       
       const defenderPreset = defenseOol
         ? defenderOolPresets[mode].find((p) =>
-            JSON.stringify(p.ool.sort()) === JSON.stringify([...defenseOol].sort())
+            JSON.stringify(p.ool) === JSON.stringify(defenseOol)
           )
         : undefined
       
-      updateWave(i, {
+      const retreatModeValue = input.retreatModes?.[i] || 'unitCount'
+      
+      // Build threshold updates based on retreat mode
+      const thresholdUpdates: Partial<WaveConfig> = {
+        retreatThreshold: undefined,
+        retreatExpectedIpcProfitThreshold: undefined,
+        retreatPwinThreshold: undefined,
+        retreatStrafeThreshold: undefined,
+        retreatLoseAirProbabilityThreshold: undefined,
+      }
+      
+      if (retreatModeValue === 'unitCount') {
+        thresholdUpdates.retreatThreshold = input.retreatThreshold?.[i]
+      } else if (retreatModeValue === 'expectedIpcProfit') {
+        thresholdUpdates.retreatExpectedIpcProfitThreshold = input.retreatExpectedIpcProfitThresholds?.[i]
+      } else if (retreatModeValue === 'probabilityWins') {
+        thresholdUpdates.retreatPwinThreshold = input.retreatPwinThresholds?.[i]
+      } else if (retreatModeValue === 'strafe') {
+        thresholdUpdates.retreatStrafeThreshold = input.retreatStrafeThresholds?.[i]
+      } else if (retreatModeValue === 'loseAir') {
+        thresholdUpdates.retreatLoseAirProbabilityThreshold = input.retreatLoseAirProbabilityThresholds?.[i]
+      }
+      
+      const waveUpdate = {
         attackOolPreset: attackingPreset?.id || DEFAULT_WAVE_CONFIG.attackOolPreset,
         defenseOolPreset: defenderPreset?.id || DEFAULT_WAVE_CONFIG.defenseOolPreset,
         rounds: (input.rounds?.[i]?.toString() ?? 'all') as unknown as string,
-        retreatThreshold: input.retreatThreshold?.[i] ?? 0,
         takesTerritory: input.takesTerritory?.[i] ?? 0,
         aaLast: input.aaLast?.[i] ?? false,
         attackerSubmerge: input.attackerSubmerge?.[i] ?? false,
@@ -1272,11 +1306,10 @@ function App() {
         attackerDestroyerLast: input.attackerDestroyerLast?.[i] ?? false,
         defenderDestroyerLast: input.defenderDestroyerLast?.[i] ?? false,
         crashFighters: input.crashFighters?.[i] ?? false,
-        retreatExpectedIpcProfitThreshold: input.retreatExpectedIpcProfitThresholds?.[i],
-        retreatPwinThreshold: input.retreatPwinThresholds?.[i],
-        retreatStrafeThreshold: input.retreatStrafeThresholds?.[i],
-        retreatLoseAirProbabilityThreshold: input.retreatLoseAirProbabilityThresholds?.[i],
-      })
+        retreatMode: retreatModeValue,
+        ...thresholdUpdates,
+      }
+      updateWave(i, waveUpdate)
     }
     
     setDiceMode(input.diceMode || 'standard')
@@ -1287,6 +1320,11 @@ function App() {
     setPruneThreshold(input.pruneThreshold || 1e-12)
     setReportPruneThreshold(input.reportPruneThreshold || 1e-12)
     setSortMode(input.sortMode || 'ipc_cost')
+    
+    // Reset flag after state updates are processed
+    setTimeout(() => {
+      isLoadingFromHistoryRef.current = false
+    }, 0)
   }
 
   // Effect to run battle and populate name field when loading from history
@@ -1414,6 +1452,9 @@ function App() {
               ),
               crashFighters: Object.fromEntries(
                 Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.crashFighters])
+              ),
+              retreatModes: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatMode])
               ),
               diceMode,
               inProgress,
@@ -1999,6 +2040,9 @@ function App() {
           pruneThreshold,
           reportPruneThreshold,
           sortMode,
+          retreatModes: Object.fromEntries(
+            Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatMode])
+          ),
           retreatExpectedIpcProfitThresholds: Object.values(waveConfigs).map((wc) => wc.retreatExpectedIpcProfitThreshold),
           retreatPwinThresholds: Object.values(waveConfigs).map((wc) => wc.retreatPwinThreshold),
           retreatStrafeThresholds: Object.values(waveConfigs).map((wc) => wc.retreatStrafeThreshold),

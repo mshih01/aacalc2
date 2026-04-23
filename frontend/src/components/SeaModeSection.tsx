@@ -38,9 +38,10 @@ export function SeaModeSection({ waveIdx, config, onUpdate }: SeaModeSectionProp
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {RETREAT_OPTIONS.map((option) => {
             const thresholdField = option.thresholdField as keyof WaveConfig
-            const isSelected = 
-              option.id === 'unitCount' ? isDefaultReteatOption :
-              (config[thresholdField] !== undefined)
+            // Use explicit retreatMode if available, fallback to inference for backward compatibility
+            const isSelected = config.retreatMode !== undefined
+              ? option.id === config.retreatMode
+              : (option.id === 'unitCount' ? isDefaultReteatOption : (config[thresholdField] !== undefined))
 
             return (
               <label key={option.id} style={CHECKBOX_LABEL_STYLE}>
@@ -49,12 +50,16 @@ export function SeaModeSection({ waveIdx, config, onUpdate }: SeaModeSectionProp
                   checked={isSelected}
                   onChange={() => {
                     const updates: Partial<WaveConfig> = {
+                      retreatMode: option.id,
+                      retreatThreshold: undefined,
                       retreatPwinThreshold: undefined,
                       retreatStrafeThreshold: undefined,
                       retreatLoseAirProbabilityThreshold: undefined,
                       retreatExpectedIpcProfitThreshold: undefined,
                     }
-                    if (option.id !== 'unitCount') {
+                    if (option.id === 'unitCount') {
+                      updates.retreatThreshold = 0
+                    } else {
                       (updates[thresholdField] as any) = 0
                     }
                     onUpdate(updates)
