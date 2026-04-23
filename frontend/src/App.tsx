@@ -225,6 +225,9 @@ function validateArmySizes(
   defense: Record<number, Record<string, number>>,
   numWaves: number
 ): { valid: boolean; error?: string } {
+  let hasAnyAttacker = false
+  let hasAnyDefender = false
+  
   for (let waveIdx = 0; waveIdx < numWaves; waveIdx++) {
     const attackUnits = attack[waveIdx] || {}
     const defenseUnits = defense[waveIdx] || {}
@@ -235,18 +238,26 @@ function validateArmySizes(
     // Count total units for defender
     const defenderTotal = Object.values(defenseUnits).reduce((sum, count) => sum + (count || 0), 0)
     
-    if (attackerTotal === 0) {
-      return {
-        valid: false,
-        error: `Wave ${waveIdx + 1}: Attacker must have at least one unit`,
-      }
+    if (attackerTotal > 0) {
+      hasAnyAttacker = true
     }
     
-    if (defenderTotal === 0) {
-      return {
-        valid: false,
-        error: `Wave ${waveIdx + 1}: Defender must have at least one unit`,
-      }
+    if (defenderTotal > 0) {
+      hasAnyDefender = true
+    }
+  }
+  
+  if (!hasAnyAttacker) {
+    return {
+      valid: false,
+      error: 'All waves: Attacker must have at least one unit',
+    }
+  }
+  
+  if (!hasAnyDefender) {
+    return {
+      valid: false,
+      error: 'All waves: Defender must have at least one unit',
     }
   }
   
@@ -1301,6 +1312,15 @@ function App() {
     <main className="app" style={{ display: 'flex', gap: '20px', minHeight: '100vh' }}>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <h1>aa1942calc2 frontend demo</h1>
+        <div style={{ marginBottom: '20px', display: 'flex', gap: '15px', fontSize: '14px' }}>
+          <a href="https://github.com/mshih01/aacalc2" target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
+            GitHub Repository
+          </a>
+          <span style={{ color: '#ccc' }}>|</span>
+          <a href="https://discord.com/channels/606254910438375434/1212463778319568996" target="_blank" rel="noopener noreferrer" style={{ color: '#0066cc', textDecoration: 'none' }}>
+            Discord Server
+          </a>
+        </div>
       <ModeSelector mode={mode} onChange={setMode} />
 
       <ResetButtons 
