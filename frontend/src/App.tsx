@@ -2125,15 +2125,15 @@ function App() {
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '105px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>Atk Survives</div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{(((result.attack.survives[waveIdx] ?? 0) ) * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{(((result.attack.survives[waveIdx] ?? 0) ) * 100).toFixed(decimalPlaces)}%</div>
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '120px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>Atk Takes Terr</div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{((result.takesTerritory[waveIdx] ?? 0) * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{((result.takesTerritory[waveIdx] ?? 0) * 100).toFixed(decimalPlaces)}%</div>
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '105px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>Def Survives</div>
-                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{(((result.defense.survives[waveIdx] ?? 0) ) * 100).toFixed(1)}%</div>
+                    <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1.2' }}>{(((result.defense.survives[waveIdx] ?? 0) ) * 100).toFixed(decimalPlaces)}%</div>
                   </div>
                   <div style={{ flex: '0 1 auto', minWidth: '115px' }}>
                     <div style={{ fontSize: '10px', color: '#666', fontWeight: '500', lineHeight: '1.2' }}>{waveIdx > 0 ? 'Δ Atk IPC' : 'Atk IPC Loss'}</div>
