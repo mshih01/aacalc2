@@ -52,6 +52,7 @@ export interface wave_input {
   retreat_strafe_threshold?: number;
   retreat_lose_air_probability: number;
   rounds: number;
+  use_attackers_from_previous_wave?: boolean;
 }
 
 export function multiwave(input: multiwave_input): multiwave_output {
@@ -78,7 +79,9 @@ export function multiwave(input: multiwave_input): multiwave_output {
       if (i > 0) {
         const defend_dist = input.report_complexity_only
           ? get_defender_distribution(probArr[i - 1])
-          : output[i - 1].def_cas;
+          : wave.use_attackers_from_previous_wave
+            ? output[i - 1].att_cas
+            : output[i - 1].def_cas;
         const def_token = preparse_token(wave.defender);
         defend_add_reinforce = [];
         for (let j = 0; j < defend_dist.length; j++) {
@@ -86,11 +89,16 @@ export function multiwave(input: multiwave_input): multiwave_output {
           let p1;
           //let p2;
           if (cas.remain.length == 0) {
-            //if attacker takes -- then no reinforce
-            if (output[i - 1] != undefined) {
-              p1 = cas.prob - output[i - 1].takesTerritory[0];
-            } else {
+            if (wave.use_attackers_from_previous_wave) {
+              //if attacker doesn't take -- then no reinforce
               p1 = cas.prob;
+            } else {
+              //if attacker takes -- then no reinforce
+              if (output[i - 1] != undefined) {
+                p1 = cas.prob - output[i - 1].takesTerritory[0];
+              } else {
+                p1 = cas.prob;
+              }
             }
             //p2 = output[i-1].takesTerritory[0];
           } else {
@@ -98,8 +106,11 @@ export function multiwave(input: multiwave_input): multiwave_output {
             //p2 = 0;
           }
           // retreated subs fight in the second wave.
+          const isAttacker = wave.use_attackers_from_previous_wave;
           const newcasstr_ool = apply_ool(
-            cas.remain + cas.retreat + def_token,
+            (isAttacker ? remove_planes(cas.remain) : cas.remain) +
+              cas.retreat +
+              def_token,
             wave.def_ool,
             wave.def_aalast,
           );
@@ -107,10 +118,14 @@ export function multiwave(input: multiwave_input): multiwave_output {
             ? preparse_battleship(newcasstr_ool)
             : newcasstr_ool;
 
+          const newcas = isAttacker
+            ? remove_planes(cas.casualty)
+            : cas.casualty;
+
           const newcasualty: casualty_1d = {
             remain: newcasstr,
             retreat: '',
-            casualty: cas.casualty,
+            casualty: newcas,
             prob: p1,
           };
           defend_add_reinforce.push(newcasualty);
@@ -223,8 +238,8 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
   if (input.report_complexity_only) {
     const out2: aacalc_output = {
-      attack: { survives: [0], ipcLoss: [0] },
-      defense: { survives: [0], ipcLoss: [0] },
+      attack: { survives: [0], ipcLoss: [0], ipcLossLandOnly: [0] },
+      defense: { survives: [0], ipcLoss: [0], ipcLossLandOnly: [0] },
       casualtiesInfo: [],
       att_cas: [],
       def_cas: [],
@@ -242,35 +257,49 @@ export function multiwave(input: multiwave_input): multiwave_output {
   const attsurvive: number[] = [];
   const defsurvive: number[] = [];
   const attipc: number[] = [];
+  const attipcLandOnly: number[] = [];
   const defipc: number[] = [];
   const atttakes: number[] = [];
   for (let i = 0; i < input.wave_info.length; i++) {
     let att_survives = output[i].attack.survives[0];
     const def_survives = output[i].defense.survives[0];
     let att_ipcLoss = output[i].attack.ipcLoss[0];
+    let att_ipcLossLandOnly = output[i].attack.ipcLossLandOnly[0];
     let def_ipcLoss = output[i].defense.ipcLoss[0];
     let att_takes = output[i].takesTerritory[0];
+    const isAttacker = input.wave_info[i].use_attackers_from_previous_wave;
     if (i > 0) {
       for (let j = 0; j < i; j++) {
-        def_ipcLoss +=
-          output[j].takesTerritory[0] *
-          get_cost_from_str(probArr[j].um, probArr[j].def_data.unit_str, '');
+        if (!isAttacker) {
+          def_ipcLoss +=
+            output[j].takesTerritory[0] *
+            get_cost_from_str(probArr[j].um, probArr[j].def_data.unit_str, '');
+        }
       }
       //def_ipcLoss -= defipc[i-1];
-      att_ipcLoss += attipc[i - 1];
-      att_survives += atttakes[i - 1];
-      att_takes += atttakes[i - 1];
+      if (!isAttacker) {
+        att_ipcLoss += attipc[i - 1];
+        att_survives += atttakes[i - 1];
+        att_takes += atttakes[i - 1];
+      } else {
+        att_ipcLoss += defipc[i - 1];
+      }
     }
     attsurvive.push(att_survives);
     defsurvive.push(def_survives);
     attipc.push(att_ipcLoss);
+    attipcLandOnly.push(att_ipcLossLandOnly);
     defipc.push(def_ipcLoss);
     atttakes.push(att_takes);
   }
   //let att_cas : casualty_1d[];
   const out2: aacalc_output = {
-    attack: { survives: attsurvive, ipcLoss: attipc },
-    defense: { survives: defsurvive, ipcLoss: defipc },
+    attack: {
+      survives: attsurvive,
+      ipcLoss: attipc,
+      ipcLossLandOnly: attipcLandOnly,
+    },
+    defense: { survives: defsurvive, ipcLoss: defipc, ipcLossLandOnly: defipc },
     casualtiesInfo: [],
     att_cas: [],
     def_cas: [],
@@ -354,4 +383,16 @@ export function get_defender_distribution(
     result.push(cas);
   }
   return result;
+}
+
+function remove_planes(s: string): string {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charAt(i);
+    if (ch == 'f' || ch == 'b') {
+      continue;
+    }
+    out += ch;
+  }
+  return out;
 }

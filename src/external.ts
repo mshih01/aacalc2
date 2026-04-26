@@ -125,6 +125,8 @@ export interface WaveInput {
   // incompatible with is_naval
   retreat_lose_air_probability?: number; // retreat if the probability of losing air exceeds threshold.  default is 1.0
   // incompatible with is_naval
+  use_attackers_from_previous_wave?: boolean; // by default, the surviving defenders from the previous wave fight in the current wave.
+  // when this option is true -- the surviving attackers from the previous wave fight in the current wave instead.  this is for simulating capture and hold.
 }
 
 export interface MultiwaveInput {
@@ -255,6 +257,15 @@ interface unit_counts {
   num_naval: number;
   num_aa: number;
   N: number;
+}
+
+// complexity is too large -- caller should fallback to monte carlo
+export function multiwaveTooComplex(input: MultiwaveInput): boolean {
+  const complexity = multiwaveComplexityFastV2(input);
+  if (complexity > 120000) {
+    return true;
+  }
+  return false;
 }
 
 export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
@@ -451,6 +462,8 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
       retreat_pwin_threshold: wave.retreat_pwin_threshold,
       pwinMode: wave.pwinMode ?? 'takes', // default to 'takes' if not provided
       retreat_strafe_threshold: wave.retreat_strafe_threshold,
+      use_attackers_from_previous_wave:
+        wave.use_attackers_from_previous_wave ?? false, // default to false if not provided
     };
 
     wavearr.push(internal_wave);
@@ -496,12 +509,21 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const lastOutput = internal_output.output[lastWave];
   const um = new unit_manager(input.verbose_level);
   const profitDist: ProfitDistribution[] = [];
+
+  const hasSwap = input.wave_info.reduce<boolean>(
+    (hasSwap, wave) =>
+      hasSwap || wave.use_attackers_from_previous_wave ? true : false,
+    false,
+  );
+
+  // for each wave
   for (let ii = 0; ii < internal_output.output.length; ii++) {
     const currOutput = internal_output.output[ii];
     if (currOutput == undefined) {
       continue; // Skip undefined outputs
     }
     let sum = 0;
+    // attacker casualties
     for (let i = 0; i < currOutput.att_cas.length; i++) {
       const cas = currOutput.att_cas[i];
       const casualty: CasualtyInfo = {
@@ -515,12 +537,14 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       if (
         ii < internal_output.output.length - 1 &&
         cas.remain.length > 0 &&
-        hasLand(um, cas.remain)
+        hasLand(um, cas.remain) &&
+        !hasSwap
       ) {
-        // If there are land units remaining, we captured the territory in the previous wave and need to record
+        // If there are land units remaining, we captured the territory in earlier wave and need to record
         // the casualties details.
         include = true;
       }
+      // include the last wave casualties details since they are final outcomes.
       if (ii == internal_output.output.length - 1) {
         include = true;
       }
@@ -545,6 +569,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       console.log(`Attacker casualties for wave ${ii}: ${sum}`);
     }
     sum = 0;
+    // def cas
     for (let i = 0; i < currOutput.def_cas.length; i++) {
       const cas = currOutput.def_cas[i];
       const casualty: CasualtyInfo = {
@@ -556,9 +581,12 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       };
       let include: boolean = false;
       let prob = cas.prob;
-      if (ii < internal_output.output.length - 1 && cas.remain.length == 0) {
-        // If there are land units remaining, we captured the territory in the previous wave and need to record
-        // the casualties details.
+      if (
+        ii < internal_output.output.length - 1 &&
+        cas.remain.length == 0 &&
+        !hasSwap
+      ) {
+        // no defending units... p takes territory.
         include = true;
         prob =
           internal_output.out.takesTerritory[ii] -

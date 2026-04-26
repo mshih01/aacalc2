@@ -1,5 +1,8 @@
 # Axis and Allies 1942 Online probability calculator engine
 
+**Links:**
+-- [Discord Server](https://discord.com/channels/606254910438375434/1497710431714803863)
+
 ## Overview:
 
 Axis and Allies odds calculator with advanced features.

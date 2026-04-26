@@ -178,6 +178,7 @@ function get_cost(
 }
 interface naval_cost {
   cost: number;
+  costLandOnly: number;
   casualty: string;
 }
 export function get_general_cost(
@@ -219,18 +220,22 @@ export function get_general_cost(
 
   let casualty = '';
   let cost = 0;
+  let costLandOnly = 0;
   for (const [ch2, cnt] of mymap) {
     const stat = problem.um.get_stat(ch2);
     if (skipBombard && stat.isBombard) {
       continue;
     }
     cost += stat.cost * cnt;
+    if (stat.isLand) {
+      costLandOnly += stat.cost * cnt;
+    }
     for (let i = 0; i < cnt; i++) {
       casualty += ch2;
     }
   }
 
-  return { cost: cost, casualty: casualty };
+  return { cost: cost, costLandOnly: costLandOnly, casualty: casualty };
 }
 
 export function print_general_results(
@@ -324,6 +329,7 @@ export function print_general_results(
 
   let totalattloss = 0;
   let totaldefloss = 0;
+  let totalattlossLandOnly = 0;
   let takes = 0;
   for (let ii = 0; ii < mergedArr.length; ii++) {
     const result = mergedArr[ii];
@@ -379,6 +385,7 @@ export function print_general_results(
     }
     if (p > 0) {
       let attloss = att_naval_cost.cost;
+      let attlossLandOnly = att_naval_cost.costLandOnly;
       const defloss = def_naval_cost.cost;
       if (
         !baseproblem.is_naval &&
@@ -395,6 +402,7 @@ export function print_general_results(
         }
       }
       totalattloss += attloss * p;
+      totalattlossLandOnly += attlossLandOnly * p;
       totaldefloss += defloss * p;
       if (baseproblem.verbose_level > 2) {
         //console.log(`result:  P[%d][%d] ${red_att} vs. ${red_def} = ${p} cumm(${result.cumm}) rcumm(${result.rcumm}) (${result.cost})`, result.i, result.j);
@@ -500,8 +508,16 @@ export function print_general_results(
   //console.log("def_cas_1d", JSON.stringify(def_cas_1d, null, 4));
   //console.log(casualties);
   const output: aacalc_output = {
-    attack: { survives: [attsurvive, 0, 0], ipcLoss: [totalattloss, 0, 0] },
-    defense: { survives: [defsurvive, 0, 0], ipcLoss: [totaldefloss, 0, 0] },
+    attack: {
+      survives: [attsurvive, 0, 0],
+      ipcLoss: [totalattloss, 0, 0],
+      ipcLossLandOnly: [totalattlossLandOnly, 0, 0],
+    },
+    defense: {
+      survives: [defsurvive, 0, 0],
+      ipcLoss: [totaldefloss, 0, 0],
+      ipcLossLandOnly: [totaldefloss, 0, 0],
+    },
     casualtiesInfo: casualties,
     att_cas: att_cas_1d,
     def_cas: def_cas_1d,
@@ -520,6 +536,7 @@ export function collect_and_print_results(problem: general_problem) {
 interface aacalc_info {
   survives: number[];
   ipcLoss: number[];
+  ipcLossLandOnly: number[];
 }
 
 export interface casualty_2d {

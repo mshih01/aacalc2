@@ -6,6 +6,9 @@ exports[`Regression test for test0 1`] = `
     "ipcLoss": [
       39.75357495338105,
     ],
+    "ipcLossLandOnly": [
+      27.80861387344258,
+    ],
     "survives": [
       0.47291302803174,
     ],
@@ -278,6 +281,9 @@ exports[`Regression test for test0 1`] = `
   "complexity": 270,
   "defense": {
     "ipcLoss": [
+      36.47117521664264,
+    ],
+    "ipcLossLandOnly": [
       36.47117521664264,
     ],
     "survives": [
@@ -424,6 +430,9 @@ exports[`Regression test for test1 1`] = `
     "ipcLoss": [
       39.75357495338105,
     ],
+    "ipcLossLandOnly": [
+      27.80861387344257,
+    ],
     "survives": [
       0.47291302803174,
     ],
@@ -698,6 +707,9 @@ exports[`Regression test for test1 1`] = `
     "ipcLoss": [
       36.47117521664264,
     ],
+    "ipcLossLandOnly": [
+      36.47117521664264,
+    ],
     "survives": [
       0.49312370561287,
     ],
@@ -841,6 +853,9 @@ exports[`Regression test for test2 1`] = `
   "attack": {
     "ipcLoss": [
       23.94008798105738,
+    ],
+    "ipcLossLandOnly": [
+      20.38236813271006,
     ],
     "survives": [
       0.99596290684284,
@@ -1277,6 +1292,9 @@ exports[`Regression test for test2 1`] = `
     "ipcLoss": [
       27.89270013636236,
     ],
+    "ipcLossLandOnly": [
+      27.89270013636236,
+    ],
     "survives": [
       0.63176969544230,
     ],
@@ -1548,6 +1566,9 @@ exports[`Regression test for test3 1`] = `
   "attack": {
     "ipcLoss": [
       21.33046772187757,
+    ],
+    "ipcLossLandOnly": [
+      17.93702690983968,
     ],
     "survives": [
       0.99900060234235,
@@ -1998,6 +2019,9 @@ exports[`Regression test for test3 1`] = `
     "ipcLoss": [
       25.27680764137532,
     ],
+    "ipcLossLandOnly": [
+      25.27680764137532,
+    ],
     "survives": [
       0.66975909850339,
     ],
@@ -2277,6 +2301,9 @@ exports[`Regression test for test4 1`] = `
   "attack": {
     "ipcLoss": [
       19.13517281075974,
+    ],
+    "ipcLossLandOnly": [
+      15.80183947742642,
     ],
     "survives": [
       0.99996189605243,
@@ -2734,6 +2761,9 @@ exports[`Regression test for test4 1`] = `
     "ipcLoss": [
       22.35985652387912,
     ],
+    "ipcLossLandOnly": [
+      22.35985652387912,
+    ],
     "survives": [
       0.72635366627802,
     ],
@@ -3025,6 +3055,9 @@ exports[`Regression test for test5 1`] = `
   "attack": {
     "ipcLoss": [
       18.41486571707471,
+    ],
+    "ipcLossLandOnly": [
+      15.08153238374138,
     ],
     "survives": [
       0.99996189605243,
@@ -3482,6 +3515,9 @@ exports[`Regression test for test5 1`] = `
     "ipcLoss": [
       21.23177088619642,
     ],
+    "ipcLossLandOnly": [
+      21.23177088619642,
+    ],
     "survives": [
       0.76134112873941,
     ],
@@ -3773,6 +3809,9 @@ exports[`Regression test for test6 1`] = `
   "attack": {
     "ipcLoss": [
       16.67046400681587,
+    ],
+    "ipcLossLandOnly": [
+      13.33713067348253,
     ],
     "survives": [
       0.99996189605243,
@@ -4230,6 +4269,9 @@ exports[`Regression test for test6 1`] = `
     "ipcLoss": [
       18.00104453077315,
     ],
+    "ipcLossLandOnly": [
+      18.00104453077315,
+    ],
     "survives": [
       0.83772319613609,
     ],
@@ -4525,6 +4567,9 @@ exports[`Regression test for test7 1`] = `
   "attack": {
     "ipcLoss": [
       16.50740203669384,
+    ],
+    "ipcLossLandOnly": [
+      13.17406870336052,
     ],
     "survives": [
       0.99996189605243,
@@ -4982,6 +5027,9 @@ exports[`Regression test for test7 1`] = `
     "ipcLoss": [
       17.68260411498902,
     ],
+    "ipcLossLandOnly": [
+      17.68260411498902,
+    ],
     "survives": [
       0.84517468646730,
     ],
@@ -5277,6 +5325,9 @@ exports[`Regression test for test8 1`] = `
   "attack": {
     "ipcLoss": [
       16.26143198686172,
+    ],
+    "ipcLossLandOnly": [
+      12.92809865352839,
     ],
     "survives": [
       0.99996189605243,
@@ -5734,6 +5785,9 @@ exports[`Regression test for test8 1`] = `
     "ipcLoss": [
       17.15196121669378,
     ],
+    "ipcLossLandOnly": [
+      17.15196121669378,
+    ],
     "survives": [
       0.85887997938599,
     ],
@@ -6033,6 +6087,9 @@ exports[`Regression test for test9 1`] = `
   "attack": {
     "ipcLoss": [
       15.53078309001993,
+    ],
+    "ipcLossLandOnly": [
+      12.19744975668660,
     ],
     "survives": [
       0.99996189605243,
@@ -6490,6 +6547,9 @@ exports[`Regression test for test9 1`] = `
     "ipcLoss": [
       15.33764490972706,
     ],
+    "ipcLossLandOnly": [
+      15.33764490972706,
+    ],
     "survives": [
       0.90813034807228,
     ],
@@ -6793,6 +6853,9 @@ exports[`Regression test for test10 1`] = `
   "attack": {
     "ipcLoss": [
       15.05875865640406,
+    ],
+    "ipcLossLandOnly": [
+      11.72542532307072,
     ],
     "survives": [
       0.99996189605243,
@@ -7236,6 +7299,9 @@ exports[`Regression test for test10 1`] = `
     "ipcLoss": [
       13.99369037928587,
     ],
+    "ipcLossLandOnly": [
+      13.99369037928587,
+    ],
     "survives": [
       0.95176134703951,
     ],
@@ -7547,6 +7613,9 @@ exports[`Regression test for test11 1`] = `
   "attack": {
     "ipcLoss": [
       14.74074074074075,
+    ],
+    "ipcLossLandOnly": [
+      11.40740740740741,
     ],
     "survives": [
       0.99996189605243,
@@ -7946,6 +8015,9 @@ exports[`Regression test for test11 1`] = `
   "complexity": 270,
   "defense": {
     "ipcLoss": [
+      12.83660610520501,
+    ],
+    "ipcLossLandOnly": [
       12.83660610520501,
     ],
     "survives": [
@@ -8272,6 +8344,9 @@ exports[`Regression test for test12 1`] = `
     "ipcLoss": [
       14.74074074074075,
     ],
+    "ipcLossLandOnly": [
+      11.40740740740741,
+    ],
     "survives": [
       0.99996189605243,
     ],
@@ -8672,6 +8747,9 @@ exports[`Regression test for test12 1`] = `
     "ipcLoss": [
       12.83660610520501,
     ],
+    "ipcLossLandOnly": [
+      12.83660610520501,
+    ],
     "survives": [
       0.99964575236245,
     ],
@@ -8995,6 +9073,9 @@ exports[`Regression test for test13 1`] = `
   "attack": {
     "ipcLoss": [
       23.34932448811341,
+    ],
+    "ipcLossLandOnly": [
+      19.50373997694876,
     ],
     "survives": [
       0.98910882792260,
@@ -9417,6 +9498,9 @@ exports[`Regression test for test13 1`] = `
     "ipcLoss": [
       27.57390019588320,
     ],
+    "ipcLossLandOnly": [
+      27.57390019588320,
+    ],
     "survives": [
       0.60452564429023,
     ],
@@ -9693,6 +9777,9 @@ exports[`Regression test for test14 1`] = `
     "ipcLoss": [
       39.75357495338105,
     ],
+    "ipcLossLandOnly": [
+      27.80861387344258,
+    ],
     "survives": [
       0.47291302803174,
     ],
@@ -9967,6 +10054,9 @@ exports[`Regression test for test14 1`] = `
     "ipcLoss": [
       36.47117521664264,
     ],
+    "ipcLossLandOnly": [
+      36.47117521664264,
+    ],
     "survives": [
       0.49312370561287,
     ],
@@ -10110,6 +10200,9 @@ exports[`Regression test for test15 1`] = `
   "attack": {
     "ipcLoss": [
       76.97201965795490,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.94024055719266,
@@ -10868,6 +10961,9 @@ exports[`Regression test for test15 1`] = `
     "ipcLoss": [
       147.02129062503141,
     ],
+    "ipcLossLandOnly": [
+      147.02129062503141,
+    ],
     "survives": [
       0.05975944173010,
     ],
@@ -11235,6 +11331,9 @@ exports[`Regression test for test16 1`] = `
   "attack": {
     "ipcLoss": [
       14.74074074074075,
+    ],
+    "ipcLossLandOnly": [
+      11.40740740740741,
     ],
     "survives": [
       0.99996189605243,
@@ -11636,6 +11735,9 @@ exports[`Regression test for test16 1`] = `
     "ipcLoss": [
       12.83660610520501,
     ],
+    "ipcLossLandOnly": [
+      12.83660610520501,
+    ],
     "survives": [
       0.99964575236245,
     ],
@@ -11960,6 +12062,9 @@ exports[`Regression test for test17 1`] = `
     "ipcLoss": [
       27.80014384106122,
     ],
+    "ipcLossLandOnly": [
+      0,
+    ],
     "survives": [
       0.99999999999965,
     ],
@@ -12274,6 +12379,9 @@ exports[`Regression test for test17 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
+      38.79021037974655,
+    ],
+    "ipcLossLandOnly": [
       38.79021037974655,
     ],
     "survives": [
@@ -12700,6 +12808,9 @@ exports[`Regression test for test18 1`] = `
     "ipcLoss": [
       23.34932448811341,
     ],
+    "ipcLossLandOnly": [
+      19.50373997694876,
+    ],
     "survives": [
       0.98910882792260,
     ],
@@ -13121,6 +13232,9 @@ exports[`Regression test for test18 1`] = `
     "ipcLoss": [
       27.57390019588320,
     ],
+    "ipcLossLandOnly": [
+      27.57390019588320,
+    ],
     "survives": [
       0.60452564429023,
     ],
@@ -13396,6 +13510,9 @@ exports[`Regression test for test19 1`] = `
   "attack": {
     "ipcLoss": [
       72.90985772746740,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.99689279110751,
@@ -14014,6 +14131,9 @@ exports[`Regression test for test19 1`] = `
     "ipcLoss": [
       144.26353316733653,
     ],
+    "ipcLossLandOnly": [
+      144.26353316733653,
+    ],
     "survives": [
       0.07132653281024,
     ],
@@ -14433,6 +14553,9 @@ exports[`Regression test for test20 1`] = `
   "attack": {
     "ipcLoss": [
       15.90062216247406,
+    ],
+    "ipcLossLandOnly": [
+      12.56108096084299,
     ],
     "survives": [
       0.99989812149797,
@@ -14890,6 +15013,9 @@ exports[`Regression test for test20 1`] = `
     "ipcLoss": [
       14.15085316634722,
     ],
+    "ipcLossLandOnly": [
+      14.15085316634722,
+    ],
     "survives": [
       0.99706128007984,
     ],
@@ -15209,6 +15335,9 @@ exports[`Regression test for test21 1`] = `
   "attack": {
     "ipcLoss": [
       29.37871935642000,
+    ],
+    "ipcLossLandOnly": [
+      20.54577403520326,
     ],
     "survives": [
       0.62499369134661,
@@ -15666,6 +15795,9 @@ exports[`Regression test for test21 1`] = `
     "ipcLoss": [
       20.55918135668142,
     ],
+    "ipcLossLandOnly": [
+      20.55918135668142,
+    ],
     "survives": [
       0.99486646037297,
     ],
@@ -15885,6 +16017,9 @@ exports[`Regression test for test22 1`] = `
   "attack": {
     "ipcLoss": [
       42.83385859363468,
+    ],
+    "ipcLossLandOnly": [
+      27.80861387344258,
     ],
     "survives": [
       0.47291302803174,
@@ -16160,6 +16295,9 @@ exports[`Regression test for test22 1`] = `
     "ipcLoss": [
       36.47117521664265,
     ],
+    "ipcLossLandOnly": [
+      36.47117521664265,
+    ],
     "survives": [
       0.49312370561287,
     ],
@@ -16319,6 +16457,9 @@ exports[`Regression test for test23 1`] = `
   "attack": {
     "ipcLoss": [
       76.97201965795490,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.94024055719266,
@@ -17077,6 +17218,9 @@ exports[`Regression test for test23 1`] = `
     "ipcLoss": [
       147.02129062503141,
     ],
+    "ipcLossLandOnly": [
+      147.02129062503141,
+    ],
     "survives": [
       0.05975944173010,
     ],
@@ -17444,6 +17588,9 @@ exports[`Regression test for test24 1`] = `
   "attack": {
     "ipcLoss": [
       14.74568878816106,
+    ],
+    "ipcLossLandOnly": [
+      11.40740740740741,
     ],
     "survives": [
       0.99996189605243,
@@ -17845,6 +17992,9 @@ exports[`Regression test for test24 1`] = `
     "ipcLoss": [
       12.83660610520501,
     ],
+    "ipcLossLandOnly": [
+      12.83660610520501,
+    ],
     "survives": [
       0.99964575236245,
     ],
@@ -18185,6 +18335,9 @@ exports[`Regression test for test25 1`] = `
     "ipcLoss": [
       27.80014384106122,
     ],
+    "ipcLossLandOnly": [
+      0,
+    ],
     "survives": [
       0.99999999999965,
     ],
@@ -18499,6 +18652,9 @@ exports[`Regression test for test25 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
+      38.79021037974655,
+    ],
+    "ipcLossLandOnly": [
       38.79021037974655,
     ],
     "survives": [
@@ -18924,6 +19080,9 @@ exports[`Regression test for test26 1`] = `
   "attack": {
     "ipcLoss": [
       23.86420465688664,
+    ],
+    "ipcLossLandOnly": [
+      18.14075118400677,
     ],
     "survives": [
       0.99546628435598,
@@ -19381,6 +19540,9 @@ exports[`Regression test for test26 1`] = `
     "ipcLoss": [
       25.45887251869445,
     ],
+    "ipcLossLandOnly": [
+      25.45887251869445,
+    ],
     "survives": [
       0.72119179226399,
     ],
@@ -19708,6 +19870,9 @@ exports[`Regression test for test27 1`] = `
   "attack": {
     "ipcLoss": [
       72.90985772746740,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.99689279110751,
@@ -20326,6 +20491,9 @@ exports[`Regression test for test27 1`] = `
     "ipcLoss": [
       144.26353316733653,
     ],
+    "ipcLossLandOnly": [
+      144.26353316733653,
+    ],
     "survives": [
       0.07132653281024,
     ],
@@ -20745,6 +20913,9 @@ exports[`Regression test for test28 1`] = `
   "attack": {
     "ipcLoss": [
       15.90064402898440,
+    ],
+    "ipcLossLandOnly": [
+      12.53147109553234,
     ],
     "survives": [
       0.99989812149797,
@@ -21202,6 +21373,9 @@ exports[`Regression test for test28 1`] = `
     "ipcLoss": [
       14.12108230893992,
     ],
+    "ipcLossLandOnly": [
+      14.12108230893992,
+    ],
     "survives": [
       0.99707853733243,
     ],
@@ -21541,6 +21715,9 @@ exports[`Regression test for test29 1`] = `
   "attack": {
     "ipcLoss": [
       29.41778848444921,
+    ],
+    "ipcLossLandOnly": [
+      20.54577403520326,
     ],
     "survives": [
       0.62499369134661,
@@ -21998,6 +22175,9 @@ exports[`Regression test for test29 1`] = `
     "ipcLoss": [
       20.55918135668142,
     ],
+    "ipcLossLandOnly": [
+      20.55918135668142,
+    ],
     "survives": [
       0.99486646037297,
     ],
@@ -22237,6 +22417,9 @@ exports[`Regression test for test30 1`] = `
   "attack": {
     "ipcLoss": [
       44.47817328797111,
+    ],
+    "ipcLossLandOnly": [
+      27.80861387344258,
     ],
     "survives": [
       0.47291302803174,
@@ -22512,6 +22695,9 @@ exports[`Regression test for test30 1`] = `
     "ipcLoss": [
       36.47117521664265,
     ],
+    "ipcLossLandOnly": [
+      36.47117521664265,
+    ],
     "survives": [
       0.49312370561287,
     ],
@@ -22659,6 +22845,9 @@ exports[`Regression test for test31 1`] = `
   "attack": {
     "ipcLoss": [
       76.97201965795490,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.94024055719266,
@@ -23417,6 +23606,9 @@ exports[`Regression test for test31 1`] = `
     "ipcLoss": [
       147.02129062503141,
     ],
+    "ipcLossLandOnly": [
+      147.02129062503141,
+    ],
     "survives": [
       0.05975944173010,
     ],
@@ -23784,6 +23976,9 @@ exports[`Regression test for test32 1`] = `
   "attack": {
     "ipcLoss": [
       14.74745759666683,
+    ],
+    "ipcLossLandOnly": [
+      11.40740740740741,
     ],
     "survives": [
       0.99996189605243,
@@ -24185,6 +24380,9 @@ exports[`Regression test for test32 1`] = `
     "ipcLoss": [
       12.83660610520501,
     ],
+    "ipcLossLandOnly": [
+      12.83660610520501,
+    ],
     "survives": [
       0.99964575236245,
     ],
@@ -24509,6 +24707,9 @@ exports[`Regression test for test33 1`] = `
     "ipcLoss": [
       27.80014384106122,
     ],
+    "ipcLossLandOnly": [
+      0,
+    ],
     "survives": [
       0.99999999999965,
     ],
@@ -24823,6 +25024,9 @@ exports[`Regression test for test33 1`] = `
   "complexity": 7055,
   "defense": {
     "ipcLoss": [
+      38.79021037974655,
+    ],
+    "ipcLossLandOnly": [
       38.79021037974655,
     ],
     "survives": [
@@ -25248,6 +25452,9 @@ exports[`Regression test for test34 1`] = `
   "attack": {
     "ipcLoss": [
       23.91852892528695,
+    ],
+    "ipcLossLandOnly": [
+      17.80490046523990,
     ],
     "survives": [
       0.99745936946948,
@@ -25705,6 +25912,9 @@ exports[`Regression test for test34 1`] = `
     "ipcLoss": [
       24.57091828044977,
     ],
+    "ipcLossLandOnly": [
+      24.57091828044977,
+    ],
     "survives": [
       0.75703889790372,
     ],
@@ -26012,6 +26222,9 @@ exports[`Regression test for test35 1`] = `
   "attack": {
     "ipcLoss": [
       72.90985772746740,
+    ],
+    "ipcLossLandOnly": [
+      0,
     ],
     "survives": [
       0.99689279110751,
@@ -26630,6 +26843,9 @@ exports[`Regression test for test35 1`] = `
     "ipcLoss": [
       144.26353316733653,
     ],
+    "ipcLossLandOnly": [
+      144.26353316733653,
+    ],
     "survives": [
       0.07132653281024,
     ],
@@ -27049,6 +27265,9 @@ exports[`Regression test for test36 1`] = `
   "attack": {
     "ipcLoss": [
       15.91448289219183,
+    ],
+    "ipcLossLandOnly": [
+      12.53147109553234,
     ],
     "survives": [
       0.99989812149797,
@@ -27506,6 +27725,9 @@ exports[`Regression test for test36 1`] = `
     "ipcLoss": [
       14.12108230893992,
     ],
+    "ipcLossLandOnly": [
+      14.12108230893992,
+    ],
     "survives": [
       0.99707853733243,
     ],
@@ -27829,6 +28051,9 @@ exports[`Regression test for test37 1`] = `
   "attack": {
     "ipcLoss": [
       29.43821308341051,
+    ],
+    "ipcLossLandOnly": [
+      20.54577403520326,
     ],
     "survives": [
       0.62499369134661,
@@ -28286,6 +28511,9 @@ exports[`Regression test for test37 1`] = `
     "ipcLoss": [
       20.55918135668142,
     ],
+    "ipcLossLandOnly": [
+      20.55918135668142,
+    ],
     "survives": [
       0.99486646037297,
     ],
@@ -28515,6 +28743,11 @@ exports[`Regression test for test38 1`] = `
       172.95303424380805,
       204.70796562772335,
       220.15701150237740,
+    ],
+    "ipcLossLandOnly": [
+      134.02841122473535,
+      15.48228611023504,
+      7.92972041270076,
     ],
     "survives": [
       0.27264301508563,
@@ -31216,6 +31449,11 @@ exports[`Regression test for test38 1`] = `
       150.35295568206254,
       160.87873122318933,
     ],
+    "ipcLossLandOnly": [
+      122.96444932533277,
+      150.35295568206254,
+      160.87873122318933,
+    ],
     "survives": [
       0.72311054218503,
       0.46096878246282,
@@ -32734,6 +32972,9 @@ exports[`Regression test for test39 1`] = `
     "ipcLoss": [
       3.67876739356359,
     ],
+    "ipcLossLandOnly": [
+      2.81781497011634,
+    ],
     "survives": [
       0.98056045687423,
     ],
@@ -32805,6 +33046,9 @@ exports[`Regression test for test39 1`] = `
     "ipcLoss": [
       5.95286668670569,
     ],
+    "ipcLossLandOnly": [
+      5.95286668670569,
+    ],
     "survives": [
       0.01271543799716,
     ],
@@ -32856,6 +33100,9 @@ exports[`Regression test for test40 1`] = `
   "attack": {
     "ipcLoss": [
       3.09259259259259,
+    ],
+    "ipcLossLandOnly": [
+      2.00000000000000,
     ],
     "survives": [
       1.00000000000000,
@@ -32935,6 +33182,9 @@ exports[`Regression test for test40 1`] = `
     "ipcLoss": [
       3.70833333333333,
     ],
+    "ipcLossLandOnly": [
+      3.70833333333333,
+    ],
     "survives": [
       0.59027777777778,
     ],
@@ -32982,6 +33232,9 @@ exports[`Regression test for test41 1`] = `
   "attack": {
     "ipcLoss": [
       4.15824968459711,
+    ],
+    "ipcLossLandOnly": [
+      2.57562953976498,
     ],
     "survives": [
       1.00000000000000,
@@ -33068,6 +33321,9 @@ exports[`Regression test for test41 1`] = `
     "ipcLoss": [
       4.93460701790696,
     ],
+    "ipcLossLandOnly": [
+      4.93460701790696,
+    ],
     "survives": [
       0.32356318296010,
     ],
@@ -33127,6 +33383,9 @@ exports[`Regression test for test42 1`] = `
   "attack": {
     "ipcLoss": [
       3.09259259259259,
+    ],
+    "ipcLossLandOnly": [
+      2.00000000000000,
     ],
     "survives": [
       1.00000000000000,
@@ -33206,6 +33465,9 @@ exports[`Regression test for test42 1`] = `
     "ipcLoss": [
       3.70833333333333,
     ],
+    "ipcLossLandOnly": [
+      3.70833333333333,
+    ],
     "survives": [
       0.59027777777778,
     ],
@@ -33253,6 +33515,9 @@ exports[`Regression test for test43 1`] = `
   "attack": {
     "ipcLoss": [
       3.09259259259259,
+    ],
+    "ipcLossLandOnly": [
+      2.00000000000000,
     ],
     "survives": [
       1.00000000000000,
@@ -33330,6 +33595,9 @@ exports[`Regression test for test43 1`] = `
   "complexity": 15,
   "defense": {
     "ipcLoss": [
+      3.70833333333333,
+    ],
+    "ipcLossLandOnly": [
       3.70833333333333,
     ],
     "survives": [

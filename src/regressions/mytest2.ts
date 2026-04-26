@@ -932,7 +932,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
-        use_attackers_from_previous_wave: true, // optional, default is false
+        use_attackers_from_previous_wave: false, // optional, default is false
       },
       {
         attack: {
@@ -967,7 +967,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
-        use_attackers_from_previous_wave: true, // optional, default is false
+        use_attackers_from_previous_wave: false, // optional, default is false
       },
     ],
     debug: false,
