@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.5
+
+### Patch Changes
+
+- 9a49bf5: add multiwaveTooComplex
+
 ## 2.0.4
 
 ### Patch Changes
