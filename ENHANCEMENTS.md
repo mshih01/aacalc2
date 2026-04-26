@@ -3,15 +3,18 @@
 **Links:**
 -- [Discord Server](https://discord.com/channels/606254910438375434/1497710431714803863)
 
-
 This documents the implementation details how to trigger each enhancement in the engine.
 
 Enhancement list:
-	
-### strafe analysis   
+
+### strafe analysis
+
 ### retreat conditions
+
 ### ipc profit distribution
+
 ### army recommendation
+
 ### controlling complexity
 
 ## Input interface:
@@ -62,7 +65,6 @@ export interface WaveInput {
 }
 ```
 
-
 ## Output interface
 
 ```
@@ -86,29 +88,31 @@ export interface MultiwaveOutput {
 
 ## Enhancements:
 
-### strafe analysis   
-		MultiwaveInput.is_deadzone	 -- optional, default false.
-			If the option is true, then the detailed attacker casualties add an additional attacker IPC cost triggerd for surving attacking land units.   This cost is reflected in the detailed casualties, as well as the summary reports.
-		MultiwaveInput.territory_value -- optional.. default 0
-			If the option is defined, then the detailed casualties will add an additional attacker IPC cost (or credit), triggered for surviving land units.  The cost is reflected in the detailed casualties as well as the summary reports.
+### strafe analysis
 
+    	MultiwaveInput.is_deadzone	 -- optional, default false.
+    		If the option is true, then the detailed attacker casualties add an additional attacker IPC cost triggerd for surving attacking land units.   This cost is reflected in the detailed casualties, as well as the summary reports.
+    	MultiwaveInput.territory_value -- optional.. default 0
+    		If the option is defined, then the detailed casualties will add an additional attacker IPC cost (or credit), triggered for surviving land units.  The cost is reflected in the detailed casualties as well as the summary reports.
 
 ### retreat conditions
-		- These conditions are exclusive.   
-			- WaveInput.rounds should be set to -1, 0, or 100  (all rounds)
-			- WaveInput.retreat_threshold should be 0   
-		- WaveInput.retreat_expected_ipc_threshold     -- optional, default undefined.
-			When defined retreat if the EV going forward is <= threshold.
-		- WaveInput.retreat_pwin_threshold		-- optional, default undefined.
-			When defined retreat if the probability of winning is <= threshold.
-			The value should be a number between 0 and 1.
-		- WaveInput.retreat_strafe_threshold		-- optional, default undefined.
-			When defined retreat if the probability of wiping out the defenders in the next round > threshold.
-			The value should be between 0 and 1.
-		- WaveInput.retreat_lose_air_probability		-- optional, default 1.0
-			Retreat if the probability of losing air in the next round exceeds threshold.
+
+    	- These conditions are exclusive.
+    		- WaveInput.rounds should be set to -1, 0, or 100  (all rounds)
+    		- WaveInput.retreat_threshold should be 0
+    	- WaveInput.retreat_expected_ipc_threshold     -- optional, default undefined.
+    		When defined retreat if the EV going forward is <= threshold.
+    	- WaveInput.retreat_pwin_threshold		-- optional, default undefined.
+    		When defined retreat if the probability of winning is <= threshold.
+    		The value should be a number between 0 and 1.
+    	- WaveInput.retreat_strafe_threshold		-- optional, default undefined.
+    		When defined retreat if the probability of wiping out the defenders in the next round > threshold.
+    		The value should be between 0 and 1.
+    	- WaveInput.retreat_lose_air_probability		-- optional, default 1.0
+    		Retreat if the probability of losing air in the next round exceeds threshold.
 
 ### ipc profit distribution
+
 ```
 		MultiwaveOutput {
 			...
@@ -122,11 +126,11 @@ export interface MultiwaveOutput {
 		export type ProfitDistribution = Record<number, ProfitInfo>; // key: ipc value: probability
 ```
 
-		You can search frontend/src/App.tsx to see how the distribution is massaged into the output list and histogram.
-
+    	You can search frontend/src/App.tsx to see how the distribution is massaged into the output list and histogram.
 
 ### army recommendation
-		input:
+
+    	input:
 
 ```
 // maxProfit only works with SolveTyep exhaust
@@ -150,7 +154,7 @@ export interface ArmyRecommendInput extends MultiwaveInput {
 }
 ```
 
-		output:
+    	output:
 
 ```
 export interface Recommendation {
@@ -162,43 +166,42 @@ export interface ArmyRecommendOutput {
 }
 ```
 
-		function:
+    	function:
+
 ```
-export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput 
+export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
 ```
 
+    	Feature:
+    		target percentage based optimization:
 
-		Feature:
-			target percentage based optimization:
+    		input.optimizeMode =  'targetWinPercentage'
+    		input.targetPercentage = 0.9 (value between 0 and 1)
+    		input.pwinMode =  'takes' | 'destroys'
+    		input.solveType = 'fuzzyBinarySearch'
+    		input.attDefType = 'attacker' | 'defender'
 
-			input.optimizeMode =  'targetWinPercentage'
-			input.targetPercentage = 0.9 (value between 0 and 1)
-			input.pwinMode =  'takes' | 'destroys'
-			input.solveType = 'fuzzyBinarySearch'
-			input.attDefType = 'attacker' | 'defender'
+    		This returns the minimum ipc cost army that achieves the target percentage.
 
-			This returns the minimum ipc cost army that achieves the target percentage.
-
-			The output is an array of recommendations.  For this feature currently only a single recommendation is provided.  May be enhanced to report multiple.
-
+    		The output is an array of recommendations.  For this feature currently only a single recommendation is provided.  May be enhanced to report multiple.
 
 
-			max ipc profit optimization:
-			input.optimizeMode = 'maxProfit'
-			input.solveType = 'exhaust'
-			input.numRecommendations = 3		// number of recommendations to return.
-			// only works for optimizing attacker army
-			// todo... input complexity needs to be controlled for this one, since it is doing exhaustive search.,
 
+    		max ipc profit optimization:
+    		input.optimizeMode = 'maxProfit'
+    		input.solveType = 'exhaust'
+    		input.numRecommendations = 3		// number of recommendations to return.
+    		// only works for optimizing attacker army
+    		// todo... input complexity needs to be controlled for this one, since it is doing exhaustive search.,
 
 ### controlling complexity
-		The underlying algorithm is O(N^4)... so we need to guard input size.
-		
-		const complexity = multiwaveComplexityFastV2(multiwaveInput)
-		
-		complexity 120000 might be a good value to for switching to monte carlo for runtime.  From my previous experiments -- calculation matches simulation aroud there.
 
-		I'm using 200000 currently as a hard limit, since I don't have monte carlo.
+    	The underlying algorithm is O(N^4)... so we need to guard input size.
 
-		for the exhaustive search -- a smaller limit is needed.  Without testing, maybe something like 1000
+    	const complexity = multiwaveComplexityFastV2(multiwaveInput)
 
+    	complexity 120000 might be a good value to for switching to monte carlo for runtime.  From my previous experiments -- calculation matches simulation aroud there.
+
+    	I'm using 200000 currently as a hard limit, since I don't have monte carlo.
+
+    	for the exhaustive search -- a smaller limit is needed.  Without testing, maybe something like 1000
