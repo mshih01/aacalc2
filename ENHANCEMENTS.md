@@ -211,6 +211,15 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
 
 ### controlling complexity
 
+```
+import {
+  multiwaveTooComplex
+} from 'aacalc2';
+
+// complexity is too large -- caller should fallback to monte carlo
+export function multiwaveTooComplex(input: MultiwaveInput): boolean {
+```
+
     	The underlying algorithm is O(N^4)... so we need to guard input size.
 
     	const complexity = multiwaveComplexityFastV2(multiwaveInput)
