@@ -17,6 +17,10 @@ import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 
 // Configuration Constants
 const MAX_WAVES = 4
+const MAX_COMPLEXITY = 120000
+const INSTANTANEOUS_EVALUATION_THRESHOLD = 10000
+const AUTO_EVALUATE_BOUNCE_TIMER = 750 // ms
+
 
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
@@ -84,6 +88,7 @@ function Toast({ message, duration = 2000 }: ToastProps) {
 
 // Frontend wrapper types
 export interface BattleInput {
+  // per wave inputs
   attack: Record<number, Record<string, number>>
   defense: Record<number, Record<string, number>>
   attackOol?: Record<number, UnitId[]>
@@ -97,6 +102,7 @@ export interface BattleInput {
   attackerDestroyerLast?: Record<number, boolean>
   defenderDestroyerLast?: Record<number, boolean>
   crashFighters?: Record<number, boolean>
+  // global inputs
   diceMode?: 'standard' | 'lowluck' | 'biased'
   inProgress?: boolean
   verboseLevel?: number
@@ -831,8 +837,8 @@ function App() {
   const [pruneThreshold, setPruneThreshold] = useState(1e-12)
   const [reportPruneThreshold, setReportPruneThreshold] = useState(1e-12)
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
-  const [complexityThreshold, setComplexityThreshold] = useState(200000)
-  const [instantaneousEvaluationThreshold, setInstantaneousEvaluationThreshold] = useState(10000)
+  const [complexityThreshold, setComplexityThreshold] = useState(MAX_COMPLEXITY)
+  const [instantaneousEvaluationThreshold, setInstantaneousEvaluationThreshold] = useState(INSTANTANEOUS_EVALUATION_THRESHOLD)
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
@@ -1006,7 +1012,7 @@ function App() {
 
   // Auto-evaluate if complexity is below instantaneous evaluation threshold (with debounce)
   useEffect(() => {
-    // Debounce timer: wait 1000ms after inputs stop changing before evaluating
+    // Debounce timer: wait AUTO_EVALUATE_BOUNCE_TIMER ms after inputs stop changing before evaluating
     const timer = setTimeout(() => {
       // Validate army sizes before attempting to evaluate
       const validation = validateArmySizes(attack, defense, numWaves)
@@ -1081,7 +1087,7 @@ function App() {
           evalBtn.click()
         }
       }
-    }, 1000) // 1000ms debounce delay
+    }, AUTO_EVALUATE_BOUNCE_TIMER) // debounce delay
 
     // Clear the timeout if inputs change again before it fires
     return () => clearTimeout(timer)
@@ -1233,7 +1239,7 @@ function App() {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName])
+  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold])
 
   const loadFromHistory = (entry: HistoryEntry) => {
     // Set flag to prevent auto-saving when we run the battle
@@ -1379,8 +1385,8 @@ function App() {
           setVerboseLevel(0)
           setPruneThreshold(1e-12)
           setReportPruneThreshold(1e-12)
-          setComplexityThreshold(200000)
-          setInstantaneousEvaluationThreshold(10000)
+          setComplexityThreshold(MAX_COMPLEXITY)
+          setInstantaneousEvaluationThreshold(INSTANTANEOUS_EVALUATION_THRESHOLD)
           setSortMode('ipc_cost')
           setDecimalPlaces(2)
           setIpcLossDecimalPlaces(2)
@@ -1590,8 +1596,8 @@ function App() {
                   min="0"
                   step="10000"
                   value={complexityThreshold}
-                  onChange={(e) => setComplexityThreshold(Math.max(0, Number(e.target.value) || 200000))}
-                  className={complexityThreshold !== 200000 ? 'has-value' : ''}
+                  onChange={(e) => setComplexityThreshold(Math.max(0, Number(e.target.value) || MAX_COMPLEXITY))}
+                  className={complexityThreshold !== MAX_COMPLEXITY ? 'has-value' : ''}
                   style={{ width: '100%' }}
                 />
                 <label>Complexity Threshold</label>
@@ -1602,8 +1608,8 @@ function App() {
                   min="0"
                   step="1000"
                   value={instantaneousEvaluationThreshold}
-                  onChange={(e) => setInstantaneousEvaluationThreshold(Math.max(0, Number(e.target.value) || 10000))}
-                  className={instantaneousEvaluationThreshold !== 10000 ? 'has-value' : ''}
+                  onChange={(e) => setInstantaneousEvaluationThreshold(Math.max(0, Number(e.target.value) || INSTANTANEOUS_EVALUATION_THRESHOLD))}
+                  className={instantaneousEvaluationThreshold !== INSTANTANEOUS_EVALUATION_THRESHOLD ? 'has-value' : ''}
                   style={{ width: '100%' }}
                 />
                 <label>Instantaneous Evaluation Threshold</label>
