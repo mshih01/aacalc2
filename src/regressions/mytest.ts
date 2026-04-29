@@ -1026,8 +1026,8 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 4,
-            art: 4,
+            inf: 5,
+            art: 5,
             arm: 0,
             fig: 0,
           },

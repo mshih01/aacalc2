@@ -591,7 +591,11 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         }
         sum += cas.prob;
       }
-      waveatt[key] = casualty;
+      if (waveatt[key] == undefined) {
+        waveatt[key] = casualty;
+      } else {
+        waveatt[key].amount += cas.prob;
+      }
     }
     if (input.verbose_level > 2) {
       console.log(`Attacker casualties for wave ${ii}: ${sum}`);
@@ -638,7 +642,12 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         }
         sum += prob;
       }
-      wavedef[key] = casualty;
+      if (wavedef[key] == undefined) {
+        wavedef[key] = casualty;
+        wavedef[key].amount = prob;
+      } else {
+        wavedef[key].amount += prob;
+      }
     }
     if (input.verbose_level > 2) {
       console.log(`Defender casualties for wave ${ii}: ${sum}`);
