@@ -510,12 +510,21 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const um = new unit_manager(input.verbose_level);
   const profitDist: ProfitDistribution[] = [];
 
-  const numSwap = input.wave_info.reduce<number>(
-    (numSwap, wave) =>
-      numSwap + (wave.use_attackers_from_previous_wave ? 1 : 0),
-    0,
-  );
-  console.log(numSwap, 'numSwap');
+  let swapArr: number[] = [];
+  let currSwap = 0;
+  let numSwap = 0;
+  for (let i = 0; i < input.wave_info.length; i++) {
+    const wave = input.wave_info[i];
+    if (!wave) {
+      continue; // Skip undefined or null waves
+    }
+    if (wave.use_attackers_from_previous_wave) {
+      currSwap = 1 - currSwap;
+      numSwap++;
+    }
+    swapArr.push(currSwap);
+  }
+  let finalSwap = swapArr[swapArr.length - 1];
   const isFinalSwap = numSwap % 2 > 0;
   const hasSwap = numSwap > 0;
 

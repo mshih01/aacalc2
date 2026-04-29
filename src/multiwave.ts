@@ -92,7 +92,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           if (cas.remain.length == 0) {
             if (wave.use_attackers_from_previous_wave) {
               //if attacker doesn't take -- then no reinforce
-              p1 = cas.prob;
+              p1 = 0;
             } else {
               //if attacker takes -- then no reinforce
               if (output[i - 1] != undefined) {
@@ -286,12 +286,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
     const def_survives = output[i].defense.survives[0];
     let att_ipcLoss = output[i].attack.ipcLoss[0];
     let def_ipcLoss = output[i].defense.ipcLoss[0];
-    console.log(
-      att_ipcLoss,
-      def_ipcLoss,
-      initIpcCost[i],
-      'ipcLoss before init cost',
-    );
     incrattipc.push(att_ipcLoss);
     incrdefipc.push(def_ipcLoss - initIpcCost[i]);
     let att_takes = output[i].takesTerritory[0];
@@ -311,6 +305,8 @@ export function multiwave(input: multiwave_input): multiwave_output {
         att_takes += atttakes[i - 1];
       } else {
         att_ipcLoss += defipc[i - 1];
+        att_takes += 1 - atttakes[i - 1];
+        att_survives += 1 - atttakes[i - 1];
       }
     }
     attsurvive.push(att_survives);
