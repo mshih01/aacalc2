@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.9
+
+### Patch Changes
+
+- 0bdb0e1: wave by wave casualties
+
 ## 2.0.8
 
 ### Patch Changes
