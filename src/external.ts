@@ -169,6 +169,11 @@ export interface SbrInput {
 
 export type Side = 'attack' | 'defense';
 export type CasualtiesInfo = Record<Side, Record<string, CasualtyInfo>>;
+// wave, side, casualty details string -> casualty info
+export type CasualtiesInfoArr = Record<
+  number,
+  Record<Side, Record<string, CasualtyInfo>>
+>;
 
 export interface CasualtyInfo {
   casualties: string;
@@ -187,7 +192,8 @@ export interface MultiwaveOutput {
   attack: CalcInfo;
   defense: CalcInfo;
   casualtiesInfo: CasualtiesInfo;
-  profitDistribution: ProfitDistribution[]; // key is profit, data is probability
+  casualtiesInfoArr: CasualtiesInfoArr; // wave by wave casualties info
+  profitDistribution: ProfitDistribution[]; // wave by wave profit distribution
   takesTerritory: number[];
   rounds: number[];
   waves: number;
@@ -502,6 +508,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     defense: {},
     //profit: {},
   };
+  const casualtiesInfoArr: CasualtiesInfo[] = [];
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
 
@@ -530,6 +537,12 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
 
   // for each wave
   for (let ii = 0; ii < internal_output.output.length; ii++) {
+    casualtiesInfoArr[ii] = {
+      attack: {},
+      defense: {},
+    };
+    const waveatt: Record<string, CasualtyInfo> = {};
+    const wavedef: Record<string, CasualtyInfo> = {};
     const currOutput = internal_output.output[ii];
     let currSwap = swapArr[ii];
     if (currOutput == undefined) {
@@ -561,9 +574,6 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       if (ii == internal_output.output.length - 1) {
         include = true;
       }
-      if (!include) {
-        continue; // Skip casualties that are not relevant for the last wave
-      }
 
       const key: string =
         get_external_unit_str(um, cas.casualty) +
@@ -573,12 +583,15 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         get_external_unit_str(um, cas.retreat) +
         ';' +
         ii.toString();
-      if (att[key] == undefined) {
-        att[key] = casualty;
-      } else {
-        att[key].amount += cas.prob;
+      if (include) {
+        if (att[key] == undefined) {
+          att[key] = casualty;
+        } else {
+          att[key].amount += cas.prob;
+        }
+        sum += cas.prob;
       }
-      sum += cas.prob;
+      waveatt[key] = casualty;
     }
     if (input.verbose_level > 2) {
       console.log(`Attacker casualties for wave ${ii}: ${sum}`);
@@ -610,29 +623,29 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       if (ii == internal_output.output.length - 1) {
         include = true;
       }
-      if (!include) {
-        continue; // Skip casualties that are not relevant for the last wave
-      }
-
       const key: string =
         get_external_unit_str(um, cas.casualty) +
         ';' +
         get_external_unit_str(um, cas.remain) +
         ';' +
         get_external_unit_str(um, cas.retreat);
-      if (def[key] == undefined) {
-        def[key] = casualty;
-        def[key].amount = prob;
-      } else {
-        def[key].amount += prob;
+      if (include) {
+        if (def[key] == undefined) {
+          def[key] = casualty;
+          def[key].amount = prob;
+        } else {
+          def[key].amount += prob;
+        }
+        sum += prob;
       }
-      sum += prob;
+      wavedef[key] = casualty;
     }
     if (input.verbose_level > 2) {
       console.log(`Defender casualties for wave ${ii}: ${sum}`);
     }
     profitDist.push(currOutput.profitDistribution);
-    //casualtiesInfo['profit'] = profit;
+    casualtiesInfoArr[ii]['attack'] = waveatt;
+    casualtiesInfoArr[ii]['defense'] = wavedef;
   }
   casualtiesInfo['attack'] = att;
   casualtiesInfo['defense'] = def;
@@ -644,9 +657,14 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     takesTerritory: internal_output.out.takesTerritory,
     rounds: rounds,
     casualtiesInfo: casualtiesInfo,
+    casualtiesInfoArr: casualtiesInfoArr,
     profitDistribution: profitDist,
     complexity: internal_output.complexity,
   };
+  if (input.verbose_level > 2) {
+    console.log('multiwave output', out);
+    console.log('multiwave output', JSON.stringify(out, null, 4));
+  }
 
   return out;
 }
@@ -848,6 +866,7 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
     attack: internalOutput.attack,
     defense: internalOutput.defense,
     casualtiesInfo: casualtiesInfo,
+    casualtiesInfoArr: [], // SBR does not have wave by wave casualties info
     profitDistribution: [internalOutput.profitDistribution],
     takesTerritory: [],
     rounds: [1, 0, 0],
