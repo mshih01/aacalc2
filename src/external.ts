@@ -531,6 +531,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   // for each wave
   for (let ii = 0; ii < internal_output.output.length; ii++) {
     const currOutput = internal_output.output[ii];
+    let currSwap = swapArr[ii];
     if (currOutput == undefined) {
       continue; // Skip undefined outputs
     }
@@ -569,7 +570,9 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         ';' +
         get_external_unit_str(um, cas.remain) +
         ';' +
-        get_external_unit_str(um, cas.retreat);
+        get_external_unit_str(um, cas.retreat) +
+        ';' +
+        ii.toString();
       if (att[key] == undefined) {
         att[key] = casualty;
       } else {

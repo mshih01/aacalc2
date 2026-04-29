@@ -279,7 +279,8 @@ for (let i = 0; i < 1; i++) {
   */
 }
 inputSettings = [];
-inputSettings.push([inputSettings4[5], 8]);
+//inputSettings.push([inputSettings4[5], 8]);
+inputSettings.push([inputSettings4[5], 7]);
 
 console.log(process.memoryUsage());
 
@@ -688,6 +689,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+  /*
   const input7: MultiwaveInput = {
     wave_info: [
       {
@@ -807,6 +809,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
+*/
   const input6: MultiwaveInput = {
     wave_info: [
       {
@@ -968,6 +971,91 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
         use_attackers_from_previous_wave: true, // optional, default is false
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
+    is_deadzone: is_deadzone, // optional, default is false
+    report_complexity_only: report_complexity_only,
+    territory_value: territory_value, // optional, default is 0
+    do_roundless_eval: do_roundless_eval, // optional, default is false
+  };
+  const input7: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 4,
+            arm: 0,
+            fig: 0,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 12,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 4,
+            arm: 0,
+            fig: 0,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            art: 0,
+            arm: 0,
+            fig: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_strafe_threshold: strafe, // optional
       },
     ],
     debug: false,
