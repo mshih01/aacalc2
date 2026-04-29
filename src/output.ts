@@ -114,71 +114,8 @@ export function get_reduced_group_string(input: string): string {
   });
   return out.substring(0, out.length - 2);
 }
-/*
-export function get_external_unit_str(um : unit_manager, input : string) :
-        string
-{
-// stat
-    let map : Map<string, number> = new Map();
-
-    for (var char of input) {
-        let v = map.get(char);
-        if (v != undefined) {
-            map.set(char, v + 1);
-        } else {
-            map.set(char, 1);
-        }
-    }
-
-    let out = ""
-    map.forEach((value : number, key : string) => {
-        let stat = um.get_stat(key);
-        
-        out = out + value + " " + stat.fullname + ", "
-    })
-    return out.substring(0, out.length - 2);
-}
-*/
-function get_cost(
-  um: unit_manager,
-  group: unit_group,
-  ii: number,
-  cas: string = '',
-  skipBombard: boolean = false,
-): [number, string] {
-  const N = group.tbl_size;
-  let cost = 0;
-  let i;
-  let out: string = '';
-  for (i = ii; i < N; i++) {
-    const ch = group.unit_str.charAt(i);
-    if (ch == '') {
-      continue;
-    }
-    if (skipBombard) {
-      const stat = um.get_stat(ch);
-      if (stat.isBombard) {
-        continue;
-      }
-    }
-
-    const stat = um.get_stat(ch);
-    cost += stat.cost;
-    out = out + stat.ch2;
-  }
-  for (const ch of cas) {
-    if (ch == '') {
-      continue;
-    }
-    const stat = um.get_stat(ch);
-    cost += stat.cost;
-    out = out + stat.ch2;
-  }
-  return [cost, out];
-}
 interface naval_cost {
   cost: number;
-  costLandOnly: number;
   casualty: string;
 }
 export function get_general_cost(
@@ -220,22 +157,18 @@ export function get_general_cost(
 
   let casualty = '';
   let cost = 0;
-  let costLandOnly = 0;
   for (const [ch2, cnt] of mymap) {
     const stat = problem.um.get_stat(ch2);
     if (skipBombard && stat.isBombard) {
       continue;
     }
     cost += stat.cost * cnt;
-    if (stat.isLand) {
-      costLandOnly += stat.cost * cnt;
-    }
     for (let i = 0; i < cnt; i++) {
       casualty += ch2;
     }
   }
 
-  return { cost: cost, costLandOnly: costLandOnly, casualty: casualty };
+  return { cost: cost, casualty: casualty };
 }
 
 export function print_general_results(
@@ -329,7 +262,6 @@ export function print_general_results(
 
   let totalattloss = 0;
   let totaldefloss = 0;
-  let totalattlossLandOnly = 0;
   let takes = 0;
   for (let ii = 0; ii < mergedArr.length; ii++) {
     const result = mergedArr[ii];
@@ -385,7 +317,6 @@ export function print_general_results(
     }
     if (p > 0) {
       let attloss = att_naval_cost.cost;
-      let attlossLandOnly = att_naval_cost.costLandOnly;
       const defloss = def_naval_cost.cost;
       if (
         !baseproblem.is_naval &&
@@ -402,7 +333,6 @@ export function print_general_results(
         }
       }
       totalattloss += attloss * p;
-      totalattlossLandOnly += attlossLandOnly * p;
       totaldefloss += defloss * p;
       if (baseproblem.verbose_level > 2) {
         //console.log(`result:  P[%d][%d] ${red_att} vs. ${red_def} = ${p} cumm(${result.cumm}) rcumm(${result.rcumm}) (${result.cost})`, result.i, result.j);
@@ -511,12 +441,10 @@ export function print_general_results(
     attack: {
       survives: [attsurvive, 0, 0],
       ipcLoss: [totalattloss, 0, 0],
-      ipcLossLandOnly: [totalattlossLandOnly, 0, 0],
     },
     defense: {
       survives: [defsurvive, 0, 0],
       ipcLoss: [totaldefloss, 0, 0],
-      ipcLossLandOnly: [totaldefloss, 0, 0],
     },
     casualtiesInfo: casualties,
     att_cas: att_cas_1d,
@@ -536,7 +464,10 @@ export function collect_and_print_results(problem: general_problem) {
 interface aacalc_info {
   survives: number[];
   ipcLoss: number[];
-  ipcLossLandOnly: number[];
+  incrementalLoss?: number[];
+  // for backwards compatibility -- ipcLoss is still provided which is the running total loss.
+  // when use_attackers_from_previous_wave -- the running total isn't enough.
+  // we need to keep track of incremental loss for each wave.
 }
 
 export interface casualty_2d {

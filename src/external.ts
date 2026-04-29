@@ -510,11 +510,14 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const um = new unit_manager(input.verbose_level);
   const profitDist: ProfitDistribution[] = [];
 
-  const hasSwap = input.wave_info.reduce<boolean>(
-    (hasSwap, wave) =>
-      hasSwap || wave.use_attackers_from_previous_wave ? true : false,
-    false,
+  const numSwap = input.wave_info.reduce<number>(
+    (numSwap, wave) =>
+      numSwap + (wave.use_attackers_from_previous_wave ? 1 : 0),
+    0,
   );
+  console.log(numSwap, 'numSwap');
+  const isFinalSwap = numSwap % 2 > 0;
+  const hasSwap = numSwap > 0;
 
   // for each wave
   for (let ii = 0; ii < internal_output.output.length; ii++) {
@@ -538,7 +541,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         ii < internal_output.output.length - 1 &&
         cas.remain.length > 0 &&
         hasLand(um, cas.remain) &&
-        !hasSwap
+        numSwap == 0
       ) {
         // If there are land units remaining, we captured the territory in earlier wave and need to record
         // the casualties details.
@@ -584,7 +587,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       if (
         ii < internal_output.output.length - 1 &&
         cas.remain.length == 0 &&
-        !hasSwap
+        numSwap == 0
       ) {
         // no defending units... p takes territory.
         include = true;

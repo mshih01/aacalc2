@@ -62,6 +62,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
   //let um2 = new unit_manager();
   //let um3 = new unit_manager();
   const output: aacalc_output[] = [];
+  const initIpcCost: number[] = [];
 
   let complexity: number = 0;
 
@@ -201,6 +202,18 @@ export function multiwave(input: multiwave_input): multiwave_output {
           wave.retreat_strafe_threshold,
         ),
       );
+      let prob = probArr[i];
+      const init_ipc_cost = defend_add_reinforce
+        ? defend_add_reinforce.reduce((acc, cas) => {
+            const ipcCost = get_cost_from_str(
+              prob.um,
+              cas.casualty,
+              cas.retreat,
+            );
+            acc += cas.prob * ipcCost;
+            return acc;
+          }, 0)
+        : 0;
       complexity += probArr[i].get_complexity();
       if (input.verbose_level > 2) {
         console.log(
@@ -230,6 +243,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
       }
       const out = print_general_results(myprob, result_data);
       output.push(out);
+      initIpcCost.push(init_ipc_cost ?? 0);
       if (input.verbose_level > 2) {
         console.log(out, 'wave', i);
       }
@@ -238,8 +252,14 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
   if (input.report_complexity_only) {
     const out2: aacalc_output = {
-      attack: { survives: [0], ipcLoss: [0], ipcLossLandOnly: [0] },
-      defense: { survives: [0], ipcLoss: [0], ipcLossLandOnly: [0] },
+      attack: {
+        survives: [0],
+        ipcLoss: [0],
+      },
+      defense: {
+        survives: [0],
+        ipcLoss: [0],
+      },
       casualtiesInfo: [],
       att_cas: [],
       def_cas: [],
@@ -257,15 +277,23 @@ export function multiwave(input: multiwave_input): multiwave_output {
   const attsurvive: number[] = [];
   const defsurvive: number[] = [];
   const attipc: number[] = [];
-  const attipcLandOnly: number[] = [];
   const defipc: number[] = [];
+  const incrattipc: number[] = [];
+  const incrdefipc: number[] = [];
   const atttakes: number[] = [];
   for (let i = 0; i < input.wave_info.length; i++) {
     let att_survives = output[i].attack.survives[0];
     const def_survives = output[i].defense.survives[0];
     let att_ipcLoss = output[i].attack.ipcLoss[0];
-    let att_ipcLossLandOnly = output[i].attack.ipcLossLandOnly[0];
     let def_ipcLoss = output[i].defense.ipcLoss[0];
+    console.log(
+      att_ipcLoss,
+      def_ipcLoss,
+      initIpcCost[i],
+      'ipcLoss before init cost',
+    );
+    incrattipc.push(att_ipcLoss);
+    incrdefipc.push(def_ipcLoss - initIpcCost[i]);
     let att_takes = output[i].takesTerritory[0];
     const isAttacker = input.wave_info[i].use_attackers_from_previous_wave;
     if (i > 0) {
@@ -288,7 +316,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
     attsurvive.push(att_survives);
     defsurvive.push(def_survives);
     attipc.push(att_ipcLoss);
-    attipcLandOnly.push(att_ipcLossLandOnly);
     defipc.push(def_ipcLoss);
     atttakes.push(att_takes);
   }
@@ -297,9 +324,13 @@ export function multiwave(input: multiwave_input): multiwave_output {
     attack: {
       survives: attsurvive,
       ipcLoss: attipc,
-      ipcLossLandOnly: attipcLandOnly,
+      incrementalLoss: incrattipc,
     },
-    defense: { survives: defsurvive, ipcLoss: defipc, ipcLossLandOnly: defipc },
+    defense: {
+      survives: defsurvive,
+      ipcLoss: defipc,
+      incrementalLoss: incrdefipc,
+    },
     casualtiesInfo: [],
     att_cas: [],
     def_cas: [],

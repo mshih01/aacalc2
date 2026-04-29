@@ -267,12 +267,10 @@ export function sbr(input: sbr_input): aacalc_output {
     attack: {
       survives: [prob_att_survives, 0, 0],
       ipcLoss: [att_ipc, 0, 0],
-      ipcLossLandOnly: [att_ipc, 0, 0],
     },
     defense: {
       survives: [prob_def_survives, 0, 0],
       ipcLoss: [def_ipc, 0, 0],
-      ipcLossLandOnly: [def_ipc, 0, 0],
     },
     casualtiesInfo: [],
     att_cas: att_cas,
