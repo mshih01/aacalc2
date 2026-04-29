@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.7
+
+### Patch Changes
+
+- ea94cf8: multiwave detailed casualties developement
+
 ## 2.0.6
 
 ### Patch Changes
