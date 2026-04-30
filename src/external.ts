@@ -653,10 +653,9 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       }
       sum2 += cas.prob;
       if (wavedef[key] == undefined) {
-        wavedef[key] = { ...casualty };
-        wavedef[key].amount = prob;
+        wavedef[key] = { ...casualty, amount: cas.prob };
       } else {
-        wavedef[key].amount += prob;
+        wavedef[key].amount += cas.prob;
       }
     }
     if (input.verbose_level > 2) {
@@ -664,6 +663,15 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       console.log(`wavedef casualties for wave ${ii}: ${sum2}`);
     }
     profitDist.push(currOutput.profitDistribution);
+    if (input.verbose_level > 2) {
+      let attsum = waveatt
+        ? Object.values(waveatt).reduce((acc, val) => acc + val.amount, 0)
+        : 0;
+      let defsum = wavedef
+        ? Object.values(wavedef).reduce((acc, val) => acc + val.amount, 0)
+        : 0;
+      console.log(attsum, defsum, 'attsum, defsum');
+    }
     casualtiesInfoArr[ii]['attack'] = waveatt;
     casualtiesInfoArr[ii]['defense'] = wavedef;
     waveatt = {};

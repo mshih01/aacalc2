@@ -49756,7 +49756,7 @@ exports[`Regression test for test38 1`] = `
           "survivors": "5 Fig, 3 AA",
         },
         "5 Fig, 3 AA, 5 Arm, 30 Inf;;": {
-          "amount": 0.20016626551623,
+          "amount": 0.27688945768944,
           "casualties": "5 Fig, 3 AA, 5 Arm, 30 Inf",
           "ipcLoss": 185,
           "retreaters": "",
@@ -50308,7 +50308,7 @@ exports[`Regression test for test38 1`] = `
           "survivors": "5 Fig, 3 AA",
         },
         "5 Fig, 3 AA, 5 Arm, 30 Inf;;": {
-          "amount": 0.29141615653353,
+          "amount": 0.33886495187892,
           "casualties": "5 Fig, 3 AA, 5 Arm, 30 Inf",
           "ipcLoss": 185,
           "retreaters": "",
