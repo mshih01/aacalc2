@@ -322,6 +322,32 @@ function CollapsibleSection({ title, children, defaultOpen = false, headerColor 
   )
 }
 
+function CollapsibleSubsection({ title, color, children, defaultOpen = true }: { title: string; color: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
+  return (
+    <div style={{ marginBottom: '30px' }}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none' }}
+      >
+        <h4 style={{ margin: 0, color, fontSize: '14px', fontWeight: '600' }}>{title}</h4>
+        <span
+          style={{
+            fontSize: '12px',
+            color: '#999',
+            transition: 'transform 0.2s',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          ▼
+        </span>
+      </div>
+      {isOpen && <div style={{ marginTop: '15px' }}>{children}</div>}
+    </div>
+  )
+}
+
 const modeUnitMap: Record<BattleMode, readonly UnitId[]> = {
   land: ['inf', 'art', 'arm', 'fig', 'bom', 'aa', 'cru', 'bat'],
   sea: ['fig', 'bom', 'sub', 'tra', 'des', 'cru', 'acc', 'bat', 'dbat'],
@@ -816,13 +842,429 @@ function getUnitString(units: Record<string, number>): string {
   return result;
 }
 
-// Helper function to identify percentile rows
 // Helper function to get percentile color
 function getPercentileColor(percentile: number | undefined): { bg: string; border: string } {
   if (percentile) {
     return { bg: '#fff3e0', border: '#ff9800' }  // Light orange background, orange border
   }
   return { bg: 'transparent', border: 'transparent' }
+}
+
+// Component: Detailed Attacker Casualties (per-wave)
+function DetailedAttackerCasualties({
+  waveIndex,
+  casualtiesData,
+  decimalPlaces,
+}: {
+  waveIndex: number
+  casualtiesData: Record<string, any> | undefined
+  decimalPlaces: number
+}) {
+  if (!casualtiesData || Object.keys(casualtiesData).length === 0) {
+    return <div style={{ padding: '12px', color: '#999' }}>No casualty data available</div>
+  }
+
+  const sortedEntries = Object.entries(casualtiesData)
+    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
+  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
+  const percentiles = [5, 32, 50, 68, 95]
+
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Surviving</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Retreating</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Casualties</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedEntries.map(([outcome, info], idx) => {
+          const cumulativeProb = sortedEntries
+            .slice(0, idx + 1)
+            .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+          const reverseProb = sortedEntries
+            .slice(idx)
+            .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+
+          const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+          const prevPercentage = idx > 0 
+            ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
+            : 0
+          const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+          const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+
+          return (
+            <tr 
+              key={`att-w${waveIndex}-${outcome}-${idx}`}
+              style={{
+                borderBottom: '1px solid #eee',
+                backgroundColor: colors.bg,
+                borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+              }}
+            >
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.retreaters}</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
+                {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// Component: Detailed Defender Casualties (per-wave)
+function DetailedDefenderCasualties({
+  waveIndex,
+  casualtiesData,
+  decimalPlaces,
+}: {
+  waveIndex: number
+  casualtiesData: Record<string, any> | undefined
+  decimalPlaces: number
+}) {
+  if (!casualtiesData || Object.keys(casualtiesData).length === 0) {
+    return <div style={{ padding: '12px', color: '#999' }}>No casualty data available</div>
+  }
+
+  const sortedEntries = Object.entries(casualtiesData)
+    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
+  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
+  const percentiles = [5, 32, 50, 68, 95]
+
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Surviving</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Casualties</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedEntries.map(([outcome, info], idx) => {
+          const cumulativeProb = sortedEntries
+            .slice(0, idx + 1)
+            .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+          const reverseProb = sortedEntries
+            .slice(idx)
+            .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
+
+          const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+          const prevPercentage = idx > 0 
+            ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
+            : 0
+          const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+          const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+
+          return (
+            <tr 
+              key={`def-w${waveIndex}-${outcome}-${idx}`}
+              style={{
+                borderBottom: '1px solid #eee',
+                backgroundColor: colors.bg,
+                borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+              }}
+            >
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
+                {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// Component: Profit Distribution Table (per-wave)
+function ProfitDistributionTable({
+  waveIndex,
+  profitDist,
+  decimalPlaces,
+}: {
+  waveIndex: number
+  profitDist: Record<number, any> | undefined
+  decimalPlaces: number
+}) {
+  if (!profitDist || Object.keys(profitDist).length === 0) {
+    return <div style={{ padding: '12px', color: '#999' }}>No profit distribution data available</div>
+  }
+
+  const sortedEntries = Object.entries(profitDist)
+    .sort(([ipcStrA], [ipcStrB]) => {
+      const ipcA = parseFloat(ipcStrA);
+      const ipcB = parseFloat(ipcStrB);
+      return ipcA - ipcB;
+    })
+  const totalProb = sortedEntries.reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0)
+  const percentiles = [5, 32, 50, 68, 95]
+
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+      <thead>
+        <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
+          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC Profit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedEntries.map(([ipcStr, profitInfo], idx) => {
+          const probValue = (profitInfo as any).prob || 0
+          const cumulativeProb = sortedEntries
+            .slice(0, idx + 1)
+            .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
+          const reverseProb = sortedEntries
+            .slice(idx)
+            .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
+
+          const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
+          const prevPercentage = idx > 0 
+            ? (sortedEntries.slice(0, idx).reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) / totalProb) * 100
+            : 0
+          const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
+          const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
+
+          const ipcValue = (profitInfo as any).ipc ?? 0
+          return (
+            <tr 
+              key={`profit-w${waveIndex}-${ipcStr}-${idx}`}
+              style={{
+                borderBottom: '1px solid #eee',
+                backgroundColor: colors.bg,
+                borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
+              }}
+            >
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(probValue * 100).toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', fontWeight: '500', color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
+                {ipcValue.toFixed(1)} {percentile && `📊 ${percentile}%`}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+// Component: Profit Distribution Histogram (per-wave)
+function ProfitDistributionHistogram({
+  waveIndex,
+  profitDist,
+  decimalPlaces,
+  histogramZoom,
+  setHistogramZoom,
+}: {
+  waveIndex: number
+  profitDist: Record<number, any> | undefined
+  decimalPlaces: number
+  histogramZoom: number
+  setHistogramZoom: (zoom: number) => void
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  if (!profitDist || Object.keys(profitDist).length === 0) {
+    return <div style={{ padding: '12px', color: '#999' }}>No profit distribution data available</div>
+  }
+
+  const binned = Object.entries(profitDist)
+    .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
+      const ipc = parseFloat(ipcStr);
+      const binSize = 3;
+      const binKey = Math.floor(ipc / binSize) * binSize;
+      bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
+      return bins;
+    }, {})
+
+  const sorted = Object.entries(binned)
+    .sort(([aKey], [bKey]) => parseInt(aKey) - parseInt(bKey))
+    .map(([binKey, prob]) => ({
+      ipc: parseInt(binKey),
+      ipcRange: `${binKey}-${parseInt(binKey) + 2}`,
+      probability: prob,
+    }))
+
+  const totalProb = sorted.reduce((sum, item) => sum + item.probability, 0)
+  const percentiles = [5, 32, 50, 68, 95]
+  let cumulativeLeft = 0
+
+  const chartData = sorted.map((item) => {
+    cumulativeLeft += item.probability
+    const cumulativeRight = totalProb - cumulativeLeft + item.probability
+
+    const percentileAt = percentiles.find(p => {
+      const prevCum = cumulativeLeft - item.probability
+      return prevCum < p && cumulativeLeft >= p
+    })
+
+    return {
+      ...item,
+      cumulativeLeft,
+      cumulativeRight,
+      percentileAt,
+    }
+  })
+
+  return (
+    <div style={{ marginTop: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h4 style={{ fontSize: '14px', margin: 0, color: '#333' }}>IPC Profit Distribution Chart</h4>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={() => setHistogramZoom(Math.max(1, histogramZoom - 0.2))}
+            style={{
+              padding: '4px 8px',
+              fontSize: '12px',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '3px',
+              cursor: 'pointer',
+            }}
+          >
+            − Zoom Out
+          </button>
+          <span style={{ fontSize: '12px', color: '#666', minWidth: '50px', textAlign: 'center' }}>
+            {(histogramZoom * 100).toFixed(0)}%
+          </span>
+          <button
+            onClick={() => setHistogramZoom(Math.min(3, histogramZoom + 0.2))}
+            style={{
+              padding: '4px 8px',
+              fontSize: '12px',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '3px',
+              cursor: 'pointer',
+            }}
+          >
+            Zoom In +
+          </button>
+          <button
+            onClick={() => {
+              setHistogramZoom(1)
+              if (scrollRef.current) {
+                scrollRef.current.scrollLeft = 0
+              }
+            }}
+            style={{
+              padding: '4px 8px',
+              fontSize: '12px',
+              backgroundColor: '#f0f0f0',
+              border: '1px solid #ccc',
+              borderRadius: '3px',
+              cursor: 'pointer',
+            }}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+      <div
+        ref={scrollRef}
+        style={{
+          overflowX: histogramZoom > 1 ? 'auto' : 'hidden',
+          overflowY: 'hidden',
+          borderRadius: '4px',
+          backgroundColor: '#fafafa',
+        }}
+      >
+        <div style={{ width: `${100 * histogramZoom}%`, minWidth: '100%' }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="ipc" 
+                label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
+              />
+              <YAxis 
+                label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip 
+                formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
+                labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div style={{
+                        backgroundColor: '#fff',
+                        border: '1px solid #ccc',
+                        borderRadius: '4px',
+                        padding: '8px',
+                        fontSize: '12px',
+                        color: '#333',
+                      }}>
+                        <p style={{ margin: '0 0 4px 0', fontWeight: 'bold' }}>
+                          IPC {data.ipcRange}
+                        </p>
+                        <p style={{ margin: '2px 0' }}>
+                          Probability: {data.probability.toFixed(decimalPlaces)}%
+                        </p>
+                        <p style={{ margin: '2px 0', color: '#666' }}>
+                          Sum ≤ {data.ipc + 2}: {data.cumulativeLeft.toFixed(decimalPlaces)}%
+                        </p>
+                        <p style={{ margin: '2px 0', color: '#666' }}>
+                          Sum ≥ {data.ipc}: {data.cumulativeRight.toFixed(decimalPlaces)}%
+                        </p>
+                        {data.percentileAt && (
+                          <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', color: '#f44336' }}>
+                            📊 {data.percentileAt}th Percentile
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar 
+                dataKey="probability" 
+                fill="#1976d2" 
+                radius={[4, 4, 0, 0]}
+              >
+                {chartData.map((entry, index) => {
+                  return (
+                    <Cell
+                      key={`cell-w${waveIndex}-${index}`}
+                      fill={entry.percentileAt ? '#ff9800' : '#1976d2'}
+                      stroke={entry.percentileAt ? '#000' : 'none'}
+                      strokeWidth={entry.percentileAt ? 2 : 0}
+                    />
+                  )
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function App() {
@@ -842,7 +1284,13 @@ function App() {
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [histogramZoom, setHistogramZoom] = useState(1)
+  const [histogramZooms, setHistogramZooms] = useState<Record<number, number>>(() => {
+    const initial: Record<number, number> = {}
+    for (let i = 0; i < MAX_WAVES; i++) {
+      initial[i] = 1
+    }
+    return initial
+  })
   const [toast, setToast] = useState<{ message: string } | null>(null)
   
   // Per-wave state consolidated via hook
@@ -874,7 +1322,10 @@ function App() {
   const shouldRunBattleRef = useRef(false)
   const loadedEntryNameRef = useRef<string | null>(null)
   const isLoadingFromHistoryRef = useRef(false)
-  const histogramScrollRef = useRef<HTMLDivElement>(null)
+  // Helper function to set zoom for specific wave
+  const setHistogramZoom = (waveIdx: number, zoom: number) => {
+    setHistogramZooms(prev => ({ ...prev, [waveIdx]: zoom }))
+  }
 
   // Load history from localStorage on mount
   useEffect(() => {
@@ -2183,376 +2634,96 @@ function App() {
             </div>
           )}
 
-          {/* Attacker Detailed Casualties */}
-          <CollapsibleSection title="Attacker Detailed Casualties" headerColor="#4CAF50">
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Surviving</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Retreating</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Casualties</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.casualtiesInfo['attack'] && (() => {
-                  const sortedEntries = Object.entries(result.casualtiesInfo['attack'])
-                    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
-                  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
-                  const percentiles = [5, 32, 50, 68, 95]
-                  
-                  return sortedEntries.map(([outcome, info], idx) => {
-                    const cumulativeProb = sortedEntries
-                      .slice(0, idx + 1)
-                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
-                    const reverseProb = sortedEntries
-                      .slice(idx)
-                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
-                    
-                    // Identify percentile
-                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
-                    const prevPercentage = idx > 0 
-                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
-                      : 0
-                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
-                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
-                    
-                    return (
-                      <tr 
-                        key={`att-${outcome}-${idx}`}
-                        style={{
-                          borderBottom: '1px solid #eee',
-                          backgroundColor: colors.bg,
-                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
-                        }}
-                      >
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.retreaters}</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
-                          {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
-                        </td>
-                      </tr>
-                    );
-                  })
-                })()}
-              </tbody>
-            </table>
-          </CollapsibleSection>
+          {/* Per-Wave Detailed Sections */}
+          {result.casualtiesInfoArr && Object.keys(result.casualtiesInfoArr).length > 0 && (() => {
+            const renderWaveDetails = (waveIdx: number) => {
+              const waveData = result.casualtiesInfoArr[waveIdx];
+              const waveProfit = result.profitDistribution[waveIdx];
+              
+              if (!waveData) return null;
 
-          {/* Defender Detailed Casualties */}
-          <CollapsibleSection title="Defender Detailed Casualties" headerColor="#FF9800">
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Surviving</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Casualties</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.casualtiesInfo['defense'] && (() => {
-                  const sortedEntries = Object.entries(result.casualtiesInfo['defense'])
-                    .sort(([_, infoA], [__, infoB]) => infoA.ipcLoss - infoB.ipcLoss)
-                  const totalProb = sortedEntries.reduce((sum, [_, casualty]) => sum + casualty.amount, 0)
-                  const percentiles = [5, 32, 50, 68, 95]
-                  
-                  return sortedEntries.map(([outcome, info], idx) => {
-                    const cumulativeProb = sortedEntries
-                      .slice(0, idx + 1)
-                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
-                    const reverseProb = sortedEntries
-                      .slice(idx)
-                      .reduce((sum, [_, casualty]) => sum + casualty.amount, 0) * 100
-                    
-                    // Identify percentile
-                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
-                    const prevPercentage = idx > 0 
-                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, casualty]) => sum + casualty.amount, 0) / totalProb) * 100
-                      : 0
-                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
-                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
-                    
-                    return (
-                      <tr 
-                        key={`def-${outcome}-${idx}`}
-                        style={{
-                          borderBottom: '1px solid #eee',
-                          backgroundColor: colors.bg,
-                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
-                        }}
-                      >
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(info.amount * 100).toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.survivors}</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{info.casualties}</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', color: '#d32f2f', fontWeight: '500' }}>
-                          {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
-                        </td>
-                      </tr>
-                    );
-                  })
-                })()}
-              </tbody>
-            </table>
-          </CollapsibleSection>
+              const content = (
+                <div>
+                  <CollapsibleSubsection title="Attacker Detailed Casualties" color="#4CAF50" defaultOpen={false}>
+                    <DetailedAttackerCasualties
+                      waveIndex={waveIdx}
+                      casualtiesData={waveData['attack']}
+                      decimalPlaces={decimalPlaces}
+                    />
+                  </CollapsibleSubsection>
 
-          <CollapsibleSection title="IPC Profit Distribution" headerColor="#1976d2">
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC Profit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.profitDistribution?.[0] && (() => {
-                  const sortedEntries = Object.entries(result.profitDistribution[0])
-                    .sort(([ipcStrA], [ipcStrB]) => {
-                      const ipcA = parseFloat(ipcStrA);
-                      const ipcB = parseFloat(ipcStrB);
-                      return ipcA - ipcB;
-                    })
-                  const totalProb = sortedEntries.reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0)
-                  const percentiles = [5, 32, 50, 68, 95]
-                  
-                  return sortedEntries.map(([ipcStr, profitInfo], idx) => {
-                    const probValue = (profitInfo as any).prob || 0
-                    const cumulativeProb = sortedEntries
-                      .slice(0, idx + 1)
-                      .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
-                    const reverseProb = sortedEntries
-                      .slice(idx)
-                      .reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) * 100
-                    
-                    // Identify percentile
-                    const percentageProb = (cumulativeProb / (totalProb * 100)) * 100
-                    const prevPercentage = idx > 0 
-                      ? (sortedEntries.slice(0, idx).reduce((sum, [_, info]) => sum + ((info as any).prob || 0), 0) / totalProb) * 100
-                      : 0
-                    const percentile = percentiles.find(p => prevPercentage < p && percentageProb >= p)
-                    const colors = percentile ? getPercentileColor(percentile) : { bg: 'transparent', border: 'transparent' }
-                    
-                    const ipcValue = (profitInfo as any).ipc ?? 0
-                    return (
-                      <tr 
-                        key={`${ipcStr}-${idx}`}
-                        style={{
-                          borderBottom: '1px solid #eee',
-                          backgroundColor: colors.bg,
-                          borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
-                        }}
-                      >
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(probValue * 100).toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-                        <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', fontWeight: '500', color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
-                          {ipcValue.toFixed(1)} {percentile && `📊 ${percentile}%`}
-                        </td>
-                      </tr>
-                    );
-                  })
-                })()}
-              </tbody>
-            </table>
-          </CollapsibleSection>
+                  <CollapsibleSubsection title="Defender Detailed Casualties" color="#FF9800" defaultOpen={false}>
+                    <DetailedDefenderCasualties
+                      waveIndex={waveIdx}
+                      casualtiesData={waveData['defense']}
+                      decimalPlaces={decimalPlaces}
+                    />
+                  </CollapsibleSubsection>
 
-          <CollapsibleSection title="IPC Profit Distribution Histogram" defaultOpen={true}  headerColor="#1976d2">
-            {/* Profit Distribution Histogram */}
-            {result.profitDistribution?.[0] && (
-              <div style={{ marginTop: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h4 style={{ fontSize: '14px', margin: 0, color: '#333' }}>IPC Profit Distribution Chart</h4>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <button
-                      onClick={() => setHistogramZoom(z => Math.max(1, z - 0.2))}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        backgroundColor: '#f0f0f0',
-                        border: '1px solid #ccc',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      − Zoom Out
-                    </button>
-                    <span style={{ fontSize: '12px', color: '#666', minWidth: '50px', textAlign: 'center' }}>
-                      {(histogramZoom * 100).toFixed(0)}%
-                    </span>
-                    <button
-                      onClick={() => setHistogramZoom(z => Math.min(3, z + 0.2))}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        backgroundColor: '#f0f0f0',
-                        border: '1px solid #ccc',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Zoom In +
-                    </button>
-                    <button
-                      onClick={() => {
-                        setHistogramZoom(1)
-                        if (histogramScrollRef.current) {
-                          histogramScrollRef.current.scrollLeft = 0
-                        }
-                      }}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        backgroundColor: '#f0f0f0',
-                        border: '1px solid #ccc',
-                        borderRadius: '3px',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Reset
-                    </button>
+                  <CollapsibleSubsection title="IPC Profit Distribution" color="#1976d2" defaultOpen={false}>
+                    <ProfitDistributionTable
+                      waveIndex={waveIdx}
+                      profitDist={waveProfit}
+                      decimalPlaces={decimalPlaces}
+                    />
+                  </CollapsibleSubsection>
+
+                  <div>
+                    <h4 style={{ marginTop: 0, marginBottom: '15px', color: '#1976d2', fontSize: '14px', fontWeight: '600' }}>
+                      IPC Profit Distribution Histogram
+                    </h4>
+                    <ProfitDistributionHistogram
+                      waveIndex={waveIdx}
+                      profitDist={waveProfit}
+                      decimalPlaces={decimalPlaces}
+                      histogramZoom={histogramZooms[waveIdx] || 1}
+                      setHistogramZoom={(zoom) => setHistogramZoom(waveIdx, zoom)}
+                    />
                   </div>
                 </div>
-                <div
-                  ref={histogramScrollRef}
-                  style={{
-                    overflowX: histogramZoom > 1 ? 'auto' : 'hidden',
-                    overflowY: 'hidden',
-                    borderRadius: '4px',
-                    backgroundColor: '#fafafa',
-                  }}
-                >
-                  <div style={{ width: `${100 * histogramZoom}%`, minWidth: '100%' }}>
-                    <ResponsiveContainer width="100%" height={300}>
-                      {(() => {
-                        const binned = Object.entries(result.profitDistribution[0])
-                          .reduce((bins: Record<number, number>, [ipcStr, profitInfo]) => {
-                            const ipc = parseFloat(ipcStr);
-                            const binSize = 3;
-                            const binKey = Math.floor(ipc / binSize) * binSize;
-                            bins[binKey] = (bins[binKey] || 0) + ((profitInfo as any).prob || 0) * 100;
-                            return bins;
-                          }, {})
-                        
-                        const sorted = Object.entries(binned)
-                          .sort(([aKey], [bKey]) => parseInt(aKey) - parseInt(bKey))
-                          .map(([binKey, prob]) => ({
-                            ipc: parseInt(binKey),
-                            ipcRange: `${binKey}-${parseInt(binKey) + 2}`,
-                            probability: prob,
-                          }))
-                        
-                        // Calculate cumulative sums and identify percentiles
-                        const totalProb = sorted.reduce((sum, item) => sum + item.probability, 0)
-                        const percentiles = [5, 32, 50, 68, 95]
-                        let cumulativeLeft = 0
-                        
-                        const chartData = sorted.map((item, index) => {
-                          cumulativeLeft += item.probability
-                          const cumulativeRight = totalProb - cumulativeLeft + item.probability
-                          
-                          // Check if this bar contains any percentile boundary
-                          const percentileAt = percentiles.find(p => {
-                            const prevCum = cumulativeLeft - item.probability
-                            return prevCum < p && cumulativeLeft >= p
-                          })
-                          
-                          return {
-                            ...item,
-                            cumulativeLeft,
-                            cumulativeRight,
-                            percentileAt,
-                          }
-                        })
+              );
 
-                        return (
-                          <BarChart
-                            data={chartData}
-                            margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis 
-                              dataKey="ipc" 
-                              label={{ value: 'IPC Profit', position: 'insideBottomRight', offset: -10 }}
-                            />
-                            <YAxis 
-                              label={{ value: 'Probability %', angle: -90, position: 'insideLeft' }}
-                            />
-                            <Tooltip 
-                              formatter={(value: any) => (typeof value === 'number' ? value.toFixed(decimalPlaces) : value) + '%'}
-                              labelFormatter={(label: any) => `IPC ${label}-${label + 2}`}
-                              content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                  const data = payload[0].payload;
-                                  return (
-                                    <div style={{
-                                      backgroundColor: '#fff',
-                                      border: '1px solid #ccc',
-                                      borderRadius: '4px',
-                                      padding: '8px',
-                                      fontSize: '12px',
-                                      color: '#333',
-                                    }}>
-                                      <p style={{ margin: '0 0 4px 0', fontWeight: 'bold' }}>
-                                        IPC {data.ipcRange}
-                                      </p>
-                                      <p style={{ margin: '2px 0' }}>
-                                        Probability: {data.probability.toFixed(decimalPlaces)}%
-                                      </p>
-                                      <p style={{ margin: '2px 0', color: '#666' }}>
-                                        Sum ≤ {data.ipc + 2}: {data.cumulativeLeft.toFixed(decimalPlaces)}%
-                                      </p>
-                                      <p style={{ margin: '2px 0', color: '#666' }}>
-                                        Sum ≥ {data.ipc}: {data.cumulativeRight.toFixed(decimalPlaces)}%
-                                      </p>
-                                      {data.percentileAt && (
-                                        <p style={{ margin: '4px 0 0 0', fontWeight: 'bold', color: '#f44336' }}>
-                                          📊 {data.percentileAt}th Percentile
-                                        </p>
-                                      )}
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              }}
-                            />
-                            <Bar 
-                              dataKey="probability" 
-                              fill="#1976d2" 
-                              radius={[4, 4, 0, 0]}
-                            >
-                              {chartData.map((entry, index) => {
-                                return (
-                                  <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.percentileAt ? '#ff9800' : '#1976d2'}
-                                    stroke={entry.percentileAt ? '#000' : 'none'}
-                                    strokeWidth={entry.percentileAt ? 2 : 0}
-                                  />
-                                )
-                              })}
-                            </Bar>
-                          </BarChart>
-                        )
-                      })()}
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+              // If single wave, render directly without wrapper
+              if (result.waves === 1) {
+                return content;
+              }
+
+              // If multi-wave, wrap in collapsible section
+              return (
+                <CollapsibleSection key={`wave-${waveIdx}-details`} title={`Wave ${waveIdx + 1} Details`} headerColor="#9C27B0">
+                  {content}
+                </CollapsibleSection>
+              );
+            };
+
+            return (
+              <div>
+                {Array.from({ length: result.waves }).map((_, waveIdx) => renderWaveDetails(waveIdx))}
               </div>
-            )}
-          </CollapsibleSection>
+            );
+          })()}
+
+          {/* All Waves Detailed */}
+          {numWaves > 1 && result.casualtiesInfo && (Object.keys(result.casualtiesInfo.attack || {}).length > 0 || Object.keys(result.casualtiesInfo.defense || {}).length > 0) && (
+            <div style={{ marginTop: '30px' }}>
+              <CollapsibleSection title="All Waves Detailed" headerColor="#7B1FA2" defaultOpen={false}>
+                <CollapsibleSubsection title="Attacker Detailed Casualties" color="#4CAF50" defaultOpen={false}>
+                  <DetailedAttackerCasualties
+                    waveIndex={-1}
+                    casualtiesData={result.casualtiesInfo['attack']}
+                    decimalPlaces={decimalPlaces}
+                  />
+                </CollapsibleSubsection>
+                <CollapsibleSubsection title="Defender Detailed Casualties" color="#FF9800" defaultOpen={false}>
+                  <DetailedDefenderCasualties
+                    waveIndex={-1}
+                    casualtiesData={result.casualtiesInfo['defense']}
+                    decimalPlaces={decimalPlaces}
+                  />
+                </CollapsibleSubsection>
+              </CollapsibleSection>
+            </div>
+          )}
         </section>
       )}
       </div>
