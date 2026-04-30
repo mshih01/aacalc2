@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.11
+
+### Patch Changes
+
+- 39899e9: per wave casualties
+
 ## 2.0.10
 
 ### Patch Changes
