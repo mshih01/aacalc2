@@ -541,14 +541,15 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
       attack: {},
       defense: {},
     };
-    const waveatt: Record<string, CasualtyInfo> = {};
-    const wavedef: Record<string, CasualtyInfo> = {};
+    let waveatt: Record<string, CasualtyInfo> = {};
+    let wavedef: Record<string, CasualtyInfo> = {};
     const currOutput = internal_output.output[ii];
     let currSwap = swapArr[ii];
     if (currOutput == undefined) {
       continue; // Skip undefined outputs
     }
     let sum = 0;
+    let sum2 = 0;
     // attacker casualties
     for (let i = 0; i < currOutput.att_cas.length; i++) {
       const cas = currOutput.att_cas[i];
@@ -592,15 +593,19 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         sum += cas.prob;
       }
       if (waveatt[key] == undefined) {
-        waveatt[key] = casualty;
+        // copy casualty to waveatt
+        waveatt[key] = { ...casualty };
       } else {
         waveatt[key].amount += cas.prob;
       }
+      sum2 += cas.prob;
     }
     if (input.verbose_level > 2) {
       console.log(`Attacker casualties for wave ${ii}: ${sum}`);
+      console.log(`waveatt casualties for wave ${ii}: ${sum2}`);
     }
     sum = 0;
+    sum2 = 0;
     // def cas
     for (let i = 0; i < currOutput.def_cas.length; i++) {
       const cas = currOutput.def_cas[i];
@@ -642,8 +647,9 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
         }
         sum += prob;
       }
+      sum2 += cas.prob;
       if (wavedef[key] == undefined) {
-        wavedef[key] = casualty;
+        wavedef[key] = { ...casualty };
         wavedef[key].amount = prob;
       } else {
         wavedef[key].amount += prob;
@@ -651,10 +657,13 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     }
     if (input.verbose_level > 2) {
       console.log(`Defender casualties for wave ${ii}: ${sum}`);
+      console.log(`wavedef casualties for wave ${ii}: ${sum2}`);
     }
     profitDist.push(currOutput.profitDistribution);
     casualtiesInfoArr[ii]['attack'] = waveatt;
     casualtiesInfoArr[ii]['defense'] = wavedef;
+    waveatt = {};
+    wavedef = {};
   }
   casualtiesInfo['attack'] = att;
   casualtiesInfo['defense'] = def;

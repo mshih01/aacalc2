@@ -135,7 +135,7 @@ exports[`Regression test for test0 1`] = `
         "survivors": "2 Arm, 2 Art, 3 Inf",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 1.02021067758113,
+        "amount": 0.52708697196826,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -401,7 +401,7 @@ exports[`Regression test for test0 1`] = `
           "survivors": "2 Arm, 2 Art, 3 Inf",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 1.02021067758113,
+          "amount": 0.52708697196826,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -826,7 +826,7 @@ exports[`Regression test for test1 1`] = `
         "survivors": "2 Arm, 2 Art, 3 Inf",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 1.02021067758113,
+        "amount": 0.52708697196826,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -1092,7 +1092,7 @@ exports[`Regression test for test1 1`] = `
           "survivors": "2 Arm, 2 Art, 3 Inf",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 1.02021067758113,
+          "amount": 0.52708697196826,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -1622,7 +1622,7 @@ exports[`Regression test for test2 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00771405312884,
+        "amount": 0.00403709315716,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -2049,7 +2049,7 @@ exports[`Regression test for test2 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00771405312884,
+          "amount": 0.00403709315716,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -2777,7 +2777,7 @@ exports[`Regression test for test3 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00170923748988,
+        "amount": 0.00099939765765,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -3218,7 +3218,7 @@ exports[`Regression test for test3 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00170923748988,
+          "amount": 0.00099939765765,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -14620,7 +14620,7 @@ exports[`Regression test for test13 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.01984507890599,
+        "amount": 0.01089117207740,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -15033,7 +15033,7 @@ exports[`Regression test for test13 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.01984507890599,
+          "amount": 0.01089117207740,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -15639,7 +15639,7 @@ exports[`Regression test for test14 1`] = `
         "survivors": "2 Arm, 2 Art, 3 Inf",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 1.02021067758113,
+        "amount": 0.52708697196826,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -15905,7 +15905,7 @@ exports[`Regression test for test14 1`] = `
           "survivors": "2 Arm, 2 Art, 3 Inf",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 1.02021067758113,
+          "amount": 0.52708697196826,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -16610,7 +16610,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791352,
+        "amount": 0.00041292609475,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -16948,7 +16948,7 @@ exports[`Regression test for test15 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00000003138941,
+        "amount": 0.00000001597308,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -17359,7 +17359,7 @@ exports[`Regression test for test15 1`] = `
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791352,
+          "amount": 0.00041292609475,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -17697,7 +17697,7 @@ exports[`Regression test for test15 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00000003138941,
+          "amount": 0.00000001597308,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -19390,14 +19390,14 @@ exports[`Regression test for test17 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00000026935389,
+        "amount": 0.00000013571853,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
       },
       ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-        "amount": 0.08447916172751,
+        "amount": 0.04256625975675,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -19511,7 +19511,7 @@ exports[`Regression test for test17 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00196697908768,
+        "amount": 0.00101694156914,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -19698,14 +19698,14 @@ exports[`Regression test for test17 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00000026935389,
+          "amount": 0.00000013571853,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
         },
         ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-          "amount": 0.08447916172751,
+          "amount": 0.04256625975675,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -19819,7 +19819,7 @@ exports[`Regression test for test17 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00196697908768,
+          "amount": 0.00101694156914,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -20487,7 +20487,7 @@ exports[`Regression test for test18 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.01984507890599,
+        "amount": 0.01089117207740,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -20900,7 +20900,7 @@ exports[`Regression test for test18 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.01984507890599,
+          "amount": 0.01089117207740,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -21863,7 +21863,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791183,
+        "amount": 0.00041292609389,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -21984,7 +21984,7 @@ exports[`Regression test for test19 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00049347625382,
+        "amount": 0.00026186366575,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -22472,7 +22472,7 @@ exports[`Regression test for test19 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791183,
+          "amount": 0.00041292609389,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -22593,7 +22593,7 @@ exports[`Regression test for test19 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00049347625382,
+          "amount": 0.00026186366575,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -23278,7 +23278,7 @@ exports[`Regression test for test20 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00020198548866,
+        "amount": 0.00010187850203,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -23726,7 +23726,7 @@ exports[`Regression test for test20 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00020198548866,
+          "amount": 0.00010187850203,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -24509,7 +24509,7 @@ exports[`Regression test for test21 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.74990175526720,
+        "amount": 0.37500630865339,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -24957,7 +24957,7 @@ exports[`Regression test for test21 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.74990175526720,
+          "amount": 0.37500630865339,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -25521,7 +25521,7 @@ exports[`Regression test for test22 1`] = `
         "survivors": "2 Arm, 2 Art, 3 Inf",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 1.02021067758113,
+        "amount": 0.52708697196826,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -25787,7 +25787,7 @@ exports[`Regression test for test22 1`] = `
           "survivors": "2 Arm, 2 Art, 3 Inf",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 1.02021067758113,
+          "amount": 0.52708697196826,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -26508,7 +26508,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791352,
+        "amount": 0.00041292609475,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -26846,7 +26846,7 @@ exports[`Regression test for test23 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00000003138941,
+        "amount": 0.00000001597308,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -27257,7 +27257,7 @@ exports[`Regression test for test23 1`] = `
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791352,
+          "amount": 0.00041292609475,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -27595,7 +27595,7 @@ exports[`Regression test for test23 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00000003138941,
+          "amount": 0.00000001597308,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -29304,14 +29304,14 @@ exports[`Regression test for test25 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00000026935389,
+        "amount": 0.00000013571853,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
       },
       ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-        "amount": 0.08447916172751,
+        "amount": 0.04256625975675,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -29425,7 +29425,7 @@ exports[`Regression test for test25 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00196697908768,
+        "amount": 0.00101694156914,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -29612,14 +29612,14 @@ exports[`Regression test for test25 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00000026935389,
+          "amount": 0.00000013571853,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
         },
         ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-          "amount": 0.08447916172751,
+          "amount": 0.04256625975675,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -29733,7 +29733,7 @@ exports[`Regression test for test25 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00196697908768,
+          "amount": 0.00101694156914,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -30422,7 +30422,7 @@ exports[`Regression test for test26 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00812337276053,
+        "amount": 0.00453371564402,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -30870,7 +30870,7 @@ exports[`Regression test for test26 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00812337276053,
+          "amount": 0.00453371564402,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -31899,7 +31899,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791183,
+        "amount": 0.00041292609389,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -32020,7 +32020,7 @@ exports[`Regression test for test27 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00049347625382,
+        "amount": 0.00026186366575,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -32508,7 +32508,7 @@ exports[`Regression test for test27 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791183,
+          "amount": 0.00041292609389,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -32629,7 +32629,7 @@ exports[`Regression test for test27 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00049347625382,
+          "amount": 0.00026186366575,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -33314,7 +33314,7 @@ exports[`Regression test for test28 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00020198548866,
+        "amount": 0.00010187850203,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -33762,7 +33762,7 @@ exports[`Regression test for test28 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00020198548866,
+          "amount": 0.00010187850203,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -34565,7 +34565,7 @@ exports[`Regression test for test29 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.74990175526720,
+        "amount": 0.37500630865339,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -35013,7 +35013,7 @@ exports[`Regression test for test29 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.74990175526720,
+          "amount": 0.37500630865339,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -35597,7 +35597,7 @@ exports[`Regression test for test30 1`] = `
         "survivors": "2 Arm, 2 Art, 3 Inf",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 1.02021067758113,
+        "amount": 0.52708697196826,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -35863,7 +35863,7 @@ exports[`Regression test for test30 1`] = `
           "survivors": "2 Arm, 2 Art, 3 Inf",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 1.02021067758113,
+          "amount": 0.52708697196826,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -36572,7 +36572,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791352,
+        "amount": 0.00041292609475,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -36910,7 +36910,7 @@ exports[`Regression test for test31 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00000003138941,
+        "amount": 0.00000001597308,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -37321,7 +37321,7 @@ exports[`Regression test for test31 1`] = `
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791352,
+          "amount": 0.00041292609475,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -37659,7 +37659,7 @@ exports[`Regression test for test31 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00000003138941,
+          "amount": 0.00000001597308,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -39352,14 +39352,14 @@ exports[`Regression test for test33 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00000026935389,
+        "amount": 0.00000013571853,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
         "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
       },
       ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-        "amount": 0.08447916172751,
+        "amount": 0.04256625975675,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -39473,7 +39473,7 @@ exports[`Regression test for test33 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00196697908768,
+        "amount": 0.00101694156914,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -39660,14 +39660,14 @@ exports[`Regression test for test33 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00000026935389,
+          "amount": 0.00000013571853,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
           "survivors": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
         },
         ";;2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;0": {
-          "amount": 0.08447916172751,
+          "amount": 0.04256625975675,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC",
@@ -39781,7 +39781,7 @@ exports[`Regression test for test33 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00196697908768,
+          "amount": 0.00101694156914,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -40470,7 +40470,7 @@ exports[`Regression test for test34 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00448198689375,
+        "amount": 0.00254063053052,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -40918,7 +40918,7 @@ exports[`Regression test for test34 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00448198689375,
+          "amount": 0.00254063053052,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -41927,7 +41927,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "",
       },
       ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-        "amount": 0.00082333791183,
+        "amount": 0.00041292609389,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -42048,7 +42048,7 @@ exports[`Regression test for test35 1`] = `
         "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
       },
       ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-        "amount": 0.00049347625382,
+        "amount": 0.00026186366575,
         "casualties": "",
         "ipcLoss": 0,
         "retreaters": "",
@@ -42536,7 +42536,7 @@ exports[`Regression test for test35 1`] = `
           "survivors": "",
         },
         ";2 Bat, 1 Bom, 1 Cru, 2 Fig, 5 Des, 5 Sub, 1 ACC;;0": {
-          "amount": 0.00082333791183,
+          "amount": 0.00041292609389,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -42657,7 +42657,7 @@ exports[`Regression test for test35 1`] = `
           "survivors": "2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des",
         },
         ";2 Tra, 1 Bat, 2 Fig, 1 Cru, 1 ACC, 5 Des, 5 Sub;": {
-          "amount": 0.00049347625382,
+          "amount": 0.00026186366575,
           "casualties": "",
           "ipcLoss": 0,
           "retreaters": "",
@@ -43342,7 +43342,7 @@ exports[`Regression test for test36 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.00020198548866,
+        "amount": 0.00010187850203,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -43790,7 +43790,7 @@ exports[`Regression test for test36 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.00020198548866,
+          "amount": 0.00010187850203,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -44577,7 +44577,7 @@ exports[`Regression test for test37 1`] = `
         "survivors": "",
       },
       "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-        "amount": 0.74990175526720,
+        "amount": 0.37500630865339,
         "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
         "ipcLoss": 52,
         "retreaters": "",
@@ -45025,7 +45025,7 @@ exports[`Regression test for test37 1`] = `
           "survivors": "",
         },
         "2 Fig, 2 Arm, 2 Art, 4 Inf;;;0": {
-          "amount": 0.74990175526720,
+          "amount": 0.37500630865339,
           "casualties": "2 Fig, 2 Arm, 2 Art, 4 Inf",
           "ipcLoss": 52,
           "retreaters": "",
@@ -45995,7 +45995,7 @@ exports[`Regression test for test38 1`] = `
         "survivors": "5 Fig, 3 Arm",
       },
       "2 Art, 2 Fig, 4 Inf;;;2": {
-        "amount": 0.70443303937376,
+        "amount": 0.35365225082890,
         "casualties": "2 Art, 2 Fig, 4 Inf",
         "ipcLoss": 40,
         "retreaters": "",
@@ -49756,7 +49756,7 @@ exports[`Regression test for test38 1`] = `
           "survivors": "5 Fig, 3 AA",
         },
         "5 Fig, 3 AA, 5 Arm, 30 Inf;;": {
-          "amount": 0.49158242204976,
+          "amount": 0.20016626551623,
           "casualties": "5 Fig, 3 AA, 5 Arm, 30 Inf",
           "ipcLoss": 185,
           "retreaters": "",
@@ -50417,7 +50417,7 @@ exports[`Regression test for test38 1`] = `
           "survivors": "2 Art, 2 Fig, 3 Inf",
         },
         "2 Art, 2 Fig, 4 Inf;;;2": {
-          "amount": 0.70443303937376,
+          "amount": 0.35365225082890,
           "casualties": "2 Art, 2 Fig, 4 Inf",
           "ipcLoss": 40,
           "retreaters": "",
@@ -53081,7 +53081,7 @@ exports[`Regression test for test39 1`] = `
         "survivors": "2 Fig, 1 Inf",
       },
       "2 Fig, 2 Inf;;;0": {
-        "amount": 0.03215498112293,
+        "amount": 0.01943954312577,
         "casualties": "2 Fig, 2 Inf",
         "ipcLoss": 26,
         "retreaters": "",
@@ -53144,7 +53144,7 @@ exports[`Regression test for test39 1`] = `
           "survivors": "2 Fig, 1 Inf",
         },
         "2 Fig, 2 Inf;;;0": {
-          "amount": 0.03215498112293,
+          "amount": 0.01943954312577,
           "casualties": "2 Fig, 2 Inf",
           "ipcLoss": 26,
           "retreaters": "",
