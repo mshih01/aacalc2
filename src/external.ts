@@ -1,5 +1,5 @@
 import { type DiceMode, type SortMode, type PwinMode } from './solve.js';
-import { type ProfitDistribution } from './output.js';
+import { type ProfitDistribution, type aacalc_output } from './output.js';
 import { get_cost_from_str } from './unitgroup.js';
 import { hasLand } from './unitgroup.js';
 import { unit_manager } from './unitgroup.js';
@@ -500,203 +500,184 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
   return internal_input;
 }
 
-export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
-  const internal_input = getInternalInput(input);
-  const internal_output = multiwave(internal_input);
-  const rounds: number[] = [];
-  for (let i = 0; i < internal_output.output.length; i++) {
-    rounds.push(internal_output.output[i]?.rounds ?? 0);
-  }
-  const casualtiesInfo: CasualtiesInfo = {
-    attack: {},
-    defense: {},
-    //profit: {},
-  };
-  const casualtiesInfoArr: CasualtiesInfo[] = [];
-  const att: Record<string, CasualtyInfo> = {};
-  const def: Record<string, CasualtyInfo> = {};
+function buildCasualtiesInfo(
+  waveOutputs: aacalc_output[],
+  takesTerritory: number[],
+  waveInfo: MultiwaveInput['wave_info'],
+  verboseLevel: number,
+): {
+  casualtiesInfo: CasualtiesInfo
+  casualtiesInfoArr: CasualtiesInfo[]
+  profitDist: ProfitDistribution[]
+} {
+  const casualtiesInfo: CasualtiesInfo = { attack: {}, defense: {} }
+  const casualtiesInfoArr: CasualtiesInfo[] = []
+  const att: Record<string, CasualtyInfo> = {}
+  const def: Record<string, CasualtyInfo> = {}
+  const um = new unit_manager(verboseLevel)
+  const profitDist: ProfitDistribution[] = []
 
-  const lastWave = internal_output.output.length - 1;
-  const lastOutput = internal_output.output[lastWave];
-  const um = new unit_manager(input.verbose_level);
-  const profitDist: ProfitDistribution[] = [];
-
-  let swapArr: number[] = [];
-  let currSwap = 0;
-  let numSwap = 0;
-  for (let i = 0; i < input.wave_info.length; i++) {
-    const wave = input.wave_info[i];
-    if (!wave) {
-      continue; // Skip undefined or null waves
-    }
+  const swapArr: number[] = []
+  let currSwap = 0
+  let numSwap = 0
+  for (let i = 0; i < waveInfo.length; i++) {
+    const wave = waveInfo[i]
+    if (!wave) continue
     if (wave.use_attackers_from_previous_wave) {
-      currSwap = 1 - currSwap;
-      numSwap++;
+      currSwap = 1 - currSwap
+      numSwap++
     }
-    swapArr.push(currSwap);
+    swapArr.push(currSwap)
   }
-  let finalSwap = swapArr[swapArr.length - 1];
-  const isFinalSwap = numSwap % 2 > 0;
-  const hasSwap = numSwap > 0;
 
-  // for each wave
-  for (let ii = 0; ii < internal_output.output.length; ii++) {
-    casualtiesInfoArr[ii] = {
-      attack: {},
-      defense: {},
-    };
-    let waveatt: Record<string, CasualtyInfo> = {};
-    let wavedef: Record<string, CasualtyInfo> = {};
-    const currOutput = internal_output.output[ii];
-    let currSwap = swapArr[ii];
-    if (currOutput == undefined) {
-      continue; // Skip undefined outputs
-    }
-    let sum = 0;
-    let sum2 = 0;
-    // attacker casualties
+  for (let ii = 0; ii < waveOutputs.length; ii++) {
+    casualtiesInfoArr[ii] = { attack: {}, defense: {} }
+    const waveatt: Record<string, CasualtyInfo> = {}
+    const wavedef: Record<string, CasualtyInfo> = {}
+    const currOutput = waveOutputs[ii]
+    if (currOutput == undefined) continue
+
+    let sum = 0
+    let sum2 = 0
+
     for (let i = 0; i < currOutput.att_cas.length; i++) {
-      const cas = currOutput.att_cas[i];
+      const cas = currOutput.att_cas[i]
       const casualty: CasualtyInfo = {
         casualties: get_external_unit_str(um, cas.casualty),
         survivors: get_external_unit_str(um, cas.remain),
         retreaters: get_external_unit_str(um, cas.retreat),
         amount: cas.prob,
         ipcLoss: get_cost_from_str(um, cas.casualty),
-      };
-      let include: boolean = false;
-      if (
-        ii < internal_output.output.length - 1 &&
-        cas.remain.length > 0 &&
-        hasLand(um, cas.remain) &&
-        numSwap == 0
-      ) {
-        // If there are land units remaining, we captured the territory in earlier wave and need to record
-        // the casualties details.
-        include = true;
       }
-      // include the last wave casualties details since they are final outcomes.
-      if (ii == internal_output.output.length - 1) {
-        include = true;
-      }
+      let include =
+        ii < waveOutputs.length - 1
+          ? cas.remain.length > 0 && hasLand(um, cas.remain) && numSwap == 0
+          : true
 
-      const key: string =
+      const key =
         get_external_unit_str(um, cas.casualty) +
         ';' +
         get_external_unit_str(um, cas.remain) +
         ';' +
         get_external_unit_str(um, cas.retreat) +
         ';' +
-        ii.toString();
+        ii.toString()
       if (include) {
         if (att[key] == undefined) {
-          att[key] = casualty;
+          att[key] = casualty
         } else {
-          att[key].amount += cas.prob;
+          att[key].amount += cas.prob
         }
-        sum += cas.prob;
+        sum += cas.prob
       }
       if (waveatt[key] == undefined) {
-        // copy casualty to waveatt
-        waveatt[key] = { ...casualty };
+        waveatt[key] = { ...casualty }
       } else {
-        waveatt[key].amount += cas.prob;
+        waveatt[key].amount += cas.prob
       }
-      sum2 += cas.prob;
+      sum2 += cas.prob
     }
-    if (input.verbose_level > 2) {
-      console.log(`Attacker casualties for wave ${ii}: ${sum}`);
-      console.log(`waveatt casualties for wave ${ii}: ${sum2}`);
+    if (verboseLevel > 2) {
+      console.log(`Attacker casualties for wave ${ii}: ${sum}`)
+      console.log(`waveatt casualties for wave ${ii}: ${sum2}`)
     }
-    sum = 0;
-    sum2 = 0;
-    // def cas
+
+    sum = 0
+    sum2 = 0
+
     for (let i = 0; i < currOutput.def_cas.length; i++) {
-      const cas = currOutput.def_cas[i];
+      const cas = currOutput.def_cas[i]
       const casualty: CasualtyInfo = {
         casualties: get_external_unit_str(um, cas.casualty),
         survivors: get_external_unit_str(um, cas.remain),
         retreaters: get_external_unit_str(um, cas.retreat),
         amount: cas.prob,
         ipcLoss: get_cost_from_str(um, cas.casualty),
-      };
-      let include: boolean = false;
-      let prob = cas.prob;
-      if (
-        ii < internal_output.output.length - 1 &&
-        cas.remain.length == 0 &&
-        numSwap == 0
-      ) {
-        // no defending units... p takes territory.
-        include = true;
+      }
+      let prob = cas.prob
+      let include: boolean
+      if (ii < waveOutputs.length - 1 && cas.remain.length == 0 && numSwap == 0) {
+        include = true
         prob =
-          internal_output.out.takesTerritory[ii] -
-          (ii > 0 ? internal_output.out.takesTerritory[ii - 1] : 0);
+          takesTerritory[ii] - (ii > 0 ? takesTerritory[ii - 1] : 0)
+      } else {
+        include = ii == waveOutputs.length - 1
       }
-      if (ii == internal_output.output.length - 1) {
-        include = true;
-      }
-      const key: string =
+
+      const key =
         get_external_unit_str(um, cas.casualty) +
         ';' +
         get_external_unit_str(um, cas.remain) +
         ';' +
-        get_external_unit_str(um, cas.retreat);
+        get_external_unit_str(um, cas.retreat)
       if (include) {
         if (def[key] == undefined) {
-          def[key] = casualty;
-          def[key].amount = prob;
+          def[key] = casualty
+          def[key].amount = prob
         } else {
-          def[key].amount += prob;
+          def[key].amount += prob
         }
-        sum += prob;
+        sum += prob
       }
-      sum2 += cas.prob;
+      sum2 += cas.prob
       if (wavedef[key] == undefined) {
-        wavedef[key] = { ...casualty, amount: cas.prob };
+        wavedef[key] = { ...casualty, amount: cas.prob }
       } else {
-        wavedef[key].amount += cas.prob;
+        wavedef[key].amount += cas.prob
       }
     }
-    if (input.verbose_level > 2) {
-      console.log(`Defender casualties for wave ${ii}: ${sum}`);
-      console.log(`wavedef casualties for wave ${ii}: ${sum2}`);
+    if (verboseLevel > 2) {
+      console.log(`Defender casualties for wave ${ii}: ${sum}`)
+      console.log(`wavedef casualties for wave ${ii}: ${sum2}`)
     }
-    profitDist.push(currOutput.profitDistribution);
-    if (input.verbose_level > 2) {
-      let attsum = waveatt
-        ? Object.values(waveatt).reduce((acc, val) => acc + val.amount, 0)
-        : 0;
-      let defsum = wavedef
-        ? Object.values(wavedef).reduce((acc, val) => acc + val.amount, 0)
-        : 0;
-      console.log(attsum, defsum, 'attsum, defsum');
+
+    profitDist.push(currOutput.profitDistribution)
+
+    if (verboseLevel > 2) {
+      const attsum = Object.values(waveatt).reduce((acc, val) => acc + val.amount, 0)
+      const defsum = Object.values(wavedef).reduce((acc, val) => acc + val.amount, 0)
+      console.log(attsum, defsum, 'attsum, defsum')
     }
-    casualtiesInfoArr[ii]['attack'] = waveatt;
-    casualtiesInfoArr[ii]['defense'] = wavedef;
-    waveatt = {};
-    wavedef = {};
+    casualtiesInfoArr[ii]['attack'] = waveatt
+    casualtiesInfoArr[ii]['defense'] = wavedef
   }
-  casualtiesInfo['attack'] = att;
-  casualtiesInfo['defense'] = def;
+
+  casualtiesInfo['attack'] = att
+  casualtiesInfo['defense'] = def
+
+  return { casualtiesInfo, casualtiesInfoArr, profitDist }
+}
+
+export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
+  const internal_input = getInternalInput(input)
+  const internal_output = multiwave(internal_input)
+
+  const rounds = internal_output.output.map((o) => o?.rounds ?? 0)
+
+  const { casualtiesInfo, casualtiesInfoArr, profitDist } = buildCasualtiesInfo(
+    internal_output.output,
+    internal_output.out.takesTerritory,
+    input.wave_info,
+    input.verbose_level,
+  )
 
   const out: MultiwaveOutput = {
     attack: internal_output.out.attack,
     defense: internal_output.out.defense,
     waves: internal_output.output.length,
     takesTerritory: internal_output.out.takesTerritory,
-    rounds: rounds,
-    casualtiesInfo: casualtiesInfo,
-    casualtiesInfoArr: casualtiesInfoArr,
+    rounds,
+    casualtiesInfo,
+    casualtiesInfoArr,
     profitDistribution: profitDist,
     complexity: internal_output.complexity,
-  };
+  }
   if (input.verbose_level > 2) {
-    console.log('multiwave output', out);
-    console.log('multiwave output', JSON.stringify(out, null, 4));
+    console.log('multiwave output', out)
+    console.log('multiwave output', JSON.stringify(out, null, 4))
   }
 
-  return out;
+  return out
 }
 
 export function multiEvalExternal(input: MultiEvalInput): MultiEvalOutput {
