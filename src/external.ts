@@ -268,6 +268,10 @@ interface unit_counts {
 // complexity is too large -- caller should fallback to monte carlo
 export function multiwaveTooComplex(input: MultiwaveInput): boolean {
   const complexity = multiwaveComplexityFastV2(input);
+  // multiwave detailed casualties doesn't match simulation
+  if (input.wave_info.length > 1) {
+    return true;
+  }
   if (complexity > 120000) {
     return true;
   }
