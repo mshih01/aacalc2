@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.10
+
+### Patch Changes
+
+- 9363183: multiwaveTooComplex return true for multiwave
+
 ## 2.0.9
 
 ### Patch Changes
