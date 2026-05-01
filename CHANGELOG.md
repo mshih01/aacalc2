@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.12
+
+### Patch Changes
+
+- dd68d5e: fix attacker detailed casualties for multiwave
+
 ## 2.0.11
 
 ### Patch Changes
