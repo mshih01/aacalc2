@@ -3,3 +3,4 @@ dist
 test
 tags
 frontend2
+tsconfig.tsbuildinfo
