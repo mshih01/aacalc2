@@ -526,9 +526,20 @@ function addToMap(
   }
 }
 
+function filterMapByThreshold(
+  map: Record<string, CasualtyInfo>,
+  threshold: number,
+): Record<string, CasualtyInfo> {
+  if (threshold <= 0) return map;
+  return Object.fromEntries(
+    Object.entries(map).filter(([, v]) => v.amount >= threshold),
+  );
+}
+
 function buildCasualtiesInfoArr(
   waveOutputs: aacalc_output[],
   verboseLevel: number,
+  reportPruneThreshold: number,
 ): {
   casualtiesInfoArr: CasualtiesInfo[];
   profitDist: ProfitDistribution[];
@@ -581,8 +592,14 @@ function buildCasualtiesInfoArr(
     }
 
     profitDist.push(currOutput.profitDistribution);
-    casualtiesInfoArr[ii]['attack'] = waveatt;
-    casualtiesInfoArr[ii]['defense'] = wavedef;
+    casualtiesInfoArr[ii]['attack'] = filterMapByThreshold(
+      waveatt,
+      reportPruneThreshold,
+    );
+    casualtiesInfoArr[ii]['defense'] = filterMapByThreshold(
+      wavedef,
+      reportPruneThreshold,
+    );
   }
 
   return { casualtiesInfoArr, profitDist };
@@ -593,6 +610,7 @@ function buildCumulativeCasualtiesInfo(
   takesTerritory: number[],
   waveInfo: MultiwaveInput['wave_info'],
   verboseLevel: number,
+  reportPruneThreshold: number,
 ): CasualtiesInfo {
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
@@ -780,7 +798,10 @@ function buildCumulativeCasualtiesInfo(
     }
   }
 
-  return { attack: att, defense: def };
+  return {
+    attack: filterMapByThreshold(att, reportPruneThreshold),
+    defense: filterMapByThreshold(def, reportPruneThreshold),
+  };
 }
 
 export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
@@ -792,6 +813,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const { casualtiesInfoArr, profitDist } = buildCasualtiesInfoArr(
     internal_output.output,
     input.verbose_level,
+    input.report_prune_threshold,
   );
 
   const casualtiesInfo = buildCumulativeCasualtiesInfo(
@@ -799,6 +821,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     internal_output.out.takesTerritory,
     input.wave_info,
     input.verbose_level,
+    input.report_prune_threshold,
   );
 
   const out: MultiwaveOutput = {
