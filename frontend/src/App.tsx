@@ -2706,7 +2706,7 @@ function App() {
           {/* All Waves Detailed */}
           {numWaves > 1 && result.casualtiesInfo && (Object.keys(result.casualtiesInfo.attack || {}).length > 0 || Object.keys(result.casualtiesInfo.defense || {}).length > 0) && (
             <div style={{ marginTop: '30px' }}>
-              <CollapsibleSection title="All Waves Detailed" headerColor="#7B1FA2" defaultOpen={false}>
+              <CollapsibleSection title="All Waves Detailed" headerColor="#7B1FA2" defaultOpen={true}>
                 <CollapsibleSubsection title="Attacker Detailed Casualties" color="#4CAF50" defaultOpen={false}>
                   <DetailedAttackerCasualties
                     waveIndex={-1}
