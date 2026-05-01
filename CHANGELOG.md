@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.13
+
+### Patch Changes
+
+- 290edfc: multiwaveTooComplex reenable multiwave analysis
+
 ## 2.0.12
 
 ### Patch Changes
