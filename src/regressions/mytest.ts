@@ -1018,7 +1018,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         att_dest_last: false,
         def_dest_last: false,
         is_crash_fighters: false,
-        rounds: round,
+        rounds: 1,
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat, // optional
         retreat_strafe_threshold: strafe, // optional
@@ -1037,7 +1037,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 0,
+            inf: 2,
             art: 0,
             arm: 0,
             fig: 0,
