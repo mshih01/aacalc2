@@ -119,6 +119,7 @@ export interface BattleInput {
   territoryValue?: number
   isDeadzone?: boolean
   numWaves?: number
+  amphibious?: boolean
 }
 
 function computeBattle(input: BattleInput): MultiwaveOutput {
@@ -1666,6 +1667,7 @@ function App() {
         territoryValue,
         isDeadzone,
         numWaves,
+        amphibious,
       }
       
       // Check complexity before evaluating the battle
@@ -1815,6 +1817,7 @@ function App() {
       updateWave(i, waveUpdate)
     }
     
+    setAmphibious(input.amphibious ?? false)
     setDiceMode(input.diceMode || 'standard')
     setTerritoryValue(input.territoryValue || 0)
     setIsDeadzone(input.isDeadzone ?? false)
@@ -1984,6 +1987,7 @@ function App() {
               territoryValue,
               isDeadzone,
               numWaves,
+              amphibious,
             }
             const shareUrl = encodeStateToUrl(shareInput)
             navigator.clipboard.writeText(shareUrl).then(() => {
