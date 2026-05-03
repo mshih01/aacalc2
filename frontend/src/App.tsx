@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import {
   multiwaveExternal,
   sbrExternal,
@@ -2639,8 +2639,8 @@ function App() {
 
           {/* All Waves Summary */}
           {numWaves > 1 && (() => {
-            const totalAtt = result.attack.cumulativeIpcLoss[numWaves - 1];
-            const totalDef = result.defense.cumulativeIpcLoss[numWaves - 1];
+            const totalAtt = result.attack.cumulativeIpcLoss[numWaves - 1] ?? 0;
+            const totalDef = result.defense.cumulativeIpcLoss[numWaves - 1] ?? 0;
             const totalProfit = totalDef - totalAtt;
             return (
             <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #1976d2' }}>
@@ -2721,7 +2721,7 @@ function App() {
 
               // If multi-wave, wrap in collapsible section
               return (
-                <CollapsibleSection key={`wave-${waveIdx}-details`} title={`Wave ${waveIdx + 1} Details`} headerColor="#9C27B0">
+                <CollapsibleSection title={`Wave ${waveIdx + 1} Details`} headerColor="#9C27B0">
                   {content}
                 </CollapsibleSection>
               );
@@ -2729,7 +2729,9 @@ function App() {
 
             return (
               <div>
-                {Array.from({ length: result.waves }).map((_, waveIdx) => renderWaveDetails(waveIdx))}
+                {Array.from({ length: result.waves }).map((_, waveIdx) => (
+                  <Fragment key={`wd-${waveIdx}`}>{renderWaveDetails(waveIdx)}</Fragment>
+                ))}
               </div>
             );
           })()}
