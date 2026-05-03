@@ -17,7 +17,7 @@ import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 
 // Configuration Constants
 const MAX_WAVES = 4
-const MAX_COMPLEXITY = 120000
+const MAX_COMPLEXITY = 200000
 const INSTANTANEOUS_EVALUATION_THRESHOLD = 10000
 const AUTO_EVALUATE_BOUNCE_TIMER = 750 // ms
 
@@ -102,6 +102,7 @@ export interface BattleInput {
   attackerDestroyerLast?: Record<number, boolean>
   defenderDestroyerLast?: Record<number, boolean>
   crashFighters?: Record<number, boolean>
+  useAttackersFromPreviousWave?: Record<number, boolean>
   // global inputs
   diceMode?: 'standard' | 'lowluck' | 'biased'
   inProgress?: boolean
@@ -155,6 +156,7 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
       retreat_strafe_threshold: input.retreatStrafeThresholds?.[waveIdx],
       retreat_lose_air_probability: input.retreatLoseAirProbabilityThresholds?.[waveIdx],
       pwinMode: 'takes' as const,
+      use_attackers_from_previous_wave: input.useAttackersFromPreviousWave?.[waveIdx] ?? false,
     }
   })
 
@@ -564,6 +566,7 @@ export interface WaveConfig {
   retreatPwinThreshold?: number
   retreatStrafeThreshold?: number
   retreatLoseAirProbabilityThreshold?: number
+  useAttackersFromPreviousWave: boolean
 }
 
 const DEFAULT_WAVE_CONFIG: WaveConfig = {
@@ -579,6 +582,7 @@ const DEFAULT_WAVE_CONFIG: WaveConfig = {
   defenderDestroyerLast: false,
   crashFighters: false,
   retreatMode: 'unitCount',
+  useAttackersFromPreviousWave: false,
 }
 
 // Hook for managing per-wave state
@@ -1409,7 +1413,8 @@ function App() {
     retreatExpectedIpcProfitRecord: Record<number, number | undefined>,
     retreatPwinRecord: Record<number, number | undefined>,
     retreatStrafeRecord: Record<number, number | undefined>,
-    retreatLoseAirRecord: Record<number, number | undefined>
+    retreatLoseAirRecord: Record<number, number | undefined>,
+    useAttackersFromPreviousWaveRecord: Record<number, boolean>
   ): MultiwaveInput => {
     return {
       wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
@@ -1443,6 +1448,7 @@ function App() {
           retreat_strafe_threshold: retreatStrafeRecord[waveIdx],
           retreat_lose_air_probability: retreatLoseAirRecord[waveIdx],
           pwinMode: 'takes' as const,
+          use_attackers_from_previous_wave: useAttackersFromPreviousWaveRecord[waveIdx] ?? false,
         }
       }),
       debug: false,
@@ -1488,6 +1494,7 @@ function App() {
       const retreatPwinRecord: Record<number, number | undefined> = {}
       const retreatStrafeRecord: Record<number, number | undefined> = {}
       const retreatLoseAirRecord: Record<number, number | undefined> = {}
+      const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
       
       for (let i = 0; i < numWaves; i++) {
         const config = waveConfigs[i]
@@ -1506,6 +1513,7 @@ function App() {
         retreatPwinRecord[i] = config.retreatPwinThreshold
         retreatStrafeRecord[i] = config.retreatStrafeThreshold
         retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
+        useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
       }
       
       const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(
@@ -1525,7 +1533,8 @@ function App() {
         retreatExpectedIpcProfitRecord,
         retreatPwinRecord,
         retreatStrafeRecord,
-        retreatLoseAirRecord
+        retreatLoseAirRecord,
+        useAttackersFromPreviousWaveRecord
       )
       
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
@@ -1572,6 +1581,7 @@ function App() {
       const retreatPwinRecord: Record<number, number | undefined> = {}
       const retreatStrafeRecord: Record<number, number | undefined> = {}
       const retreatLoseAirRecord: Record<number, number | undefined> = {}
+      const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
       
       for (let i = 0; i < numWaves; i++) {
         const config = waveConfigs[i]
@@ -1591,6 +1601,7 @@ function App() {
         retreatPwinRecord[i] = config.retreatPwinThreshold
         retreatStrafeRecord[i] = config.retreatStrafeThreshold
         retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
+        useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
       }
       
       const input: BattleInput = {
@@ -1607,6 +1618,7 @@ function App() {
         attackerDestroyerLast: attackerDestroyerLastRecord,
         defenderDestroyerLast: defenderDestroyerLastRecord,
         crashFighters: crashFightersRecord,
+        useAttackersFromPreviousWave: useAttackersFromPreviousWaveRecord,
         retreatModes: retreatModeRecord,
         mode,
         diceMode,
@@ -1642,7 +1654,8 @@ function App() {
         retreatExpectedIpcProfitRecord,
         retreatPwinRecord,
         retreatStrafeRecord,
-        retreatLoseAirRecord
+        retreatLoseAirRecord,
+        useAttackersFromPreviousWaveRecord
       )
       
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
@@ -2356,6 +2369,19 @@ function App() {
                 </div>
               </div>
 
+              {waveIdx > 0 && (
+                <div style={{ marginBottom: '10px', padding: '8px 12px', backgroundColor: '#f0f0f0', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px' }}>
+                    <input
+                      type="checkbox"
+                      checked={waveConfigs[waveIdx]?.useAttackersFromPreviousWave || false}
+                      onChange={(e) => updateWave(waveIdx, { useAttackersFromPreviousWave: e.target.checked })}
+                    />
+                    Use surviving attackers from previous wave
+                  </label>
+                </div>
+              )}
+
               {/* Wave Options */}
               {mode === 'sea' ? (
                 <SeaModeSection
@@ -2566,10 +2592,10 @@ function App() {
           
           {/* Wave Summaries */}
           {Array.from({ length: numWaves }, (_, waveIdx) => {
-            const attackLoss = result.attack.ipcLoss[waveIdx] ?? 0;
-            const defenseLoss = result.defense.ipcLoss[waveIdx] ?? 0;
-            const attackLossDelta = waveIdx > 0 ? attackLoss - (result.attack.ipcLoss[waveIdx - 1] ?? 0) : attackLoss;
-            const defenseLossDelta = waveIdx > 0 ? defenseLoss - (result.defense.ipcLoss[waveIdx - 1] ?? 0) : defenseLoss;
+            const attackLossDelta = result.attack.incrementalLoss[waveIdx] ??
+              result.attack.ipcLoss[waveIdx] - (waveIdx > 0 ? result.attack.ipcLoss[waveIdx - 1] : 0);
+            const defenseLossDelta = result.defense.incrementalLoss[waveIdx] ??
+              result.defense.ipcLoss[waveIdx] - (waveIdx > 0 ? result.defense.ipcLoss[waveIdx - 1] : 0);
             const profitDelta = defenseLossDelta - attackLossDelta;
             
             return (
@@ -2612,27 +2638,32 @@ function App() {
           })}
 
           {/* All Waves Summary */}
-          {numWaves > 1 && (
+          {numWaves > 1 && (() => {
+            const totalAtt = result.attack.cumulativeIpcLoss[numWaves - 1];
+            const totalDef = result.defense.cumulativeIpcLoss[numWaves - 1];
+            const totalProfit = totalDef - totalAtt;
+            return (
             <div style={{ backgroundColor: '#e3f2fd', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #1976d2' }}>
               <h3 style={{ marginTop: 0, color: '#1565c0' }}>All Waves Summary</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px' }}>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Attacker IPC Loss</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.attack.ipcLoss[numWaves - 1] ?? 0).toFixed(ipcLossDecimalPlaces)}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{totalAtt.toFixed(ipcLossDecimalPlaces)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Defender IPC Loss</div>
-                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{(result.defense.ipcLoss[numWaves - 1] ?? 0).toFixed(ipcLossDecimalPlaces)}</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#d32f2f' }}>{totalDef.toFixed(ipcLossDecimalPlaces)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>Total Attacker Profit</div>
                   <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1976d2' }}>
-                    {((result.defense.ipcLoss[numWaves - 1] ?? 0) - (result.attack.ipcLoss[numWaves - 1] ?? 0)).toFixed(ipcLossDecimalPlaces)}
+                    {totalProfit.toFixed(ipcLossDecimalPlaces)}
                   </div>
                 </div>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* Per-Wave Detailed Sections */}
           {result.casualtiesInfoArr && Object.keys(result.casualtiesInfoArr).length > 0 && (() => {
