@@ -6,6 +6,7 @@ import {
 } from './output.js';
 import { get_cost_from_str } from './unitgroup.js';
 import { unit_manager } from './unitgroup.js';
+import { hasLand } from './unitgroup.js';
 
 import { preparse_token, preparse_battleship, preparse } from './preparse.js';
 
@@ -92,7 +93,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
           if (cas.remain.length == 0) {
             if (wave.use_attackers_from_previous_wave) {
               //if attacker doesn't take -- then no reinforce
-              p1 = 0;
+              continue;
             } else {
               //if attacker takes -- then no reinforce
               if (output[i - 1] != undefined) {
@@ -104,6 +105,11 @@ export function multiwave(input: multiwave_input): multiwave_output {
             //p2 = output[i-1].takesTerritory[0];
           } else {
             p1 = cas.prob;
+            if (wave.use_attackers_from_previous_wave) {
+              if (!hasLand(um, cas.remain)) {
+                continue;
+              }
+            }
             //p2 = 0;
           }
           // retreated subs fight in the second wave.

@@ -536,6 +536,23 @@ function filterMapByThreshold(
   );
 }
 
+function splitAirLand(
+  um: unit_manager,
+  s: string,
+): { air: string; land: string } {
+  let air = '';
+  let land = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s.charAt(i);
+    if (um.get_stat(ch).isAir) {
+      air += ch;
+    } else {
+      land += ch;
+    }
+  }
+  return { air, land };
+}
+
 function buildCasualtiesInfoArr(
   waveOutputs: aacalc_output[],
   verboseLevel: number,
@@ -608,27 +625,13 @@ function buildCasualtiesInfoArr(
 function buildCumulativeCasualtiesInfo(
   waveOutputs: aacalc_output[],
   takesTerritory: number[],
-  waveInfo: MultiwaveInput['wave_info'],
+  swapArr: number[],
   verboseLevel: number,
   reportPruneThreshold: number,
 ): CasualtiesInfo {
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
   const um = new unit_manager(verboseLevel);
-
-  const swapArr: number[] = [];
-  let currSwap = 0;
-  let numSwap = 0;
-  for (let i = 0; i < waveInfo.length; i++) {
-    const wave = waveInfo[i];
-    if (!wave) continue;
-    if (wave.use_attackers_from_previous_wave) {
-      currSwap = 1 - currSwap;
-      numSwap++;
-    }
-    swapArr.push(currSwap);
-  }
-
   const lastIdx = waveOutputs.length - 1;
 
   interface PendingEntry {
@@ -639,163 +642,475 @@ function buildCumulativeCasualtiesInfo(
     prob: number;
   }
 
-  let pending: PendingEntry[] = [];
+  function totalP(arr: PendingEntry[]): number {
+    return arr.reduce((s, p) => s + p.prob, 0);
+  }
 
-  const totalPendingProb = (): number =>
-    pending.reduce((s, p) => s + p.prob, 0);
+  function pushCrossMul(
+    target: PendingEntry[],
+    pending: PendingEntry[],
+    entry: PendingEntry,
+  ): void {
+    if (pending.length === 0) {
+      target.push(entry);
+    } else {
+      const tp = totalP(pending);
+      for (const p of pending) {
+        target.push({
+          casualties: mergeUnitStrings(p.casualties, entry.casualties),
+          survivors: entry.survivors,
+          retreaters: mergeUnitStrings(p.retreaters, entry.retreaters),
+          ipcLoss: p.ipcLoss + entry.ipcLoss,
+          prob: (p.prob / tp) * entry.prob,
+        });
+      }
+    }
+  }
+
+  function mapCrossMul(
+    map: Record<string, CasualtyInfo>,
+    pending: PendingEntry[],
+    entry: PendingEntry,
+  ): void {
+    if (pending.length === 0) {
+      addToMap(
+        map,
+        entry.casualties + ';' + entry.survivors + ';' + entry.retreaters,
+        {
+          casualties: entry.casualties,
+          survivors: entry.survivors,
+          retreaters: entry.retreaters,
+          amount: entry.prob,
+          ipcLoss: entry.ipcLoss,
+        },
+      );
+    } else {
+      const tp = totalP(pending);
+      for (const p of pending) {
+        const combinedCas = mergeUnitStrings(p.casualties, entry.casualties);
+        const combinedRetreat = mergeUnitStrings(
+          p.retreaters,
+          entry.retreaters,
+        );
+        addToMap(
+          map,
+          combinedCas + ';' + entry.survivors + ';' + combinedRetreat,
+          {
+            casualties: combinedCas,
+            survivors: entry.survivors,
+            retreaters: combinedRetreat,
+            amount: (p.prob / tp) * entry.prob,
+            ipcLoss: p.ipcLoss + entry.ipcLoss,
+          },
+        );
+      }
+    }
+  }
+
+  const incrSwapArr: boolean[] = [];
+  for (let i = 0; i < swapArr.length; i++) {
+    incrSwapArr.push(i > 0 && swapArr[i] !== swapArr[i - 1]);
+  }
+
+  let pendingAtt: PendingEntry[] = [];
+  let pendingDef: PendingEntry[] = [];
 
   for (let ii = 0; ii < waveOutputs.length; ii++) {
     const currOutput = waveOutputs[ii];
     if (currOutput == undefined) continue;
+    if (verboseLevel > 2) {
+      console.log(
+        'w' + ii + ' pendingAtt:',
+        JSON.stringify(
+          pendingAtt.map((p) => ({
+            prob: p.prob,
+            ipcLoss: p.ipcLoss,
+            casualties: p.casualties,
+            survivors: p.survivors,
+          })),
+        ),
+        'pendingDef:',
+        JSON.stringify(
+          pendingDef.map((p) => ({
+            prob: p.prob,
+            ipcLoss: p.ipcLoss,
+            casualties: p.casualties,
+            survivors: p.survivors,
+          })),
+        ),
+      );
+    }
+    const swapped = swapArr[ii] === 1;
+    const nextSwapped = ii < lastIdx && swapArr[ii + 1] === 1;
 
     if (ii < lastIdx) {
-      const newContinues: PendingEntry[] = [];
+      if (!swapped) {
+        // Non-last wave, not swapped
+        const newContinues: PendingEntry[] = [];
 
-      for (let i = 0; i < currOutput.att_cas.length; i++) {
-        const cas = currOutput.att_cas[i];
-        const casStr = get_external_unit_str(um, cas.casualty);
-        const remainStr = get_external_unit_str(um, cas.remain);
-        const retreatStr = get_external_unit_str(um, cas.retreat);
-        const ipc = get_cost_from_str(um, cas.casualty);
-        const prob = cas.prob;
-        const isCapture =
-          cas.remain.length > 0 && hasLand(um, cas.remain) && numSwap === 0;
+        for (let i = 0; i < currOutput.att_cas.length; i++) {
+          const cas = currOutput.att_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          const isCapture = cas.remain.length > 0 && hasLand(um, cas.remain);
 
-        if (isCapture) {
-          if (pending.length === 0) {
-            addToMap(att, casStr + ';' + remainStr + ';' + retreatStr, {
+          if (isCapture && nextSwapped) {
+            // Swap transition: split land from air
+            const { air: casAir } = splitAirLand(um, cas.casualty);
+            const { air: remainAir } = splitAirLand(um, cas.remain);
+            const { air: retreatAir } = splitAirLand(um, cas.retreat);
+            const airIpc = get_cost_from_str(um, casAir);
+            pushCrossMul(newContinues, pendingAtt, {
+              casualties: get_external_unit_str(um, casAir),
+              survivors: get_external_unit_str(um, remainAir),
+              retreaters: get_external_unit_str(um, retreatAir),
+              ipcLoss: airIpc,
+              prob: cas.prob,
+            });
+          } else if (isCapture && !nextSwapped) {
+            // Standard capture
+            mapCrossMul(att, pendingAtt, {
               casualties: casStr,
               survivors: remainStr,
               retreaters: retreatStr,
-              amount: prob,
               ipcLoss: ipc,
+              prob: cas.prob,
+            });
+          } else if (!isCapture && nextSwapped) {
+            // Non-capture before swap (terminal): includes both fail and air-only survivors
+            mapCrossMul(att, pendingAtt, {
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: cas.prob,
             });
           } else {
-            const totalP = totalPendingProb();
-            for (const p of pending) {
-              const combinedCas = mergeUnitStrings(p.casualties, casStr);
-              const combinedRetreat = mergeUnitStrings(
-                p.retreaters,
-                retreatStr,
-              );
-              const combinedProb = (p.prob / totalP) * prob;
-              addToMap(
-                att,
-                combinedCas + ';' + remainStr + ';' + combinedRetreat,
-                {
-                  casualties: combinedCas,
-                  survivors: remainStr,
-                  retreaters: combinedRetreat,
-                  amount: combinedProb,
-                  ipcLoss: p.ipcLoss + ipc,
-                },
-              );
+            // Standard continue (push as-is, cascade handles cross-multiplication)
+            newContinues.push({
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: cas.prob,
+            });
+          }
+        }
+
+        // Cascade or replace pendingAtt
+        if (nextSwapped || pendingAtt.length === 0) {
+          pendingAtt = newContinues;
+        } else if (newContinues.length > 0) {
+          const tp = totalP(pendingAtt);
+          const nextPending: PendingEntry[] = [];
+          for (const p of pendingAtt) {
+            for (const np of newContinues) {
+              nextPending.push({
+                casualties: mergeUnitStrings(p.casualties, np.casualties),
+                survivors: np.survivors,
+                retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
+                ipcLoss: p.ipcLoss + np.ipcLoss,
+                prob: (p.prob / tp) * np.prob,
+              });
             }
           }
-        } else {
-          newContinues.push({
+          pendingAtt = nextPending;
+        }
+
+        // Defender side with correct terminal/continued split
+        const takesInc = currOutput.takesTerritory[0];
+
+        // For swap transition, compute true continuation prob from att_cas
+        let termScale = 1;
+        let defTermSum = 0;
+        if (nextSwapped) {
+          let contProb = 0;
+          for (const c of currOutput.att_cas) {
+            if (c.remain.length > 0) contProb += c.prob;
+          }
+          // Current terminal sum from def_cas perspective = 1 - takesInc
+          // Correct terminal sum = 1 - contProb
+          if (takesInc < 1) {
+            termScale = (1 - contProb) / (1 - takesInc);
+          }
+        }
+        termScale = 1.0; // undo previous fix;
+        for (let i = 0; i < currOutput.def_cas.length; i++) {
+          const cas = currOutput.def_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+
+          if (nextSwapped) {
+            if (cas.remain !== '') {
+              const amt = cas.prob * termScale;
+              defTermSum += amt;
+              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
+                casualties: casStr,
+                survivors: remainStr,
+                retreaters: retreatStr,
+                amount: amt,
+                ipcLoss: ipc,
+              });
+            } else {
+              const amt = (cas.prob - takesInc) * termScale;
+              defTermSum += amt;
+              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
+                casualties: casStr,
+                survivors: remainStr,
+                retreaters: retreatStr,
+                amount: amt,
+                ipcLoss: ipc,
+              });
+              if (pendingDef.length === 0) {
+                pendingDef.push({
+                  casualties: casStr,
+                  survivors: '',
+                  retreaters: retreatStr,
+                  prob: 1,
+                  ipcLoss: ipc,
+                });
+              }
+            }
+          } else {
+            if (cas.remain === '') {
+              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
+                casualties: casStr,
+                survivors: remainStr,
+                retreaters: retreatStr,
+                amount: takesInc,
+                ipcLoss: ipc,
+              });
+            }
+          }
+        }
+      } else {
+        // Non-last wave, swapped
+        const newContinues: PendingEntry[] = [];
+        const newContinuesDef: PendingEntry[] = [];
+
+        for (let i = 0; i < currOutput.def_cas.length; i++) {
+          const cas = currOutput.def_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          // if swap, then the current takes isn't cummulative -- it's the incremental takes compared to previous wave
+          const takesInc = currOutput.takesTerritory[0];
+          const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
+          const isDefenderKilled = cas.remain.length == 0;
+          const captureProb = takesInc;
+          const mutualKillProb = cas.prob - takesInc;
+          const isTakesState = isDefenderKilled;
+          const takesStateProb = captureProb;
+          const isDefenderHoldsState =
+            !isDefenderKilled || (isDefenderKilled && captureProb < cas.prob);
+          const defenderHoldsStateProb = isDefenderKilled
+            ? cas.prob - takesInc
+            : cas.prob;
+          let isTerminalState;
+          let isContinueState;
+          let terminalStateProb;
+          let continueStateProb;
+          if (isNextWaveSwap) {
+            isTerminalState = isDefenderHoldsState;
+            terminalStateProb = defenderHoldsStateProb;
+            isContinueState = isTakesState;
+            continueStateProb = takesStateProb;
+          } else {
+            isTerminalState = isTakesState;
+            isContinueState = isDefenderHoldsState;
+            terminalStateProb = takesStateProb;
+            continueStateProb = defenderHoldsStateProb;
+          }
+          if (isContinueState && continueStateProb > 0) {
+            /*
+			// don't need to cross multiply... defender in the next
+			// state already preserves
+            newContinues.push({
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: continueStateProb,
+            });
+*/
+          }
+          if (isTerminalState && terminalStateProb > 0) {
+            mapCrossMul(att, pendingAtt, {
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: terminalStateProb,
+            });
+          }
+        }
+
+        const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
+        // Cascade pendingAtt with newContinues
+        if (isNextWaveSwap || pendingAtt.length === 0) {
+          pendingAtt = newContinues;
+        } else if (newContinues.length > 0) {
+          const tp = totalP(pendingAtt);
+          const nextPending: PendingEntry[] = [];
+          for (const p of pendingAtt) {
+            for (const np of newContinues) {
+              nextPending.push({
+                casualties: mergeUnitStrings(p.casualties, np.casualties),
+                survivors: np.survivors,
+                retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
+                ipcLoss: p.ipcLoss + np.ipcLoss,
+                prob: (p.prob / tp) * np.prob,
+              });
+            }
+          }
+          pendingAtt = nextPending;
+        }
+
+        for (let i = 0; i < currOutput.att_cas.length; i++) {
+          const cas = currOutput.att_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          const isCapture = cas.remain.length > 0 && hasLand(um, cas.remain);
+          const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
+          let isTerminalState;
+          if (isNextWaveSwap) {
+            isTerminalState = !isCapture;
+          } else {
+            isTerminalState = isCapture;
+          }
+          if (isTerminalState) {
+            mapCrossMul(def, pendingDef, {
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: cas.prob,
+            });
+          } else {
+            newContinuesDef.push({
+              casualties: casStr,
+              survivors: remainStr,
+              retreaters: retreatStr,
+              ipcLoss: ipc,
+              prob: cas.prob,
+            });
+          }
+        }
+
+        // Cascade pendingDef with newContinuesDef
+        if (newContinuesDef.length > 0) {
+          const tp = totalP(pendingDef);
+          if (tp > 0) {
+            const nextPendingDef: PendingEntry[] = [];
+            for (const p of pendingDef) {
+              for (const np of newContinuesDef) {
+                nextPendingDef.push({
+                  casualties: mergeUnitStrings(p.casualties, np.casualties),
+                  survivors: np.survivors,
+                  retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
+                  ipcLoss: p.ipcLoss + np.ipcLoss,
+                  prob: (p.prob / tp) * np.prob,
+                });
+              }
+            }
+            pendingDef = nextPendingDef;
+          } else {
+            pendingDef = newContinuesDef;
+          }
+        }
+      }
+    } else {
+      // Last wave
+      if (!swapped) {
+        for (let i = 0; i < currOutput.att_cas.length; i++) {
+          const cas = currOutput.att_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          mapCrossMul(att, pendingAtt, {
             casualties: casStr,
             survivors: remainStr,
             retreaters: retreatStr,
             ipcLoss: ipc,
-            prob,
+            prob: cas.prob,
           });
         }
-      }
-
-      // Cascade pending continue entries with current continue entries
-      if (pending.length > 0 && newContinues.length > 0) {
-        const totalP = totalPendingProb();
-        const nextPending: PendingEntry[] = [];
-        for (const p of pending) {
-          for (const np of newContinues) {
-            nextPending.push({
-              casualties: mergeUnitStrings(p.casualties, np.casualties),
-              survivors: np.survivors,
-              retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
-              ipcLoss: p.ipcLoss + np.ipcLoss,
-              prob: (p.prob / totalP) * np.prob,
-            });
-          }
-        }
-        pending = nextPending;
-      } else if (pending.length === 0) {
-        pending = newContinues;
-      }
-
-      // Defender: non-last wave (keep current logic)
-      for (let i = 0; i < currOutput.def_cas.length; i++) {
-        const cas = currOutput.def_cas[i];
-        const casStr = get_external_unit_str(um, cas.casualty);
-        const remainStr = get_external_unit_str(um, cas.remain);
-        const retreatStr = get_external_unit_str(um, cas.retreat);
-        const ipc = get_cost_from_str(um, cas.casualty);
-        let prob = cas.prob;
-        if (cas.remain.length === 0 && numSwap === 0) {
-          prob = takesTerritory[ii] - (ii > 0 ? takesTerritory[ii - 1] : 0);
+        for (let i = 0; i < currOutput.def_cas.length; i++) {
+          const cas = currOutput.def_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
           addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
             casualties: casStr,
             survivors: remainStr,
             retreaters: retreatStr,
-            amount: prob,
+            amount: cas.prob,
             ipcLoss: ipc,
           });
         }
-      }
-    } else {
-      // Last wave: attacker
-      for (let i = 0; i < currOutput.att_cas.length; i++) {
-        const cas = currOutput.att_cas[i];
-        const casStr = get_external_unit_str(um, cas.casualty);
-        const remainStr = get_external_unit_str(um, cas.remain);
-        const retreatStr = get_external_unit_str(um, cas.retreat);
-        const ipc = get_cost_from_str(um, cas.casualty);
-        const prob = cas.prob;
-
-        if (pending.length === 0) {
-          addToMap(att, casStr + ';' + remainStr + ';' + retreatStr, {
+      } else {
+        // Last wave swapped: def_cas => att, att_cas => def
+        for (let i = 0; i < currOutput.def_cas.length; i++) {
+          const cas = currOutput.def_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          mapCrossMul(att, pendingAtt, {
             casualties: casStr,
             survivors: remainStr,
             retreaters: retreatStr,
-            amount: prob,
             ipcLoss: ipc,
+            prob: cas.prob,
           });
-        } else {
-          const totalP = totalPendingProb();
-          for (const p of pending) {
-            const combinedCas = mergeUnitStrings(p.casualties, casStr);
-            const combinedRetreat = mergeUnitStrings(p.retreaters, retreatStr);
-            addToMap(
-              att,
-              combinedCas + ';' + remainStr + ';' + combinedRetreat,
-              {
-                casualties: combinedCas,
-                survivors: remainStr,
-                retreaters: combinedRetreat,
-                amount: (p.prob / totalP) * prob,
-                ipcLoss: p.ipcLoss + ipc,
-              },
-            );
-          }
+        }
+        for (let i = 0; i < currOutput.att_cas.length; i++) {
+          const cas = currOutput.att_cas[i];
+          const casStr = get_external_unit_str(um, cas.casualty);
+          const remainStr = get_external_unit_str(um, cas.remain);
+          const retreatStr = get_external_unit_str(um, cas.retreat);
+          const ipc = get_cost_from_str(um, cas.casualty);
+          mapCrossMul(def, pendingDef, {
+            casualties: casStr,
+            survivors: remainStr,
+            retreaters: retreatStr,
+            ipcLoss: ipc,
+            prob: cas.prob,
+          });
         }
       }
-
-      // Last wave: defender (include all)
-      for (let i = 0; i < currOutput.def_cas.length; i++) {
-        const cas = currOutput.def_cas[i];
-        const casStr = get_external_unit_str(um, cas.casualty);
-        const remainStr = get_external_unit_str(um, cas.remain);
-        const retreatStr = get_external_unit_str(um, cas.retreat);
-        const ipc = get_cost_from_str(um, cas.casualty);
-        addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
-          casualties: casStr,
-          survivors: remainStr,
-          retreaters: retreatStr,
-          amount: cas.prob,
-          ipcLoss: ipc,
-        });
-      }
     }
+    function mergePending(arr: PendingEntry[]): PendingEntry[] {
+      const map = new Map<string, PendingEntry>();
+      for (const p of arr) {
+        const key =
+          p.casualties +
+          '|' +
+          p.survivors +
+          '|' +
+          p.retreaters +
+          '|' +
+          p.ipcLoss;
+        const existing = map.get(key);
+        if (existing) {
+          existing.prob += p.prob;
+        } else {
+          map.set(key, { ...p });
+        }
+      }
+      return Array.from(map.values());
+    }
+    pendingAtt = mergePending(pendingAtt);
+    pendingDef = mergePending(pendingDef);
   }
 
   return {
@@ -805,11 +1120,30 @@ function buildCumulativeCasualtiesInfo(
 }
 
 export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
+  const t0_multi = performance.now();
   const internal_input = getInternalInput(input);
   const internal_output = multiwave(internal_input);
+  if (input.verbose_level > 0) {
+    console.log(
+      'multiwave runtime:',
+      (performance.now() - t0_multi).toFixed(2),
+      'ms',
+    );
+  }
 
   const rounds = internal_output.output.map((o) => o?.rounds ?? 0);
 
+  const swapArr: number[] = [];
+  let currSwap = 0;
+  for (let i = 0; i < input.wave_info.length; i++) {
+    const wave = input.wave_info[i];
+    if (wave?.use_attackers_from_previous_wave) {
+      currSwap = 1 - currSwap;
+    }
+    swapArr.push(currSwap);
+  }
+
+  const t0_cas = performance.now();
   const { casualtiesInfoArr, profitDist } = buildCasualtiesInfoArr(
     internal_output.output,
     input.verbose_level,
@@ -819,10 +1153,42 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const casualtiesInfo = buildCumulativeCasualtiesInfo(
     internal_output.output,
     internal_output.out.takesTerritory,
-    input.wave_info,
+    swapArr,
     input.verbose_level,
     input.report_prune_threshold,
   );
+  if (input.verbose_level > 0) {
+    console.log(
+      'casualties computation runtime:',
+      (performance.now() - t0_cas).toFixed(2),
+      'ms',
+    );
+  }
+
+  if (input.verbose_level > 1) {
+    let attIpc = 0;
+    let defIpc = 0;
+    let attProb = 0;
+    let defProb = 0;
+    for (const v of Object.values(casualtiesInfo.attack)) {
+      attIpc += v.amount * v.ipcLoss;
+      attProb += v.amount;
+    }
+    for (const v of Object.values(casualtiesInfo.defense)) {
+      defIpc += v.amount * v.ipcLoss;
+      defProb += v.amount;
+    }
+    console.log(
+      'cumulative detailed att ipcLoss:',
+      attIpc,
+      'def ipcLoss:',
+      defIpc,
+      'att prob:',
+      attProb,
+      'def prob:',
+      defProb,
+    );
+  }
 
   const out: MultiwaveOutput = {
     attack: internal_output.out.attack,

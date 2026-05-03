@@ -1,5 +1,6 @@
 README.md
 ENHANCEMENTS.md
+AGENTS.md
 frontend/**
 dist/**
 node_modules/**
