@@ -1776,6 +1776,7 @@ function App() {
         attackerDestroyerLast: input.attackerDestroyerLast?.[i] ?? false,
         defenderDestroyerLast: input.defenderDestroyerLast?.[i] ?? false,
         crashFighters: input.crashFighters?.[i] ?? false,
+        useAttackersFromPreviousWave: input.useAttackersFromPreviousWave?.[i] ?? false,
         retreatMode: retreatModeValue,
         ...thresholdUpdates,
       }
@@ -1881,7 +1882,7 @@ function App() {
         </div>
         <button
           onClick={() => {
-            const shareUrl = encodeStateToUrl({
+            const shareInput: BattleInput = {
               attack,
               defense,
               attackOol: Object.fromEntries(
@@ -1923,6 +1924,9 @@ function App() {
               crashFighters: Object.fromEntries(
                 Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.crashFighters])
               ),
+              useAttackersFromPreviousWave: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.useAttackersFromPreviousWave])
+              ),
               retreatModes: Object.fromEntries(
                 Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatMode])
               ),
@@ -1948,7 +1952,8 @@ function App() {
               territoryValue,
               isDeadzone,
               numWaves,
-            })
+            }
+            const shareUrl = encodeStateToUrl(shareInput)
             navigator.clipboard.writeText(shareUrl).then(() => {
               setToast({ message: '✓ Share link copied to clipboard!' })
             }).catch(() => {
