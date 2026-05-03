@@ -2369,19 +2369,6 @@ function App() {
                 </div>
               </div>
 
-              {waveIdx > 0 && (
-                <div style={{ marginBottom: '10px', padding: '8px 12px', backgroundColor: '#f0f0f0', borderRadius: '4px', display: 'flex', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '13px' }}>
-                    <input
-                      type="checkbox"
-                      checked={waveConfigs[waveIdx]?.useAttackersFromPreviousWave || false}
-                      onChange={(e) => updateWave(waveIdx, { useAttackersFromPreviousWave: e.target.checked })}
-                    />
-                    Use surviving attackers from previous wave
-                  </label>
-                </div>
-              )}
-
               {/* Wave Options */}
               {mode === 'sea' ? (
                 <SeaModeSection

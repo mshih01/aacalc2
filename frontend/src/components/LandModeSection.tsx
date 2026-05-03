@@ -51,6 +51,18 @@ export function LandModeSection({ waveIdx, config, onUpdate }: LandModeSectionPr
             AA 2nd Last
           </label>
         </div>
+        {waveIdx > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <label style={CHECKBOX_LABEL_STYLE}>
+              <input
+                type="checkbox"
+                checked={config.useAttackersFromPreviousWave || false}
+                onChange={(e) => onUpdate({ useAttackersFromPreviousWave: e.target.checked })}
+              />
+              Prev wave attackers
+            </label>
+          </div>
+        )}
       </div>
 
       {/* Retreat Options */}
