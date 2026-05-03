@@ -425,6 +425,38 @@ const attackerOolPresets: Record<BattleMode, Array<{id: string; label: string; o
   ],
 }
 
+const attackerAmphibOolPresets: Record<BattleMode, Array<{id: string; label: string; ool: UnitId[]}>> = {
+  land: [
+    {
+      id: 'inf-art-tnk-fig-bom',
+      label: 'Inf - Inf_A - Art - Art_A - Tnk - Tnk_A - Fig - Bom',
+      ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig', 'bom'],
+    },
+    {
+      id: 'inf-art-tnk-bom-fig',
+      label: 'Inf - Inf_A - Art - Art_A - Tnk - Tnk_A - Bom - Fig',
+      ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'bom', 'fig'],
+    },
+    {
+      id: 'inf-art-bom-tnk-fig',
+      label: 'Inf - Inf_A - Art - Art_A - Bom - Tnk - Tnk_A - Fig',
+      ool: ['inf', 'inf_a', 'art', 'art_a', 'bom', 'arm', 'arm_a', 'fig'],
+    },
+    {
+      id: 'inf-bom-art-tnk-fig',
+      label: 'Inf - Inf_A - Bom - Art - Art_A - Tnk - Tnk_A - Fig',
+      ool: ['inf', 'inf_a', 'bom', 'art', 'art_a', 'arm', 'arm_a', 'fig'],
+    },
+    {
+      id: 'bom-inf-art-tnk-fig',
+      label: 'Bom - Inf - Inf_A - Art - Art_A - Tnk - Tnk_A - Fig',
+      ool: ['bom', 'inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig'],
+    },
+  ],
+  sea: attackerOolPresets.sea,
+  sbr: attackerOolPresets.sbr,
+}
+
 const defenderOolPresets: Record<BattleMode, Array<{id: string; label: string; ool: UnitId[]}>> = {
   land: [
     {
@@ -1382,12 +1414,12 @@ function App() {
     resetWaves(MAX_WAVES)
     for (let i = 0; i < MAX_WAVES; i++) {
       updateWave(i, {
-        attackOolPreset: attackerOolPresets[mode][0].id,
+        attackOolPreset: (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode][0].id,
         defenseOolPreset: defenderOolPresets[mode][0].id,
       })
     }
     setNumWaves(mode === 'sbr' ? 1 : 1)
-  }, [mode, resetWaves, updateWave])
+  }, [mode, resetWaves, updateWave, amphibious])
 
   // Clear results and complexity warning when any input changes
   useEffect(() => {
@@ -1498,7 +1530,7 @@ function App() {
       
       for (let i = 0; i < numWaves; i++) {
         const config = waveConfigs[i]
-        attackOolRecord[i] = attackerOolPresets[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
+        attackOolRecord[i] = (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
         defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
         roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
         retreatThresholdRecord[i] = config.retreatThreshold
@@ -1585,7 +1617,7 @@ function App() {
       
       for (let i = 0; i < numWaves; i++) {
         const config = waveConfigs[i]
-        attackOolRecord[i] = attackerOolPresets[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
+        attackOolRecord[i] = (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
         defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
         roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
         retreatThresholdRecord[i] = config.retreatThreshold
@@ -1731,7 +1763,7 @@ function App() {
       // Find matching presets for OOL arrays (without mutating original arrays)
       const mode = input.mode || 'land'
       const attackingPreset = attackOol 
-        ? attackerOolPresets[mode].find((p) =>
+        ? [...attackerOolPresets[mode], ...(mode === 'land' ? attackerAmphibOolPresets[mode] : [])].find((p) =>
             JSON.stringify(p.ool) === JSON.stringify(attackOol)
           )
         : undefined
@@ -1888,7 +1920,7 @@ function App() {
               attackOol: Object.fromEntries(
                 Object.entries(waveConfigs).map(([idx, wc]) => [
                   idx,
-                  attackerOolPresets[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []
+                  (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []
                 ])
               ),
               defenseOol: Object.fromEntries(
@@ -2220,7 +2252,7 @@ function App() {
                       value={waveConfigs[waveIdx]?.attackOolPreset || 'inf-art-tnk-fig-bom'} 
                       onChange={(e) => updateWave(waveIdx, { attackOolPreset: e.target.value })}
                     >
-                      {attackerOolPresets[mode].map((preset) => (
+                      {(amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].map((preset) => (
                         <option key={preset.id} value={preset.id}>
                           {preset.label}
                         </option>
@@ -2498,7 +2530,7 @@ function App() {
         battleInput={{
           attack,
           defense,
-          attackOol: Object.values(waveConfigs).map((wc) => attackerOolPresets[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []),
+          attackOol: Object.values(waveConfigs).map((wc) => (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((p) => p.id === wc.attackOolPreset)?.ool || []),
           defenseOol: Object.values(waveConfigs).map((wc) => defenderOolPresets[mode].find((p) => p.id === wc.defenseOolPreset)?.ool || []),
           rounds: Object.values(waveConfigs).map((wc) => wc.rounds),
           retreatThreshold: Object.values(waveConfigs).map((wc) => wc.retreatThreshold),
