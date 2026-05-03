@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.14
+
+### Patch Changes
+
+- 087d0d1: use attackers from previous wave
+
 ## 2.0.13
 
 ### Patch Changes
