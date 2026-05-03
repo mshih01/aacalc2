@@ -186,6 +186,8 @@ export interface CasualtyInfo {
 export interface CalcInfo {
   survives: number[];
   ipcLoss: number[];
+  incrementalLoss: number[];
+  cumulativeIpcLoss: number[];
 }
 
 export interface MultiwaveOutput {
@@ -1190,9 +1192,45 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     );
   }
 
+  // Compute cumulative IPC loss from incremental values, accounting for role reversals.
+  // This gives the total IPC loss of the original attacker/defender across all waves.
+  const attCumulativeIpc: number[] = [];
+  const defCumulativeIpc: number[] = [];
+  let cumAtt = 0,
+    cumDef = 0;
+  for (let i = 0; i < input.wave_info.length; i++) {
+    const incAtt =
+      internal_output.out.attack.incrementalLoss?.[i] ??
+      (i > 0
+        ? internal_output.out.attack.ipcLoss[i] -
+          internal_output.out.attack.ipcLoss[i - 1]
+        : internal_output.out.attack.ipcLoss[i]);
+    const incDef =
+      internal_output.out.defense.incrementalLoss?.[i] ??
+      (i > 0
+        ? internal_output.out.defense.ipcLoss[i] -
+          internal_output.out.defense.ipcLoss[i - 1]
+        : internal_output.out.defense.ipcLoss[i]);
+    if (swapArr[i] === 1) {
+      cumAtt += incDef;
+      cumDef += incAtt;
+    } else {
+      cumAtt += incAtt;
+      cumDef += incDef;
+    }
+    attCumulativeIpc.push(cumAtt);
+    defCumulativeIpc.push(cumDef);
+  }
+
   const out: MultiwaveOutput = {
-    attack: internal_output.out.attack,
-    defense: internal_output.out.defense,
+    attack: {
+      ...internal_output.out.attack,
+      cumulativeIpcLoss: attCumulativeIpc,
+    },
+    defense: {
+      ...internal_output.out.defense,
+      cumulativeIpcLoss: defCumulativeIpc,
+    },
     waves: internal_output.output.length,
     takesTerritory: internal_output.out.takesTerritory,
     rounds,
@@ -1403,8 +1441,14 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   //casualtiesInfo['profit'] = profit;
 
   const output: MultiwaveOutput = {
-    attack: internalOutput.attack,
-    defense: internalOutput.defense,
+    attack: {
+      ...internalOutput.attack,
+      cumulativeIpcLoss: [...internalOutput.attack.ipcLoss],
+    },
+    defense: {
+      ...internalOutput.defense,
+      cumulativeIpcLoss: [...internalOutput.defense.ipcLoss],
+    },
     casualtiesInfo: casualtiesInfo,
     casualtiesInfoArr: [], // SBR does not have wave by wave casualties info
     profitDistribution: [internalOutput.profitDistribution],

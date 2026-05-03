@@ -84,6 +84,13 @@ export interface MultiwaveOutput {
   waves: number;
   complexity: number;
 }:
+
+export interface CalcInfo {
+  survives: number[];
+  ipcLoss: number[];           // legacy running total (does not account for role reversals)
+  incrementalLoss: number[];   // per-wave values
+  cumulativeIpcLoss: number[]; // running total (accounts for role reversals)
+}
 ```
 
 ## Enhancements:
@@ -207,7 +214,26 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
     		input.numRecommendations = 3		// number of recommendations to return.
     		// only works for optimizing attacker army
     		// todo... input complexity needs to be controlled for this one, since it is doing exhaustive search.,
-			// todo... add max IPC support for other  solveType -- maybe gridSearch, or linearSearch..
+    	// todo... add max IPC support for other  solveType -- maybe gridSearch, or linearSearch..
+
+### use attackers from previous wave
+
+```
+WaveInput.use_attackers_from_previous_wave  -- optional, default false.
+    When true, the surviving attackers from the previous wave continue
+    fighting in the current wave instead of the surviving defenders. This
+    is useful for modeling "capture and hold" scenarios where the
+    attacking force pushes through consecutive territories.
+
+    Role reversal is cumulative: each wave where this flag is true toggles
+    the attack/defense sides for the "All Waves Summary" totals.
+
+    NOTE: When this flag is used, use `incrementalLoss` for per-wave
+    IPC values and `cumulativeIpcLoss` for running totals. The
+    library automatically accounts for role reversals in both arrays.
+    The original `ipcLoss` array should not be used since it does not
+    properly account for role reversals between waves.
+```
 
 ### controlling complexity
 

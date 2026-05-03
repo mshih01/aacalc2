@@ -441,10 +441,12 @@ export function print_general_results(
     attack: {
       survives: [attsurvive, 0, 0],
       ipcLoss: [totalattloss, 0, 0],
+      incrementalLoss: [totalattloss, 0, 0],
     },
     defense: {
       survives: [defsurvive, 0, 0],
       ipcLoss: [totaldefloss, 0, 0],
+      incrementalLoss: [totaldefloss, 0, 0],
     },
     casualtiesInfo: casualties,
     att_cas: att_cas_1d,
@@ -464,7 +466,7 @@ export function collect_and_print_results(problem: general_problem) {
 interface aacalc_info {
   survives: number[];
   ipcLoss: number[];
-  incrementalLoss?: number[];
+  incrementalLoss: number[];
   // for backwards compatibility -- ipcLoss is still provided which is the running total loss.
   // when use_attackers_from_previous_wave -- the running total isn't enough.
   // we need to keep track of incremental loss for each wave.

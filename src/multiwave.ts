@@ -261,10 +261,12 @@ export function multiwave(input: multiwave_input): multiwave_output {
       attack: {
         survives: [0],
         ipcLoss: [0],
+        incrementalLoss: [0],
       },
       defense: {
         survives: [0],
         ipcLoss: [0],
+        incrementalLoss: [0],
       },
       casualtiesInfo: [],
       att_cas: [],

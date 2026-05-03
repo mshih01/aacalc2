@@ -3,6 +3,9 @@
 exports[`Regression test for test0 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      39.75357495338105,
+    ],
     "incrementalLoss": [
       39.75357495338105,
     ],
@@ -547,6 +550,9 @@ exports[`Regression test for test0 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      36.47117521664264,
+    ],
     "incrementalLoss": [
       36.47117521664264,
     ],
@@ -694,6 +700,9 @@ exports[`Regression test for test0 1`] = `
 exports[`Regression test for test1 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      39.75357495338105,
+    ],
     "incrementalLoss": [
       39.75357495338105,
     ],
@@ -1238,6 +1247,9 @@ exports[`Regression test for test1 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      36.47117521664264,
+    ],
     "incrementalLoss": [
       36.47117521664264,
     ],
@@ -1385,6 +1397,9 @@ exports[`Regression test for test1 1`] = `
 exports[`Regression test for test2 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      23.94008798105738,
+    ],
     "incrementalLoss": [
       23.94008798105738,
     ],
@@ -2251,6 +2266,9 @@ exports[`Regression test for test2 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      27.89270013636236,
+    ],
     "incrementalLoss": [
       27.89270013636236,
     ],
@@ -2526,6 +2544,9 @@ exports[`Regression test for test2 1`] = `
 exports[`Regression test for test3 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      21.33046772187757,
+    ],
     "incrementalLoss": [
       21.33046772187757,
     ],
@@ -3420,6 +3441,9 @@ exports[`Regression test for test3 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      25.27680764137532,
+    ],
     "incrementalLoss": [
       25.27680764137532,
     ],
@@ -3703,6 +3727,9 @@ exports[`Regression test for test3 1`] = `
 exports[`Regression test for test4 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      19.13517281075974,
+    ],
     "incrementalLoss": [
       19.13517281075974,
     ],
@@ -4611,6 +4638,9 @@ exports[`Regression test for test4 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      22.35985652387912,
+    ],
     "incrementalLoss": [
       22.35985652387912,
     ],
@@ -4906,6 +4936,9 @@ exports[`Regression test for test4 1`] = `
 exports[`Regression test for test5 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      18.41486571707471,
+    ],
     "incrementalLoss": [
       18.41486571707471,
     ],
@@ -5814,6 +5847,9 @@ exports[`Regression test for test5 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      21.23177088619642,
+    ],
     "incrementalLoss": [
       21.23177088619642,
     ],
@@ -6109,6 +6145,9 @@ exports[`Regression test for test5 1`] = `
 exports[`Regression test for test6 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      16.67046400681587,
+    ],
     "incrementalLoss": [
       16.67046400681587,
     ],
@@ -7017,6 +7056,9 @@ exports[`Regression test for test6 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      18.00104453077315,
+    ],
     "incrementalLoss": [
       18.00104453077315,
     ],
@@ -7316,6 +7358,9 @@ exports[`Regression test for test6 1`] = `
 exports[`Regression test for test7 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      16.50740203669384,
+    ],
     "incrementalLoss": [
       16.50740203669384,
     ],
@@ -8224,6 +8269,9 @@ exports[`Regression test for test7 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      17.68260411498902,
+    ],
     "incrementalLoss": [
       17.68260411498902,
     ],
@@ -8523,6 +8571,9 @@ exports[`Regression test for test7 1`] = `
 exports[`Regression test for test8 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      16.26143198686172,
+    ],
     "incrementalLoss": [
       16.26143198686172,
     ],
@@ -9431,6 +9482,9 @@ exports[`Regression test for test8 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      17.15196121669378,
+    ],
     "incrementalLoss": [
       17.15196121669378,
     ],
@@ -9734,6 +9788,9 @@ exports[`Regression test for test8 1`] = `
 exports[`Regression test for test9 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      15.53078309001993,
+    ],
     "incrementalLoss": [
       15.53078309001993,
     ],
@@ -10642,6 +10699,9 @@ exports[`Regression test for test9 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      15.33764490972706,
+    ],
     "incrementalLoss": [
       15.33764490972706,
     ],
@@ -10949,6 +11009,9 @@ exports[`Regression test for test9 1`] = `
 exports[`Regression test for test10 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      15.05875865640406,
+    ],
     "incrementalLoss": [
       15.05875865640406,
     ],
@@ -11829,6 +11892,9 @@ exports[`Regression test for test10 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      13.99369037928587,
+    ],
     "incrementalLoss": [
       13.99369037928587,
     ],
@@ -12144,6 +12210,9 @@ exports[`Regression test for test10 1`] = `
 exports[`Regression test for test11 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      14.74074074074075,
+    ],
     "incrementalLoss": [
       14.74074074074075,
     ],
@@ -12940,6 +13009,9 @@ exports[`Regression test for test11 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      12.83660610520501,
+    ],
     "incrementalLoss": [
       12.83660610520501,
     ],
@@ -13267,6 +13339,9 @@ exports[`Regression test for test11 1`] = `
 exports[`Regression test for test12 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      14.74074074074075,
+    ],
     "incrementalLoss": [
       14.74074074074075,
     ],
@@ -14063,6 +14138,9 @@ exports[`Regression test for test12 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      12.83660610520501,
+    ],
     "incrementalLoss": [
       12.83660610520501,
     ],
@@ -14390,6 +14468,9 @@ exports[`Regression test for test12 1`] = `
 exports[`Regression test for test13 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      23.34932448811341,
+    ],
     "incrementalLoss": [
       23.34932448811341,
     ],
@@ -15228,6 +15309,9 @@ exports[`Regression test for test13 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      27.57390019588320,
+    ],
     "incrementalLoss": [
       27.57390019588320,
     ],
@@ -15507,6 +15591,9 @@ exports[`Regression test for test13 1`] = `
 exports[`Regression test for test14 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      39.75357495338105,
+    ],
     "incrementalLoss": [
       39.75357495338105,
     ],
@@ -16051,6 +16138,9 @@ exports[`Regression test for test14 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      36.47117521664264,
+    ],
     "incrementalLoss": [
       36.47117521664264,
     ],
@@ -16198,6 +16288,9 @@ exports[`Regression test for test14 1`] = `
 exports[`Regression test for test15 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      76.97201965795490,
+    ],
     "incrementalLoss": [
       76.97201965795490,
     ],
@@ -17708,6 +17801,9 @@ exports[`Regression test for test15 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      147.02129062503141,
+    ],
     "incrementalLoss": [
       147.02129062503141,
     ],
@@ -18079,6 +18175,9 @@ exports[`Regression test for test15 1`] = `
 exports[`Regression test for test16 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      14.74074074074075,
+    ],
     "incrementalLoss": [
       14.74074074074075,
     ],
@@ -18875,6 +18974,9 @@ exports[`Regression test for test16 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      12.83660610520501,
+    ],
     "incrementalLoss": [
       12.83660610520501,
     ],
@@ -19202,6 +19304,9 @@ exports[`Regression test for test16 1`] = `
 exports[`Regression test for test17 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      27.80014384106122,
+    ],
     "incrementalLoss": [
       27.80014384106122,
     ],
@@ -19830,6 +19935,9 @@ exports[`Regression test for test17 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      38.79021037974655,
+    ],
     "incrementalLoss": [
       38.79021037974655,
     ],
@@ -20257,6 +20365,9 @@ exports[`Regression test for test17 1`] = `
 exports[`Regression test for test18 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      23.34932448811341,
+    ],
     "incrementalLoss": [
       23.34932448811341,
     ],
@@ -21095,6 +21206,9 @@ exports[`Regression test for test18 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      27.57390019588320,
+    ],
     "incrementalLoss": [
       27.57390019588320,
     ],
@@ -21374,6 +21488,9 @@ exports[`Regression test for test18 1`] = `
 exports[`Regression test for test19 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      72.90985772746740,
+    ],
     "incrementalLoss": [
       72.90985772746740,
     ],
@@ -22604,6 +22721,9 @@ exports[`Regression test for test19 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      144.26353316733653,
+    ],
     "incrementalLoss": [
       144.26353316733653,
     ],
@@ -23027,6 +23147,9 @@ exports[`Regression test for test19 1`] = `
 exports[`Regression test for test20 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      15.90062216247406,
+    ],
     "incrementalLoss": [
       15.90062216247406,
     ],
@@ -23935,6 +24058,9 @@ exports[`Regression test for test20 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      14.15085316634722,
+    ],
     "incrementalLoss": [
       14.15085316634722,
     ],
@@ -24258,6 +24384,9 @@ exports[`Regression test for test20 1`] = `
 exports[`Regression test for test21 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      29.37871935642000,
+    ],
     "incrementalLoss": [
       29.37871935642000,
     ],
@@ -25166,6 +25295,9 @@ exports[`Regression test for test21 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      20.55918135668142,
+    ],
     "incrementalLoss": [
       20.55918135668142,
     ],
@@ -25389,6 +25521,9 @@ exports[`Regression test for test21 1`] = `
 exports[`Regression test for test22 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      42.83385859363468,
+    ],
     "incrementalLoss": [
       42.83385859363468,
     ],
@@ -25933,6 +26068,9 @@ exports[`Regression test for test22 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      36.47117521664265,
+    ],
     "incrementalLoss": [
       36.47117521664265,
     ],
@@ -26096,6 +26234,9 @@ exports[`Regression test for test22 1`] = `
 exports[`Regression test for test23 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      76.97201965795490,
+    ],
     "incrementalLoss": [
       76.97201965795490,
     ],
@@ -27606,6 +27747,9 @@ exports[`Regression test for test23 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      147.02129062503141,
+    ],
     "incrementalLoss": [
       147.02129062503141,
     ],
@@ -27977,6 +28121,9 @@ exports[`Regression test for test23 1`] = `
 exports[`Regression test for test24 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      14.74568878816106,
+    ],
     "incrementalLoss": [
       14.74568878816106,
     ],
@@ -28773,6 +28920,9 @@ exports[`Regression test for test24 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      12.83660610520501,
+    ],
     "incrementalLoss": [
       12.83660610520501,
     ],
@@ -29116,6 +29266,9 @@ exports[`Regression test for test24 1`] = `
 exports[`Regression test for test25 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      27.80014384106122,
+    ],
     "incrementalLoss": [
       27.80014384106122,
     ],
@@ -29744,6 +29897,9 @@ exports[`Regression test for test25 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      38.79021037974655,
+    ],
     "incrementalLoss": [
       38.79021037974655,
     ],
@@ -30171,6 +30327,9 @@ exports[`Regression test for test25 1`] = `
 exports[`Regression test for test26 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      23.86420465688664,
+    ],
     "incrementalLoss": [
       23.86420465688664,
     ],
@@ -31079,6 +31238,9 @@ exports[`Regression test for test26 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      25.45887251869445,
+    ],
     "incrementalLoss": [
       25.45887251869445,
     ],
@@ -31410,6 +31572,9 @@ exports[`Regression test for test26 1`] = `
 exports[`Regression test for test27 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      72.90985772746740,
+    ],
     "incrementalLoss": [
       72.90985772746740,
     ],
@@ -32640,6 +32805,9 @@ exports[`Regression test for test27 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      144.26353316733653,
+    ],
     "incrementalLoss": [
       144.26353316733653,
     ],
@@ -33063,6 +33231,9 @@ exports[`Regression test for test27 1`] = `
 exports[`Regression test for test28 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      15.90064402898440,
+    ],
     "incrementalLoss": [
       15.90064402898440,
     ],
@@ -33971,6 +34142,9 @@ exports[`Regression test for test28 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      14.12108230893992,
+    ],
     "incrementalLoss": [
       14.12108230893992,
     ],
@@ -34314,6 +34488,9 @@ exports[`Regression test for test28 1`] = `
 exports[`Regression test for test29 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      29.41778848444921,
+    ],
     "incrementalLoss": [
       29.41778848444921,
     ],
@@ -35222,6 +35399,9 @@ exports[`Regression test for test29 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      20.55918135668142,
+    ],
     "incrementalLoss": [
       20.55918135668142,
     ],
@@ -35465,6 +35645,9 @@ exports[`Regression test for test29 1`] = `
 exports[`Regression test for test30 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      44.47817328797111,
+    ],
     "incrementalLoss": [
       44.47817328797111,
     ],
@@ -36009,6 +36192,9 @@ exports[`Regression test for test30 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      36.47117521664265,
+    ],
     "incrementalLoss": [
       36.47117521664265,
     ],
@@ -36160,6 +36346,9 @@ exports[`Regression test for test30 1`] = `
 exports[`Regression test for test31 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      76.97201965795490,
+    ],
     "incrementalLoss": [
       76.97201965795490,
     ],
@@ -37670,6 +37859,9 @@ exports[`Regression test for test31 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      147.02129062503141,
+    ],
     "incrementalLoss": [
       147.02129062503141,
     ],
@@ -38041,6 +38233,9 @@ exports[`Regression test for test31 1`] = `
 exports[`Regression test for test32 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      14.74745759666683,
+    ],
     "incrementalLoss": [
       14.74745759666683,
     ],
@@ -38837,6 +39032,9 @@ exports[`Regression test for test32 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      12.83660610520501,
+    ],
     "incrementalLoss": [
       12.83660610520501,
     ],
@@ -39164,6 +39362,9 @@ exports[`Regression test for test32 1`] = `
 exports[`Regression test for test33 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      27.80014384106122,
+    ],
     "incrementalLoss": [
       27.80014384106122,
     ],
@@ -39792,6 +39993,9 @@ exports[`Regression test for test33 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      38.79021037974655,
+    ],
     "incrementalLoss": [
       38.79021037974655,
     ],
@@ -40219,6 +40423,9 @@ exports[`Regression test for test33 1`] = `
 exports[`Regression test for test34 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      23.91852892528695,
+    ],
     "incrementalLoss": [
       23.91852892528695,
     ],
@@ -41127,6 +41334,9 @@ exports[`Regression test for test34 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      24.57091828044977,
+    ],
     "incrementalLoss": [
       24.57091828044977,
     ],
@@ -41438,6 +41648,9 @@ exports[`Regression test for test34 1`] = `
 exports[`Regression test for test35 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      72.90985772746740,
+    ],
     "incrementalLoss": [
       72.90985772746740,
     ],
@@ -42668,6 +42881,9 @@ exports[`Regression test for test35 1`] = `
   ],
   "complexity": 7055,
   "defense": {
+    "cumulativeIpcLoss": [
+      144.26353316733653,
+    ],
     "incrementalLoss": [
       144.26353316733653,
     ],
@@ -43091,6 +43307,9 @@ exports[`Regression test for test35 1`] = `
 exports[`Regression test for test36 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      15.91448289219183,
+    ],
     "incrementalLoss": [
       15.91448289219183,
     ],
@@ -43999,6 +44218,9 @@ exports[`Regression test for test36 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      14.12108230893992,
+    ],
     "incrementalLoss": [
       14.12108230893992,
     ],
@@ -44326,6 +44548,9 @@ exports[`Regression test for test36 1`] = `
 exports[`Regression test for test37 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      29.43821308341051,
+    ],
     "incrementalLoss": [
       29.43821308341051,
     ],
@@ -45234,6 +45459,9 @@ exports[`Regression test for test37 1`] = `
   ],
   "complexity": 270,
   "defense": {
+    "cumulativeIpcLoss": [
+      20.55918135668142,
+    ],
     "incrementalLoss": [
       20.55918135668142,
     ],
@@ -45465,6 +45693,11 @@ exports[`Regression test for test37 1`] = `
 exports[`Regression test for test38 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      172.95303424380805,
+      204.70796562772335,
+      220.15701150237740,
+    ],
     "incrementalLoss": [
       172.95303424380805,
       31.75493138391530,
@@ -54644,6 +54877,11 @@ exports[`Regression test for test38 1`] = `
   ],
   "complexity": 15410,
   "defense": {
+    "cumulativeIpcLoss": [
+      122.96444932533277,
+      150.35295568206260,
+      160.87873122318933,
+    ],
     "incrementalLoss": [
       122.96444932533277,
       27.38850635672982,
@@ -56169,6 +56407,9 @@ exports[`Regression test for test38 1`] = `
 exports[`Regression test for test39 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      3.67876739356359,
+    ],
     "incrementalLoss": [
       3.67876739356359,
     ],
@@ -56307,6 +56548,9 @@ exports[`Regression test for test39 1`] = `
   ],
   "complexity": 15,
   "defense": {
+    "cumulativeIpcLoss": [
+      5.95286668670569,
+    ],
     "incrementalLoss": [
       5.95286668670569,
     ],
@@ -56362,6 +56606,9 @@ exports[`Regression test for test39 1`] = `
 exports[`Regression test for test40 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      3.09259259259259,
+    ],
     "incrementalLoss": [
       3.09259259259259,
     ],
@@ -56514,6 +56761,9 @@ exports[`Regression test for test40 1`] = `
   ],
   "complexity": 15,
   "defense": {
+    "cumulativeIpcLoss": [
+      3.70833333333333,
+    ],
     "incrementalLoss": [
       3.70833333333333,
     ],
@@ -56565,6 +56815,9 @@ exports[`Regression test for test40 1`] = `
 exports[`Regression test for test41 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      4.15824968459711,
+    ],
     "incrementalLoss": [
       4.15824968459711,
     ],
@@ -56731,6 +56984,9 @@ exports[`Regression test for test41 1`] = `
   ],
   "complexity": 15,
   "defense": {
+    "cumulativeIpcLoss": [
+      4.93460701790696,
+    ],
     "incrementalLoss": [
       4.93460701790696,
     ],
@@ -56794,6 +57050,9 @@ exports[`Regression test for test41 1`] = `
 exports[`Regression test for test42 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      3.09259259259259,
+    ],
     "incrementalLoss": [
       3.09259259259259,
     ],
@@ -56946,6 +57205,9 @@ exports[`Regression test for test42 1`] = `
   ],
   "complexity": 15,
   "defense": {
+    "cumulativeIpcLoss": [
+      3.70833333333333,
+    ],
     "incrementalLoss": [
       3.70833333333333,
     ],
@@ -56997,6 +57259,9 @@ exports[`Regression test for test42 1`] = `
 exports[`Regression test for test43 1`] = `
 {
   "attack": {
+    "cumulativeIpcLoss": [
+      3.09259259259259,
+    ],
     "incrementalLoss": [
       3.09259259259259,
     ],
@@ -57149,6 +57414,9 @@ exports[`Regression test for test43 1`] = `
   ],
   "complexity": 15,
   "defense": {
+    "cumulativeIpcLoss": [
+      3.70833333333333,
+    ],
     "incrementalLoss": [
       3.70833333333333,
     ],
