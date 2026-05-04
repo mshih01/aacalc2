@@ -120,6 +120,7 @@ export interface BattleInput {
   isDeadzone?: boolean
   numWaves?: number
   amphibious?: boolean
+  experimentalConvolution?: boolean
 }
 
 function computeBattle(input: BattleInput): MultiwaveOutput {
@@ -176,6 +177,7 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
     is_deadzone: input.isDeadzone ?? false,
     retreat_round_zero: false,
     do_roundless_eval: true,
+    experimentalConvolution: input.experimentalConvolution,
   }
 
   if (input.verboseLevel && input.verboseLevel > 0) {
@@ -1321,6 +1323,7 @@ function App() {
   const [decimalPlaces, setDecimalPlaces] = useState(2)
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
+  const [experimentalConvolution, setExperimentalConvolution] = useState(false)
   const [histogramZooms, setHistogramZooms] = useState<Record<number, number>>(() => {
     const initial: Record<number, number> = {}
     for (let i = 0; i < MAX_WAVES; i++) {
@@ -1668,6 +1671,7 @@ function App() {
         isDeadzone,
         numWaves,
         amphibious,
+        experimentalConvolution,
       }
       
       // Check complexity before evaluating the battle
@@ -2153,6 +2157,16 @@ function App() {
                   style={{ width: '100%' }}
                 />
                 <label>IPC Loss Decimal Places</label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={experimentalConvolution}
+                    onChange={(e) => setExperimentalConvolution(e.target.checked)}
+                  />
+                  Experimental: fix defender profit via convolution
+                </label>
               </div>
             </div>
           </div>
