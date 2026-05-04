@@ -280,28 +280,40 @@ export function solve_one_general_state(
     if (allow_same_state) {
       r = p_init;
     }
-    let curr_defnode = defnode;
     let curr_attnode = attnode;
     for (j = 0; j < numBombard; j++) {
       curr_attnode = curr_attnode.next_navalhit;
     }
-    const start_attnode = curr_attnode;
+    const attProbArr = new Array(NNN + 1);
+    for (let ii = 0; ii <= NNN; ii++) {
+      attProbArr[ii] = att_nosub.get_prob_table(NNN, ii) * r;
+    }
+    const defProbArr = new Array(MMM + 1);
+    for (let jj = 0; jj <= MMM; jj++) {
+      defProbArr[jj] = def_nosub.get_prob_table(MMM, jj);
+    }
+    const attIdxArr = new Array(MMM + 1);
+    let node = curr_attnode;
+    for (let jj = 0; jj <= MMM; jj++) {
+      attIdxArr[jj] = node.index;
+      node = node.next_navalhit;
+    }
+    const defIdxArr = new Array(NNN + 1);
+    node = defnode;
+    for (let ii = 0; ii <= NNN; ii++) {
+      defIdxArr[ii] = node.index;
+      node = node.next_navalhit;
+    }
 
     for (i = 0; i <= NNN; i++) {
-      //let mm = remove_navalhits2(defnode, i);
-      const m = curr_defnode.index;
-      const p1 = att_nosub.get_prob_table(NNN, i) * r;
-      let curr_attnode = start_attnode;
+      const m = defIdxArr[i];
+      const p1 = attProbArr[i];
       for (j = 0; j <= MMM; j++) {
-        prob = p1 * def_nosub.get_prob_table(MMM, j);
-        //let nn = remove_navalhits2(attnode, j + numBombard);
-        const n = curr_attnode.index;
+        prob = p1 * defProbArr[j];
+        const n = attIdxArr[j];
         const ii = problem.getIndex(n, m);
         onNextState(problem, ii, prob, n, m, r2);
-        //problem.setiP(ii, problem.getiP(ii) + prob);
-        curr_attnode = curr_attnode.next_navalhit;
       }
-      curr_defnode = curr_defnode.next_navalhit;
     }
   } else if (
     enable_airsub_optimization &&
