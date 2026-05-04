@@ -29,6 +29,7 @@ export interface multiwave_input {
   num_runs: number;
   verbose_level: number;
   report_complexity_only: boolean;
+  experimentalConvolution?: boolean;
 }
 
 export interface multiwave_output {
@@ -248,6 +249,28 @@ export function multiwave(input: multiwave_input): multiwave_output {
         console.log(skipMerge, 'skipMerge');
       }
       const out = print_general_results(myprob, result_data);
+      if (input.experimentalConvolution && i > 0 && defend_add_reinforce) {
+        const initMap = new Map<number, number>();
+        for (const cas of defend_add_reinforce) {
+          const cost = get_cost_from_str(prob.um, cas.casualty);
+          initMap.set(cost, (initMap.get(cost) ?? 0) + cas.prob);
+        }
+        const finalMap = new Map<number, number>();
+        for (const info of Object.values(out.profitDistribution)) {
+          finalMap.set(info.ipc, (finalMap.get(info.ipc) ?? 0) + info.prob);
+        }
+        const deltaMap = new Map<number, number>();
+        for (const [fIPC, pF] of finalMap) {
+          for (const [iIPC, pI] of initMap) {
+            const d = fIPC - iIPC;
+            deltaMap.set(d, (deltaMap.get(d) ?? 0) + pF * pI);
+          }
+        }
+        out.profitDistribution = {};
+        for (const [ipc, prob] of deltaMap) {
+          out.profitDistribution[ipc] = { ipc, prob };
+        }
+      }
       output.push(out);
       initIpcCost.push(init_ipc_cost ?? 0);
       if (input.verbose_level > 2) {

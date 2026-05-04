@@ -150,6 +150,7 @@ export interface MultiwaveInput {
   do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
+  experimentalConvolution?: boolean; // experimental: fix defender cumulative profit via convolution
 }
 
 export interface MultiEvalInput extends MultiwaveInput {
@@ -493,6 +494,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     diceMode: input.diceMode,
     sortMode: input.sortMode == undefined ? 'ipc_cost' : input.sortMode,
     num_runs: input.num_runs,
+    experimentalConvolution: input.experimentalConvolution,
   };
 
   return internal_input;
