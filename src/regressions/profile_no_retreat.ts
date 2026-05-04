@@ -7,7 +7,7 @@ const input: MultiwaveInput = {
     {
       attack: {
         units: {
-          inf: 100,
+          inf: 150,
           art: 40,
           fig: 10,
         },
@@ -17,7 +17,7 @@ const input: MultiwaveInput = {
       },
       defense: {
         units: {
-          inf: 100,
+          inf: 150,
           art: 40,
           fig: 6,
           aa: 3,
@@ -46,6 +46,9 @@ const input: MultiwaveInput = {
   sortMode: 'ipc_cost',
 };
 
+
+for (let i = 0; i < 10; i++) {
+
 console.log('starting...');
 const t0 = performance.now();
 const output = multiwaveExternal(input);
@@ -55,3 +58,4 @@ console.log(
   'profit:',
   (output.defense.ipcLoss[0] - output.attack.ipcLoss[0]).toFixed(3),
 );
+}

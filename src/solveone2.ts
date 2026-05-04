@@ -53,6 +53,7 @@ export function solve_one_general_state_copy2(
   //console.log(N, M, "solve_one_naval");
   //const p_init = problem.getP(N, M);
   const p_init = onInitState(problem, N, M);
+  const state_init_rounds = problem.init_rounds;
 
   if (p_init == 0) {
     onExitState(problem, N, M);
@@ -69,7 +70,7 @@ export function solve_one_general_state_copy2(
         const n = attnode.next_retreat_amphibious.index;
         const m = defnode.index;
         const ii = problem.getIndex(n, m);
-        onNextState(problem, ii, p_init, n, m, 0);
+        onNextState(problem, ii, p_init, n, m, state_init_rounds);
         //problem.setiP(ii, problem.getiP(ii) + p_init);
         problem.setP(N, M, 0);
         onExitState(problem, N, M);
@@ -121,7 +122,7 @@ export function solve_one_general_state_copy2(
     }
     const ii = problem.getIndex(n, m);
 
-    onNextState(problem, ii, p_init, n, m, 0);
+    onNextState(problem, ii, p_init, n, m, state_init_rounds);
     //problem.setiP(ii, problem.getiP(ii) + p_init);
 
     problem.setP(N, M, 0);
@@ -132,7 +133,7 @@ export function solve_one_general_state_copy2(
     const n = attnode.index;
     const m = defnode.next_remove_noncombat.index;
     const ii = problem.getIndex(n, m);
-    onNextState(problem, ii, p_init, n, m, 0);
+    onNextState(problem, ii, p_init, n, m, state_init_rounds);
     //problem.setiP(ii, problem.getiP(ii) + p_init);
     problem.setP(N, M, 0);
     onExitState(problem, N, M);
@@ -221,6 +222,7 @@ export function solve_one_general_state_copy2(
   }
 
   const r2 = 1 / (1 - P0);
+  const total_rounds = state_init_rounds + r2;
   let r = p_init * r2;
   if (allow_same_state) {
     r = p_init;
@@ -276,6 +278,7 @@ export function solve_one_general_state_copy2(
     const P0 =
       att_nosub.get_prob_table(NNN, 0) * def_nosub.get_prob_table(MMM, 0);
     const r2 = 1 / (1 - P0);
+    const total_rounds = state_init_rounds + r2;
     let r = p_init * r2;
     if (allow_same_state) {
       r = p_init;
@@ -312,7 +315,7 @@ export function solve_one_general_state_copy2(
         prob = p1 * defProbArr[j];
         const n = attIdxArr[j];
         const ii = problem.getIndex(n, m);
-        onNextState(problem, ii, prob, n, m, r2);
+        onNextState(problem, ii, prob, n, m, total_rounds);
       }
     }
   } else if (
@@ -331,6 +334,7 @@ export function solve_one_general_state_copy2(
         const P0 =
           att_sub.get_prob_table(N1, 0) * def_sub.get_prob_table(M1, 0);
         const r2 = 1 / (1 - P0);
+        const total_rounds = state_init_rounds + r2;
         let r = p_init * r2;
         if (allow_same_state) {
           r = p_init;
@@ -342,7 +346,7 @@ export function solve_one_general_state_copy2(
             const n = att_remove_subhits_function(attnode, j1);
             const p2 = p1 * def_sub.get_prob_table(M1, j1);
             const ii = problem.getIndex(n, m);
-            onNextState(problem, ii, p2, n, m, r2);
+            onNextState(problem, ii, p2, n, m, total_rounds);
             //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
@@ -350,6 +354,7 @@ export function solve_one_general_state_copy2(
         const P0 =
           att_air.get_prob_table(N2, 0) * def_air.get_prob_table(M2, 0);
         const r2 = 1 / (1 - P0);
+        const total_rounds = state_init_rounds + r2;
         let r = p_init * r2;
         if (allow_same_state) {
           r = p_init;
@@ -361,7 +366,7 @@ export function solve_one_general_state_copy2(
             const n = att_remove_planehits_function(attnode, false, j2);
             const p2 = p1 * def_air.get_prob_table(M2, j2);
             const ii = problem.getIndex(n, m);
-            onNextState(problem, ii, p2, n, m, r2);
+            onNextState(problem, ii, p2, n, m, total_rounds);
             //problem.setiP(ii, problem.getiP(ii) + p2);
           }
         }
@@ -514,7 +519,7 @@ export function solve_one_general_state_copy2(
                   j + def_sub_unconstrained_hits,
                 );
                 const ii = problem.getIndex(n, m);
-                onNextState(problem, ii, p2, n, m, r2);
+                onNextState(problem, ii, p2, n, m, total_rounds);
                 //problem.setiP(ii, problem.getiP(ii) + p2);
               }
             }
@@ -549,7 +554,7 @@ export function solve_one_general_state_copy2(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m);
-                  onNextState(problem, ii, p5, n3, m, r2);
+                  onNextState(problem, ii, p5, n3, m, total_rounds);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
@@ -585,7 +590,7 @@ export function solve_one_general_state_copy2(
                     i3 + att_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n, m3);
-                  onNextState(problem, ii, p5, n, m3, r2);
+                  onNextState(problem, ii, p5, n, m3, total_rounds);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }
@@ -633,7 +638,7 @@ export function solve_one_general_state_copy2(
                     j3 + def_sub_unconstrained_hits,
                   );
                   const ii = problem.getIndex(n3, m3);
-                  onNextState(problem, ii, p5, n3, m3, r2);
+                  onNextState(problem, ii, p5, n3, m3, total_rounds);
                   //problem.setiP(ii, problem.getiP(ii) + p5);
                 }
               }

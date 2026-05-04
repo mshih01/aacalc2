@@ -876,7 +876,7 @@ function do_roundless_eval(
           num_rounds: number,
         ) => {
           problem.P_1d[ii] += prob;
-          problem.ERound_1d[ii] += prob * (problem.init_rounds + num_rounds);
+          problem.ERound_1d[ii] += prob * num_rounds;
         },
         (problem, n: number, m: number) => {
           const p_init = problem.getP(n, m);
