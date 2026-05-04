@@ -46,16 +46,14 @@ const input: MultiwaveInput = {
   sortMode: 'ipc_cost',
 };
 
-
 for (let i = 0; i < 10; i++) {
-
-console.log('starting...');
-const t0 = performance.now();
-const output = multiwaveExternal(input);
-const t1 = performance.now() - t0;
-console.log(`runtime: ${t1.toFixed(1)}ms`);
-console.log(
-  'profit:',
-  (output.defense.ipcLoss[0] - output.attack.ipcLoss[0]).toFixed(3),
-);
+  console.log('starting...');
+  const t0 = performance.now();
+  const output = multiwaveExternal(input);
+  const t1 = performance.now() - t0;
+  console.log(`runtime: ${t1.toFixed(1)}ms`);
+  console.log(
+    'profit:',
+    (output.defense.ipcLoss[0] - output.attack.ipcLoss[0]).toFixed(3),
+  );
 }
