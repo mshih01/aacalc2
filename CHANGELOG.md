@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.15
+
+### Patch Changes
+
+- a076afe: runtime improvement + multiwave wave by wave profit distribution show incremental profit (experimental advanced option)
+
 ## 2.0.14
 
 ### Patch Changes
