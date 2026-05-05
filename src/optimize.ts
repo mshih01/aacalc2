@@ -63,8 +63,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   let armyRecommendOutput: ArmyRecommendOutput = {
     recommendations: [{ army: {}, cost: 0 }],
   };
-  if (optimizeMode == 'maxProfit' && solveType != 'exhaust') {
-    console.error('maxProfit optimizeMode only works with exhaust solveType');
+  if (optimizeMode == 'maxProfit' && solveType == 'fuzzyBinarySearch') {
+    console.error(
+      'maxProfit optimizeMode does not work with fuzzyBinarySearch solveType',
+    );
     return armyRecommendOutput;
   }
 
@@ -491,6 +493,44 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         return cost;
       }
 
+      const profitMap: Map<string, number> = new Map();
+      function armyProfitObjective(vars: number[]): number {
+        let key = JSON.stringify(vars);
+        let retval = profitMap.get(key);
+        if (retval != undefined) {
+          return retval;
+        }
+        callCount++;
+        retval = armyProfitObjectiveHelper(vars);
+        profitMap.set(key, retval);
+        return retval;
+      }
+      function armyProfitObjectiveHelper(vars: number[]): number {
+        const army: Army = getArmy(vars);
+        if (attDefType == 'defender') {
+          input.wave_info[0].defense.units = army;
+        } else {
+          input.wave_info[0].attack.units = army;
+        }
+
+        const output = multiwaveExternal(input);
+        const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+        let overflow = 0;
+        for (const [uid, count] of Object.entries(army)) {
+          if (count < 0) {
+            overflow += -count;
+          }
+          let max = maxUnits[<UnitIdentifier>uid] ?? 0;
+          if (count > max) {
+            overflow += count;
+          }
+        }
+        if (overflow > 0) {
+          return 1000000 * overflow;
+        }
+        return -profit;
+      }
+
       // Initial guess (e.g., max units)
       const numInf: number = maxArmy['inf'] ?? 0;
       const numArt: number = maxArmy['art'] ?? 0;
@@ -525,21 +565,40 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
               [0, numCru],
             ];
 
+      const objectiveFn =
+        optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
+
+      const verbose = !!(input.verbose_level && input.verbose_level > 0);
+
       // Example Usage
       const initialGuess = initial;
-      console.log(initialGuess, 'initialGuess');
-      console.log(bounds, 'bounds');
+      if (verbose) console.log(initialGuess, 'initialGuess');
+      if (verbose) console.log(bounds, 'bounds');
       const finalParams: Vector =
         solveType == 'gridSearch'
-          ? gridSearch(armyCostObjective, bounds)
-          : lineSearch(armyCostObjective, initialGuess, bounds, 5);
+          ? gridSearch(objectiveFn, bounds, verbose)
+          : lineSearch(objectiveFn, initialGuess, bounds, 5, verbose);
 
-      console.log('Optimized Integer Parameters:', finalParams);
-      console.log('Minimum value found:', armyCostObjective(finalParams));
-      console.log(mymap.size, 'map size');
-      const bestArmy = getArmy(finalParams);
-      const cost = getArmyCost(bestArmy);
-      armyRecommendOutput.recommendations = [{ army: bestArmy, cost: cost }];
+      if (verbose) console.log('Optimized Integer Parameters:', finalParams);
+      if (optimizeMode == 'maxProfit') {
+        if (verbose) {
+          console.log('Maximum profit found:', -objectiveFn(finalParams));
+          console.log(profitMap.size, 'profit map size');
+        }
+        const bestArmy = getArmy(finalParams);
+        const profit = -armyProfitObjective(finalParams);
+        armyRecommendOutput.recommendations = [
+          { army: bestArmy, cost: profit },
+        ];
+      } else {
+        if (verbose) {
+          console.log('Minimum value found:', armyCostObjective(finalParams));
+          console.log(mymap.size, 'map size');
+        }
+        const bestArmy = getArmy(finalParams);
+        const cost = getArmyCost(bestArmy);
+        armyRecommendOutput.recommendations = [{ army: bestArmy, cost: cost }];
+      }
 
       break;
     }
@@ -620,6 +679,7 @@ function doNeighborSearch(
 function doGridSearch(
   objectiveFn: ObjectiveFunction,
   bound: [number, number, number][],
+  verbose?: boolean,
 ): Vector {
   let range: Number[][] = [];
   for (let i = 0; i < bound.length; i++) {
@@ -634,7 +694,7 @@ function doGridSearch(
   //console.log(range, "range");
   let combinations = getCombinations(range);
   //console.log(combinations, "combinations");
-  console.log(combinations.length, 'combinations');
+  if (verbose) console.log(combinations.length, 'combinations');
   let miny = undefined;
   let minx: Vector = [];
   for (let i = 0; i < combinations.length; i++) {
@@ -653,6 +713,7 @@ function doGridSearch(
 function gridSearch(
   objectiveFn: ObjectiveFunction,
   bound: [number, number][],
+  verbose?: boolean,
 ): Vector {
   let currBound: [number, number, number][] = [];
   for (let i = 0; i < bound.length; i++) {
@@ -661,8 +722,8 @@ function gridSearch(
     let step = Math.max(Math.ceil((high - low) / 3), 1);
     currBound.push([low, high, step]);
   }
-  console.log(currBound, 'currBound');
-  let best = doGridSearch(objectiveFn, currBound);
+  if (verbose) console.log(currBound, 'currBound');
+  let best = doGridSearch(objectiveFn, currBound, verbose);
 
   for (let i = 0; i < 10; i++) {
     let prevBound = currBound.slice();
@@ -679,8 +740,8 @@ function gridSearch(
       }
       currBound.push([low, high, step]);
     }
-    console.log(currBound, 'currBound');
-    best = doGridSearch(objectiveFn, currBound);
+    if (verbose) console.log(currBound, 'currBound');
+    best = doGridSearch(objectiveFn, currBound, verbose);
     if (stop) {
       break;
     }
@@ -693,6 +754,7 @@ function lineSearch(
   x: Vector,
   bound: [number, number][],
   numIterations: number,
+  verbose?: boolean,
 ): Vector {
   let x0 = x.slice();
   for (let i = 0; i < numIterations; i++) {
@@ -755,11 +817,11 @@ function lineSearch(
         break;
       }
       x0 = xNew;
-      console.log(i, x0, 'neighbor search');
+      if (verbose) console.log(i, x0, 'neighbor search');
       continue;
     }
     x0 = newX;
-    console.log(i, x0, direction, stepSize, newX);
+    if (verbose) console.log(i, x0, direction, stepSize, newX);
   }
   return x0;
 }
