@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.16
+
+### Patch Changes
+
+- 3b830c4: army recommendation -- use gridSearch for maxProfit optimization (instead of exhaust).
+
 ## 2.0.15
 
 ### Patch Changes
