@@ -94,7 +94,7 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
         optimizeMode: config.optimizeMode,
         numRecommendations: config.numRecommendations,
         targetPercentage: config.targetPercentage,
-        solveType: config.optimizeMode === 'maxProfit' ? 'exhaust' : 'fuzzyBinarySearch',
+        solveType: config.optimizeMode === 'maxProfit' ? 'gridSearch' : 'fuzzyBinarySearch',
       } as ArmyRecommendInput
 
       const armyRecommendResult = armyRecommend(armyRecommendInput)
