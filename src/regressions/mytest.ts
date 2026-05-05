@@ -9,7 +9,7 @@ import {
 } from '../index.js';
 
 let out = [];
-let verbose = 1; // 0, 1, 2, 3
+let verbose = 3; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -1079,10 +1079,10 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 90,
-            art: 50,
+            inf: 3,
+            art: 3,
             arm: 0,
-            fig: 10,
+            fig: 0,
           },
           ool: ['inf', 'art', 'arm', 'fig', 'bom'],
           takes: 0,
@@ -1090,11 +1090,11 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 80,
-            art: 10,
+            inf: 3,
+            art: 0,
             arm: 0,
-            fig: 10,
-            aa: 3,
+            fig: 0,
+            aa: 0,
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
           takes: 0,
@@ -1113,8 +1113,8 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 30,
-            art: 30,
+            inf: 3,
+            art: 3,
             arm: 0,
             fig: 0,
           },
@@ -1148,8 +1148,8 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 30,
-            art: 30,
+            inf: 3,
+            art: 3,
             arm: 0,
             fig: 0,
           },
@@ -1178,7 +1178,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat,
         retreat_strafe_threshold: strafe,
-        use_attackers_from_previous_wave: false,
+        use_attackers_from_previous_wave: true,
       },
     ],
     debug: false,

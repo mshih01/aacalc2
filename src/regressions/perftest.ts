@@ -77,63 +77,65 @@ const battleInput: MultiwaveInput = {
 const results: string[][] = [];
 const precision = 3;
 
-for (const setting of settings) {
-  const [
-    description,
-    retreat,
-    round,
-    strafe,
-    is_deadzone,
-    territory_value,
-    do_roundless_eval,
-    report_complexity_only,
-  ] = setting;
-
-  const input: MultiwaveInput = {
-    ...battleInput,
-    wave_info: [
-      {
-        ...battleInput.wave_info[0],
-        rounds: round,
-        retreat_expected_ipc_profit_threshold: retreat,
-        retreat_strafe_threshold: strafe,
-      },
-    ],
-    is_deadzone,
-    territory_value,
-    do_roundless_eval,
-    report_complexity_only,
-  };
-
-  if (report_complexity_only) {
-    console.time(description);
-    const c1 = multiwaveComplexity(input);
-    console.timeEnd(description);
-
-    console.time(description);
-    const c2 = multiwaveComplexityFastV2(input);
-    console.timeEnd(description);
-
-    console.log(`complexity: ${c1}  fast: ${c2}`);
-  } else {
-    const t0 = performance.now();
-    const output = multiwaveExternal(input);
-    const t1 = performance.now() - t0;
-
-    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-
-    console.log(
-      `${description}: profit=${profit.toFixed(precision)}  def_loss=${output.defense.ipcLoss[0].toFixed(precision)}  att_loss=${output.attack.ipcLoss[0].toFixed(precision)}  takes=${output.takesTerritory[0].toFixed(precision)}  runtime=${t1.toFixed(precision)}ms`,
-    );
-
-    results.push([
-      profit.toFixed(precision),
-      output.defense.ipcLoss[0].toFixed(precision),
-      output.attack.ipcLoss[0].toFixed(precision),
-      output.takesTerritory[0].toFixed(precision),
-      t1.toFixed(precision),
+for (let index = 0; index < 5; index++) {
+  for (const setting of settings) {
+    const [
       description,
-    ]);
+      retreat,
+      round,
+      strafe,
+      is_deadzone,
+      territory_value,
+      do_roundless_eval,
+      report_complexity_only,
+    ] = setting;
+
+    const input: MultiwaveInput = {
+      ...battleInput,
+      wave_info: [
+        {
+          ...battleInput.wave_info[0],
+          rounds: round,
+          retreat_expected_ipc_profit_threshold: retreat,
+          retreat_strafe_threshold: strafe,
+        },
+      ],
+      is_deadzone,
+      territory_value,
+      do_roundless_eval,
+      report_complexity_only,
+    };
+
+    if (report_complexity_only) {
+      console.time(description);
+      const c1 = multiwaveComplexity(input);
+      console.timeEnd(description);
+
+      console.time(description);
+      const c2 = multiwaveComplexityFastV2(input);
+      console.timeEnd(description);
+
+      console.log(`complexity: ${c1}  fast: ${c2}`);
+    } else {
+      const t0 = performance.now();
+      const output = multiwaveExternal(input);
+      const t1 = performance.now() - t0;
+
+      const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+
+      console.log(
+        `${description}: profit=${profit.toFixed(precision)}  def_loss=${output.defense.ipcLoss[0].toFixed(precision)}  att_loss=${output.attack.ipcLoss[0].toFixed(precision)}  takes=${output.takesTerritory[0].toFixed(precision)}  runtime=${t1.toFixed(precision)}ms`,
+      );
+
+      results.push([
+        profit.toFixed(precision),
+        output.defense.ipcLoss[0].toFixed(precision),
+        output.attack.ipcLoss[0].toFixed(precision),
+        output.takesTerritory[0].toFixed(precision),
+        t1.toFixed(precision),
+        description,
+      ]);
+    }
   }
 }
 

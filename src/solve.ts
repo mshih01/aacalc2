@@ -667,22 +667,72 @@ function print_retreat_state(problem: general_problem): void {
 }
 
 // compute EV for all possible substates
+// for each state, compute the expected profit E(i, j)
+// E(i, j) = 0 if terminal state
+// E(i, j) = sum of all possible next states (ii, jj)
+//          prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj))
 export function compute_expected_value(problem: general_problem): void {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
-  problem.E_1d = new Array(N * M);
+  const E_1d = (problem.E_1d = new Array(N * M));
+  const attData = problem.att_data;
+  const defData = problem.def_data;
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
       problem.setE(i, j, 0.0);
     }
   }
+  let do_optimization =
+    problem.retreat_expected_ipc_profit_threshold != undefined &&
+    problem.retreat_expected_ipc_profit_threshold >= 0 &&
+    problem.territory_value < 10 &&
+    !problem.is_naval &&
+    defData.nodeArr[0].num_bomber == 0 && // no defending bombers
+    defData.nodeArr[0].N > 20 &&
+    attData.nodeArr[0].N > 20 &&
+    count_units(attData.nodeArr[0].unit_str, 'B') == 0 && // no bombards
+    count_units(attData.nodeArr[0].unit_str, 'C') == 0 && // no bombards
+    attData.nodeArr[0].unit_str.lastIndexOf('f') < attData.nodeArr[0].num_air;
+  //do_optimization = false;
+  const factor = 1.4;
+  const verify_optimization = false;
 
   for (i = N - 1; i >= 0; i--) {
     for (j = M - 1; j >= 0; j--) {
-      // for each state... compute the expected IPC profit E(i, j)
-      // E(i, j) = 0 if the state is terminal (no attackers or no defenders)
-      // E(i, j) = sum of (ii, jj all possible next states):  prob(ii, jj) * (E(ii, jj) + delta_cost(ii, jj)
+      const attNode = attData.nodeArr[i];
+      const defNode = defData.nodeArr[j];
+      if (is_terminal_state(problem, i, j, false, false)) {
+        problem.accumulate = 0;
+        if (problem.is_deadzone && defNode.N == 0) {
+          problem.accumulate -= attNode.deadzone_cost;
+        }
+        if (defNode.N == 0 && attNode.hasLand) {
+          problem.accumulate += problem.territory_value;
+        }
+        problem.setE(i, j, problem.accumulate);
+        continue;
+      }
+      let isVerifyOptimization = false;
+      if (do_optimization) {
+        if (defNode.N >= factor * attNode.N && defNode.N > 10) {
+          if (
+            attNode.nosub_group != undefined &&
+            defNode.nosub_group != undefined
+          ) {
+            const attPower = attNode.nosub_group.power[attNode.N];
+            const defPower = defNode.nosub_group.power[defNode.N];
+            if (defPower > factor * attPower) {
+              if (!verify_optimization) {
+                E_1d[i * M + j] = 0;
+                problem.setRetreat(i, j, true);
+                continue;
+              }
+              isVerifyOptimization = true;
+            }
+          }
+        }
+      }
 
       solve_one_general_state_copy1(
         problem,
@@ -700,18 +750,16 @@ export function compute_expected_value(problem: general_problem): void {
           m: number,
           num_rounds: number,
         ) => {
-          const attnode = problem.att_data.nodeArr[n];
-          const defnode = problem.def_data.nodeArr[m];
-          const attloss = problem.base_attcost - attnode.cost;
-          const defloss = problem.base_defcost - defnode.cost;
-          const deltacost = defloss - attloss;
-          const expected_value = problem.E_1d[ii];
-          problem.accumulate += (deltacost + expected_value) * prob;
+          const attloss =
+            problem.base_attcost - problem.att_data.nodeCostArr[n];
+          const defloss =
+            problem.base_defcost - problem.def_data.nodeCostArr[m];
+          problem.accumulate += (defloss - attloss + problem.E_1d[ii]) * prob;
         },
         (problem, n: number, m: number) => {
           problem.accumulate = 0;
-          problem.base_attcost = problem.att_data.nodeArr[n].cost;
-          problem.base_defcost = problem.def_data.nodeArr[m].cost;
+          problem.base_attcost = problem.att_data.nodeCostArr[n];
+          problem.base_defcost = problem.def_data.nodeCostArr[m];
           return 1;
         },
         (problem, n: number, m: number) => {
@@ -739,6 +787,11 @@ export function compute_expected_value(problem: general_problem): void {
           }
         },
       );
+      if (isVerifyOptimization && !problem.getRetreat(i, j)) {
+        throw new Error(
+          `Optimization verification failed at state (${i}, ${j}) with attPower ${attNode.nosub_group?.power[attNode.N]} and defPower ${defNode.nosub_group?.power[defNode.N]}`,
+        );
+      }
     }
   }
 

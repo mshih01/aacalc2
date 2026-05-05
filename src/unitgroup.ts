@@ -658,6 +658,7 @@ export class general_unit_graph_node {
   num_naval: number;
   num_dest: number;
   num_aa: number;
+  num_bomber: number;
   hasLand: boolean = false; // true if unit_str has land units.
   cost: number;
   deadzone_cost: number; // land units taking territories in a deadzone.
@@ -695,7 +696,8 @@ export class general_unit_graph_node {
     this.retreat = retreat;
     this.N = unit_str.length;
     this.num_subs = count_units(unit_str, 'S');
-    this.num_air = count_units(unit_str, 'f') + count_units(unit_str, 'b');
+    this.num_bomber = count_units(unit_str, 'b');
+    this.num_air = count_units(unit_str, 'f') + this.num_bomber;
     this.num_aa = count_units(unit_str, 'c');
     this.num_naval = this.N - this.num_subs - this.num_air;
     this.numBB = count_units(this.unit_str, 'E');
@@ -736,6 +738,7 @@ export class general_unit_group {
   dlast_group: unit_group | undefined;
 
   nodeArr: general_unit_graph_node[] = [];
+  nodeCostArr: number[] = [];
 
   constructor(
     um: unit_manager,
@@ -1666,6 +1669,10 @@ export function compute_remove_hits(
 
   //console.log("done queue");
   naval_group.nodeArr = nodeVec;
+  naval_group.nodeCostArr = new Array(nodeVec.length);
+  for (let i = 0; i < naval_group.nodeCostArr.length; i++) {
+    naval_group.nodeCostArr[i] = nodeVec[i].cost;
+  }
   //console.log(naval_group.nodeArr.length, "length");
   let i;
   for (i = 0; i < naval_group.nodeArr.length; i++) {
