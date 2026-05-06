@@ -23,16 +23,7 @@ type Setting = [
 ];
 
 const settings: Setting[] = [
-  [
-    'EV retreat roundless',
-    0,
-    0,
-    undefined,
-    true /* is_deadzone*/,
-    0,
-    true,
-    false,
-  ], // is_deadzone
+  ['EV retreat roundless', 0, 0, 0, true /* is_deadzone*/, 2, true, false], // is_deadzone
 ];
 
 console.log(process.memoryUsage());
@@ -182,20 +173,22 @@ solveTypeArr.push('exhaust');
 solveTypeArr = [];
 //solveTypeArr.push('fuzzyBinarySearch');
 //solveTypeArr.push('linearSearch');
-solveTypeArr.push('gridSearch');
+//solveTypeArr.push('exhaust');
+solveTypeArr.push('linearSearch');
+//solveTypeArr.push('gridSearch');
 
 if (true) {
-  const out: [string, Army, number, number][] = [];
+  const out: [string, string, number][] = [];
   for (let solveType of solveTypeArr) {
     let input2: MultiwaveInput = {
       wave_info: [
         {
           attack: {
             units: {
-              inf: 20,
-              art: 10,
-              arm: 10,
-              fig: 10,
+              inf: 40,
+              art: 40,
+              arm: 40,
+              fig: 2,
               bom: 0,
             },
             ool: ['inf', 'art', 'arm', 'fig', 'bom'],
@@ -204,12 +197,12 @@ if (true) {
           },
           defense: {
             units: {
-              inf: 20,
-              art: 10,
-              arm: 0,
+              inf: 15,
+              art: 4,
+              arm: 1,
               fig: 0,
               bom: 0,
-              aa: 3,
+              aa: 0,
             },
             ool: ['aa', 'bom', 'inf', 'art', 'arm', 'fig'],
             takes: 0,
@@ -239,7 +232,7 @@ if (true) {
       diceMode: 'standard',
       sortMode: 'ipc_cost',
       is_deadzone: true,
-      territory_value: undefined,
+      territory_value: 2,
       do_roundless_eval: true,
       retreat_round_zero: false,
     };
@@ -247,11 +240,13 @@ if (true) {
       ...input2,
       targetPercentage: 0.9,
       optimizeMode: 'maxProfit',
-      numRecommendations: 1,
+      numRecommendations: 3,
       attDefType: 'attacker',
       pwinMode: 'destroys',
       //solveType: 'gridSearch',
       solveType: solveType,
+      granularity: 3,
+      beamWidth: 3,
     };
     let t0 = performance.now();
     console.log(solveType, 'begin');
@@ -261,22 +256,10 @@ if (true) {
     console.log(input.wave_info[0].defense.units);
     console.log(solveType, 'end');
     let t1 = performance.now() - t0;
-    out.push([
-      solveType,
-      output.recommendations[0].army,
-      output.recommendations[0].cost,
-      t1,
-    ]);
+    out.push([solveType, JSON.stringify(output.recommendations, null, 0), t1]);
   }
   for (let i = 0; i < out.length; i++) {
     let o = out[i];
-    console.log(
-      o[0],
-      JSON.stringify(o[1]),
-      'cost',
-      o[2],
-      'runtime',
-      o[3].toFixed(1),
-    );
+    console.log(o[0], o[1], 'runtime', o[2].toFixed(1));
   }
 }

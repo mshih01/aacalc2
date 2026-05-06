@@ -35,6 +35,8 @@ export interface ArmyRecommendInput extends MultiwaveInput {
   targetPercentage: number; // target percentage for attacker to win or defender to hold.
   pwinMode?: PwinMode;
   solveType?: SolveType;
+  beamWidth?: number; // number of beams for gridSearch beam search (default 3)
+  granularity?: number; // grid divisions per dim for gridSearch (default 3)
 }
 
 export interface Recommendation {
@@ -574,30 +576,50 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       const initialGuess = initial;
       if (verbose) console.log(initialGuess, 'initialGuess');
       if (verbose) console.log(bounds, 'bounds');
-      const finalParams: Vector =
-        solveType == 'gridSearch'
-          ? gridSearch(objectiveFn, bounds, verbose)
-          : lineSearch(objectiveFn, initialGuess, bounds, 5, verbose);
-
-      if (verbose) console.log('Optimized Integer Parameters:', finalParams);
-      if (optimizeMode == 'maxProfit') {
-        if (verbose) {
-          console.log('Maximum profit found:', -objectiveFn(finalParams));
-          console.log(profitMap.size, 'profit map size');
-        }
-        const bestArmy = getArmy(finalParams);
-        const profit = -armyProfitObjective(finalParams);
-        armyRecommendOutput.recommendations = [
-          { army: bestArmy, cost: profit },
-        ];
+      const beamWidth = input.beamWidth ?? 3;
+      const granularity = input.granularity ?? 3;
+      if (solveType == 'gridSearch') {
+        const gridResults = gridSearch(
+          objectiveFn,
+          bounds,
+          verbose,
+          beamWidth,
+          granularity,
+        );
+        if (verbose)
+          console.log(
+            'Optimized Integer Parameters:',
+            gridResults.length > 0 ? gridResults[0] : 'N/A',
+          );
       } else {
-        if (verbose) {
-          console.log('Minimum value found:', armyCostObjective(finalParams));
-          console.log(mymap.size, 'map size');
-        }
-        const bestArmy = getArmy(finalParams);
-        const cost = getArmyCost(bestArmy);
-        armyRecommendOutput.recommendations = [{ army: bestArmy, cost: cost }];
+        const lineResult = lineSearch(
+          objectiveFn,
+          initialGuess,
+          bounds,
+          20,
+          verbose,
+        );
+        if (verbose) console.log('Optimized Integer Parameters:', lineResult);
+      }
+      const relevantMap = optimizeMode == 'maxProfit' ? profitMap : mymap;
+      const sortedEntries = Array.from(relevantMap.entries())
+        .map(([key, value]) => ({ vars: JSON.parse(key) as number[], value }))
+        .sort((a, b) => a.value - b.value);
+
+      if (verbose) {
+        console.log(relevantMap.size, 'map size');
+      }
+
+      armyRecommendOutput.recommendations = [];
+      const n = Math.min(numRecommendations, sortedEntries.length);
+      for (let i = 0; i < n; i++) {
+        const vars = sortedEntries[i].vars;
+        const army = getArmy(vars);
+        const cost =
+          optimizeMode == 'maxProfit'
+            ? -sortedEntries[i].value
+            : getArmyCost(army);
+        armyRecommendOutput.recommendations.push({ army, cost });
       }
 
       break;
@@ -634,7 +656,7 @@ function approximateGradient(
 
     // Calculate approximate gradient using finite difference
     gradients[j] =
-      xplus > xminus ? (fPlusDelta - fMinusDelta) / (xplus - xminus) : 0;
+      xplus != xminus ? (fPlusDelta - fMinusDelta) / (xplus - xminus) : 0;
 
     // Restore original parameter value
     params[j] = originalVal;
@@ -647,40 +669,37 @@ function doNeighborSearch(
   x: Vector,
   bound: [number, number][],
   delta: number,
+  verbose?: boolean,
 ): Vector {
   let range: Number[][] = [];
   for (let i = 0; i < x.length; i++) {
     let minval = bound[i][0];
     let maxval = bound[i][1];
-    let min = x[i] > 0 ? Math.max(x[i] - delta, minval) : 0;
-    let max = x[i] > 0 ? Math.min(x[i] + delta, maxval) : 0;
+    let min = Math.max(x[i] - delta, minval);
+    let max = Math.min(x[i] + delta, maxval);
     let v = getIntegersInRange(min, max, 1);
     range.push(v);
   }
-  //console.log(range, "range");
   let combinations = getCombinations(range);
-  //console.log(combinations, "combinations");
-  //console.log(combinations.length, "combinations");
   let miny = objectiveFn(x);
   let minx = x;
   for (let i = 0; i < combinations.length; i++) {
     const x1 = combinations[i] as Vector;
     const y1 = objectiveFn(x1);
-    //console.log(x1, y1, "x1, y1")
     if (y1 < miny) {
       miny = y1;
       minx = x1;
     }
   }
 
-  //console.log(minx, miny, "minx, miny")
   return minx;
 }
 function doGridSearch(
   objectiveFn: ObjectiveFunction,
   bound: [number, number, number][],
   verbose?: boolean,
-): Vector {
+  k: number = 1,
+): [Vector, number][] {
   let range: Number[][] = [];
   for (let i = 0; i < bound.length; i++) {
     let minval = bound[i][0];
@@ -695,59 +714,75 @@ function doGridSearch(
   let combinations = getCombinations(range);
   //console.log(combinations, "combinations");
   if (verbose) console.log(combinations.length, 'combinations');
-  let miny = undefined;
-  let minx: Vector = [];
+  let evaluated: [Vector, number][] = [];
   for (let i = 0; i < combinations.length; i++) {
     const x1 = combinations[i] as Vector;
     const y1 = objectiveFn(x1);
     //console.log(x1, y1, "x1, y1")
-    if (miny == undefined || y1 < miny) {
-      miny = y1;
-      minx = x1;
-    }
+    evaluated.push([x1, y1]);
   }
-
-  //console.log(minx, miny, "minx, miny")
-  return minx;
+  evaluated.sort((a, b) => a[1] - b[1]);
+  return evaluated.slice(0, k);
 }
 function gridSearch(
   objectiveFn: ObjectiveFunction,
   bound: [number, number][],
   verbose?: boolean,
-): Vector {
+  beamWidth: number = 3,
+  granularity: number = 3,
+): Vector[] {
+  const g = granularity;
+  const k = Math.max(1, beamWidth);
   let currBound: [number, number, number][] = [];
   for (let i = 0; i < bound.length; i++) {
     let low = bound[i][0];
     let high = bound[i][1];
-    let step = Math.max(Math.ceil((high - low) / 3), 1);
+    let step = Math.max(Math.ceil((high - low) / g), 1);
     currBound.push([low, high, step]);
   }
   if (verbose) console.log(currBound, 'currBound');
-  let best = doGridSearch(objectiveFn, currBound, verbose);
+  let bestList = doGridSearch(objectiveFn, currBound, verbose, k);
 
-  for (let i = 0; i < 10; i++) {
-    let prevBound = currBound.slice();
-
-    currBound = [];
+  for (let iter = 0; iter < 10; iter++) {
+    let prevBound = currBound;
+    let allCandidates: [Vector, number][] = [];
     let stop = true;
-    for (let i = 0; i < best.length; i++) {
-      let oldstep = prevBound[i][2];
-      let low = Math.max(best[i] - oldstep, bound[i][0]);
-      let high = Math.min(best[i] + oldstep, bound[i][1]);
-      let step = Math.max(Math.floor((high - low) / 3), 1);
-      if (step > 1) {
-        stop = false;
+
+    for (let beamIdx = 0; beamIdx < bestList.length; beamIdx++) {
+      const best = bestList[beamIdx][0];
+      let beamBound: [number, number, number][] = [];
+      for (let d = 0; d < best.length; d++) {
+        let oldstep = prevBound[d][2];
+        let low = Math.max(best[d] - oldstep, bound[d][0]);
+        let high = Math.min(best[d] + oldstep, bound[d][1]);
+        let step = Math.max(Math.floor((high - low) / g), 1);
+        if (step > 1) stop = false;
+        beamBound.push([low, high, step]);
       }
-      currBound.push([low, high, step]);
+      const candidates = doGridSearch(objectiveFn, beamBound, false, k);
+      allCandidates.push(...candidates);
     }
-    if (verbose) console.log(currBound, 'currBound');
-    best = doGridSearch(objectiveFn, currBound, verbose);
-    if (stop) {
-      break;
+
+    allCandidates.sort((a, b) => a[1] - b[1]);
+    bestList = allCandidates.slice(0, k);
+    if (verbose) {
+      console.log('top k', bestList);
+    }
+
+    if (stop) break;
+
+    const best = bestList[0][0];
+    currBound = [];
+    for (let d = 0; d < best.length; d++) {
+      let oldstep = prevBound[d][2];
+      let low = Math.max(best[d] - oldstep, bound[d][0]);
+      let high = Math.min(best[d] + oldstep, bound[d][1]);
+      let step = Math.max(Math.floor((high - low) / g), 1);
+      currBound.push([low, high, step]);
     }
   }
 
-  return best;
+  return bestList.map((pair) => pair[0]);
 }
 function lineSearch(
   objectiveFn: ObjectiveFunction,
@@ -760,10 +795,10 @@ function lineSearch(
   for (let i = 0; i < numIterations; i++) {
     let gradientAtX = approximateGradient(x0, bound, 1.0, objectiveFn);
 
-    // negative gradient
-    let direction: Vector = gradientAtX.map((val, i) =>
-      val > 0 ? -val : -val,
-    );
+    // negative gradient, normalized to unit length
+    let direction: Vector = gradientAtX.map((val) => -val);
+    let norm = Math.sqrt(direction.reduce((sum, v) => sum + v * v, 0));
+    if (norm > 0) direction = direction.map((v) => v / norm);
     for (let i = 0; i < direction.length; i++) {
       let val = x0[i];
       let minBound = bound[i][0];
@@ -782,8 +817,8 @@ function lineSearch(
       bound,
       direction,
       0.5,
-      0.5,
-      2.0,
+      0.9,
+      20.0,
     );
     const newX: Vector = x0.map((val, i) => {
       let v = Math.round(val + stepSize * direction[i]);
@@ -805,7 +840,7 @@ function lineSearch(
     }
     if (same) {
       // do neighbor search
-      let xNew = doNeighborSearch(objectiveFn, x0, bound, 8);
+      let xNew = doNeighborSearch(objectiveFn, x0, bound, 4, verbose);
       let same = true;
       for (let i = 0; i < xNew.length; i++) {
         if (xNew[i] != x0[i]) {
@@ -823,7 +858,22 @@ function lineSearch(
     x0 = newX;
     if (verbose) console.log(i, x0, direction, stepSize, newX);
   }
-  return x0;
+  // iterative final refinement
+  let xFinal = x0;
+  for (let ref = 0; ref < 5; ref++) {
+    const xNext = doNeighborSearch(objectiveFn, xFinal, bound, 4, verbose);
+    let same = true;
+    for (let i = 0; i < xNext.length; i++) {
+      if (xNext[i] != xFinal[i]) {
+        same = false;
+        break;
+      }
+    }
+    if (same) break;
+    xFinal = xNext;
+    if (verbose) console.log('refinement pass', ref, ':', xFinal);
+  }
+  return xFinal;
 }
 type Vector = number[]; // Represents a vector (e.g., a point in n-dimensional space)
 interface ObjectiveFunction {
@@ -877,6 +927,7 @@ function backtrackingLineSearch(
     let y1 = objectiveFn(xNew);
     let y0 = objectiveFn(x);
     //console.log(y1, y0, xNew, x, stepSize, 'y1, y0, xNew, x, step');
+    //console.log(y1, y0, alpha, stepSize, dotProduct, y0+alpha*stepSize*dotProduct, 'armijo condition');
     // Check the Armijo condition
     if (y1 < y0 + alpha * stepSize * dotProduct) {
       break; // Condition met, exit loop
