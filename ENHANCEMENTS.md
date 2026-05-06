@@ -17,6 +17,8 @@ Enhancement list:
 
 ### controlling complexity
 
+### use attackers from previous wave (take and hold analysis)
+
 ## Input interface:
 
 ```
@@ -74,10 +76,14 @@ export interface ProfitInfo {
 }
 export type ProfitDistribution = Record<number, ProfitInfo>; // key: ipc value: probability
 
+export type CasualtiesInfo = Record<Side, Record<string, CasualtyInfo>>;
+export type CasualtiesInfoArr = Record< number, Record<Side, Record<string, CasualtyInfo>>>;
+
 export interface MultiwaveOutput {
   attack: CalcInfo;
   defense: CalcInfo;
   casualtiesInfo: CasualtiesInfo;
+  casualtiesInfoArr: CasualtiesInfoArr; // wave by wave casualties info
   profitDistribution: ProfitDistribution[]; // key is profit, data is probability
   takesTerritory: number[];
   rounds: number[];
@@ -210,20 +216,20 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
 
     		max ipc profit optimization:
     		input.optimizeMode = 'maxProfit'
-    		input.solveType = 'exhaust'
+    		input.solveType = 'gridSearch'
     		input.numRecommendations = 3		// number of recommendations to return.
     		// only works for optimizing attacker army
-    		// todo... input complexity needs to be controlled for this one, since it is doing exhaustive search.,
-    	// todo... add max IPC support for other  solveType -- maybe gridSearch, or linearSearch..
+			// done... added max IPC support for other solveTypes -- gridSearch and linearSearch
+
 
 ### use attackers from previous wave
 
 ```
 WaveInput.use_attackers_from_previous_wave  -- optional, default false.
-    When true, the surviving attackers from the previous wave continue
-    fighting in the current wave instead of the surviving defenders. This
+    When true, the surviving attackers from the previous wave defend in 
+    the current wave instead of the surviving defenders. This
     is useful for modeling "capture and hold" scenarios where the
-    attacking force pushes through consecutive territories.
+    attacking force need to defend against counter attack.
 
     Role reversal is cumulative: each wave where this flag is true toggles
     the attack/defense sides for the "All Waves Summary" totals.
