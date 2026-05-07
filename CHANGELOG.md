@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.17
+
+### Patch Changes
+
+- cb2be88: bug in amphibious retreat
+
 ## 2.0.16
 
 ### Patch Changes
