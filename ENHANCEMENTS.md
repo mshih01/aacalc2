@@ -131,10 +131,12 @@ export interface CalcInfo {
     		The value should be a number between 0 and 1.
     	- WaveInput.retreat_strafe_threshold		-- optional, default undefined.
     		When defined retreat if the probability of wiping out the defenders in the next 
+        valid only with nosubs case.
 			round > threshold.
     		The value should be between 0 and 1.
     	- WaveInput.retreat_lose_air_probability		-- optional, default 1.0
     		Retreat if the probability of losing air in the next round exceeds threshold.
+        valid only with nosubs case.
 
 ### ipc profit distribution
 

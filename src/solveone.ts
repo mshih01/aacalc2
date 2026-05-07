@@ -70,9 +70,11 @@ export function solve_one_general_state(
         const n = attnode.next_retreat_amphibious.index;
         const m = defnode.index;
         const ii = problem.getIndex(n, m);
-        onNextState(problem, ii, p_init, n, m, state_init_rounds);
-        //problem.setiP(ii, problem.getiP(ii) + p_init);
-        problem.setP(N, M, 0);
+        if (n != N) {
+          onNextState(problem, ii, p_init, n, m, state_init_rounds);
+          //problem.setiP(ii, problem.getiP(ii) + p_init);
+          problem.setP(N, M, 0);
+        }
         onExitState(problem, N, M);
         return;
       }

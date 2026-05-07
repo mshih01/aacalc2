@@ -1074,6 +1074,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
 
+  /*
   const input9: MultiwaveInput = {
     wave_info: [
       {
@@ -1179,6 +1180,59 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_expected_ipc_profit_threshold: retreat,
         retreat_strafe_threshold: strafe,
         use_attackers_from_previous_wave: true,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: verbose,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+    is_deadzone: is_deadzone,
+    report_complexity_only: report_complexity_only,
+    territory_value: territory_value,
+    do_roundless_eval: do_roundless_eval,
+  };
+*/
+  const input9: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf_a: 2,
+            art_a: 1,
+            arm_a: 1,
+            fig: 1,
+            bom: 1,
+          },
+          ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 4,
+            art: 2,
+            arm: 0,
+            fig: 0,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: 0,
+        retreat_strafe_threshold: strafe,
       },
     ],
     debug: false,

@@ -236,7 +236,13 @@ export class general_problem {
     this.territory_value = territory_value;
     this.retreat_round_zero = retreat_round_zero;
     this.do_roundless_eval = do_roundless_eval;
-    this.is_retreat = (rounds > 0 && rounds < 100) || retreat_threshold > 0;
+    this.is_retreat =
+      (rounds > 0 && rounds < 100) ||
+      retreat_threshold > 0 ||
+      retreat_expected_ipc_profit_threshold !== undefined ||
+      retreat_pwin_threshold !== undefined ||
+      retreat_strafe_threshold !== undefined ||
+      retreat_lose_air_probability < 1.0;
     this.retreat_threshold = retreat_threshold;
     this.is_crash_fighters = is_crash_fighters;
     this.rounds = rounds;
@@ -549,8 +555,10 @@ function retreat_one_naval_state(
     const n = attnode.next_retreat_amphibious.index;
     const m = defnode.index;
     const ii = problem.getIndex(n, m);
-    problem.setiP(ii, problem.getiP(ii) + p_init);
-    problem.setP(N, M, 0);
+    if (n != N) {
+      problem.setiP(ii, problem.getiP(ii) + p_init);
+      problem.setP(N, M, 0);
+    }
     return;
   }
 }
@@ -946,6 +954,57 @@ function do_roundless_eval(
           }
         },
       );
+    }
+  }
+
+  if (problem.is_amphibious) {
+    // for each state
+    // if attackers and defenders exist.
+    // 1.  remove move the remaining non-amphibous attackers to retreat state.
+
+    for (let i = N - 1; i >= 0; i--) {
+      for (let j = M - 1; j >= 0; j--) {
+        retreat_one_naval_state(problem, i, j);
+      }
+    }
+    // evaluate infinite rounds -- with retreat disabled. -- remaining attackers are not allowed to retreat.
+    for (i = 0; i < N; i++) {
+      for (j = 0; j < M; j++) {
+        solve_one_general_state_copy2(
+          problem,
+          i,
+          j,
+          false,
+          0,
+          false,
+          true, // disable retreat to evaluate infinite rounds for remaining states.
+          (
+            problem,
+            ii: number,
+            prob: number,
+            n: number,
+            m: number,
+            num_rounds: number,
+          ) => {
+            problem.P_1d[ii] += prob;
+            problem.ERound_1d[ii] += prob * num_rounds;
+          },
+          (problem, n: number, m: number) => {
+            const p_init = problem.getP(n, m);
+            if (p_init == 0) {
+              problem.init_rounds = 0;
+              return p_init;
+            }
+            problem.init_rounds = problem.getERound(n, m) / p_init;
+            return p_init;
+          },
+          (problem, n: number, m: number) => {
+            if (problem.getP(n, m) == 0) {
+              problem.setERound(n, m, 0.0);
+            }
+          },
+        );
+      }
     }
   }
 
