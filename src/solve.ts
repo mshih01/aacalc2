@@ -695,6 +695,7 @@ export function compute_expected_value(problem: general_problem): void {
     problem.retreat_expected_ipc_profit_threshold != undefined &&
     problem.retreat_expected_ipc_profit_threshold >= 0 &&
     problem.territory_value < 10 &&
+    !problem.is_amphibious &&
     !problem.is_naval &&
     defData.nodeArr[0].num_bomber == 0 && // no defending bombers
     defData.nodeArr[0].N > 20 &&
@@ -710,7 +711,10 @@ export function compute_expected_value(problem: general_problem): void {
     for (j = M - 1; j >= 0; j--) {
       const attNode = attData.nodeArr[i];
       const defNode = defData.nodeArr[j];
-      if (is_terminal_state(problem, i, j, false, false)) {
+      if (
+        !problem.is_amphibious &&
+        is_terminal_state(problem, i, j, false, false)
+      ) {
         problem.accumulate = 0;
         if (problem.is_deadzone && defNode.N == 0) {
           problem.accumulate -= attNode.deadzone_cost;
@@ -783,15 +787,31 @@ export function compute_expected_value(problem: general_problem): void {
             }
             problem.setE(n, m, problem.accumulate);
           } else {
-            const is_retreat =
-              problem.retreat_expected_ipc_profit_threshold != undefined &&
-              problem.accumulate <
-                problem.retreat_expected_ipc_profit_threshold;
-            const ev = !is_retreat ? problem.accumulate : 0;
-            if (is_retreat) {
-              problem.setRetreat(n, m, true);
+            if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+              let ev_fight = problem.accumulate;
+              let ev_retreat = 0;
+              if (problem.is_amphibious) {
+                let retreatNode = attnode.next_retreat_amphibious ?? attnode;
+                const nn = retreatNode.index;
+                if (n == nn) {
+                  // amphib units only... can't retreat;
+                  ev_retreat = problem.accumulate - 1e9;
+                } else {
+                  const ii = problem.getIndex(nn, m);
+                  ev_retreat = problem.E_1d[ii];
+                }
+              }
+              const evdiff = ev_fight - ev_retreat;
+              const is_retreat =
+                evdiff < problem.retreat_expected_ipc_profit_threshold;
+              const ev = !is_retreat ? ev_fight : ev_retreat;
+              if (is_retreat) {
+                problem.setRetreat(n, m, true);
+              }
+              problem.setE(n, m, ev);
+            } else {
+              throw new Error('should not reach here');
             }
-            problem.setE(n, m, ev);
           }
         },
       );
