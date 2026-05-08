@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.18
+
+### Patch Changes
+
+- fa3a2e3: EV retreat consider amphibious retreat
+
 ## 2.0.17
 
 ### Patch Changes
