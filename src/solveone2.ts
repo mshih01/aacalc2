@@ -74,9 +74,15 @@ export function solve_one_general_state_copy2(
           onNextState(problem, ii, p_init, n, m, state_init_rounds);
           //problem.setiP(ii, problem.getiP(ii) + p_init);
           problem.setP(N, M, 0);
+          onExitState(problem, N, M);
+          return;
+        } else {
+          // no retreat target -- only amphibious units left
+          // intentionally fall through and disable the retreat.
         }
-        onExitState(problem, N, M);
-        return;
+      } else {
+        // no retreat target -- only amphibious units left
+        // intentionally fall through and disable the retreat.
       }
     } else {
       onExitState(problem, N, M);

@@ -1867,6 +1867,13 @@ export function compute_remove_hits(
             'next remove transports ',
           );
         }
+        if (node.next_retreat_amphibious != undefined) {
+          console.log(
+            node.index,
+            node.next_retreat_amphibious.index,
+            'next retreat amphibious',
+          );
+        }
       }
       if (naval_group.um.verbose_level > 4) {
         console.log(

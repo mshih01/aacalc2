@@ -685,6 +685,9 @@ export function compute_expected_value(problem: general_problem): void {
   const E_1d = (problem.E_1d = new Array(N * M));
   const attData = problem.att_data;
   const defData = problem.def_data;
+  if (problem.retreat_expected_ipc_profit_threshold == undefined) {
+    throw new Error('retreat_expected_ipc_profit_threshold is undefined');
+  }
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -787,7 +790,7 @@ export function compute_expected_value(problem: general_problem): void {
             }
             problem.setE(n, m, problem.accumulate);
           } else {
-            if (problem.retreat_expected_ipc_profit_threshold != undefined) {
+            {
               let ev_fight = problem.accumulate;
               let ev_retreat = 0;
               if (problem.is_amphibious) {
@@ -803,14 +806,12 @@ export function compute_expected_value(problem: general_problem): void {
               }
               const evdiff = ev_fight - ev_retreat;
               const is_retreat =
-                evdiff < problem.retreat_expected_ipc_profit_threshold;
+                evdiff < problem.retreat_expected_ipc_profit_threshold!;
               const ev = !is_retreat ? ev_fight : ev_retreat;
               if (is_retreat) {
                 problem.setRetreat(n, m, true);
               }
               problem.setE(n, m, ev);
-            } else {
-              throw new Error('should not reach here');
             }
           }
         },
@@ -835,6 +836,10 @@ export function compute_expected_value(problem: general_problem): void {
 // compute the Pwin with the win condition as attacker takes territory
 export function compute_prob_wins(problem: general_problem): void {
   problem.Pwin_1d = [];
+  if (problem.retreat_pwin_threshold == undefined) {
+    throw new Error('retreat_pwin_threshold is required for compute_prob_wins');
+  }
+
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
   let i, j;
@@ -889,8 +894,7 @@ export function compute_prob_wins(problem: general_problem): void {
             problem.setPwin(n, m, problem.pwin_acc);
           } else {
             const is_retreat =
-              problem.retreat_pwin_threshold != undefined &&
-              problem.pwin_acc < problem.retreat_pwin_threshold;
+              problem.pwin_acc < problem.retreat_pwin_threshold!;
             const pwin = !is_retreat ? problem.pwin_acc : 0;
             if (is_retreat) {
               problem.setRetreat(n, m, true);
@@ -974,57 +978,6 @@ function do_roundless_eval(
           }
         },
       );
-    }
-  }
-
-  if (problem.is_amphibious) {
-    // for each state
-    // if attackers and defenders exist.
-    // 1.  remove move the remaining non-amphibous attackers to retreat state.
-
-    for (let i = N - 1; i >= 0; i--) {
-      for (let j = M - 1; j >= 0; j--) {
-        retreat_one_naval_state(problem, i, j);
-      }
-    }
-    // evaluate infinite rounds -- with retreat disabled. -- remaining attackers are not allowed to retreat.
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < M; j++) {
-        solve_one_general_state_copy2(
-          problem,
-          i,
-          j,
-          false,
-          0,
-          false,
-          true, // disable retreat to evaluate infinite rounds for remaining states.
-          (
-            problem,
-            ii: number,
-            prob: number,
-            n: number,
-            m: number,
-            num_rounds: number,
-          ) => {
-            problem.P_1d[ii] += prob;
-            problem.ERound_1d[ii] += prob * num_rounds;
-          },
-          (problem, n: number, m: number) => {
-            const p_init = problem.getP(n, m);
-            if (p_init == 0) {
-              problem.init_rounds = 0;
-              return p_init;
-            }
-            problem.init_rounds = problem.getERound(n, m) / p_init;
-            return p_init;
-          },
-          (problem, n: number, m: number) => {
-            if (problem.getP(n, m) == 0) {
-              problem.setERound(n, m, 0.0);
-            }
-          },
-        );
-      }
     }
   }
 
