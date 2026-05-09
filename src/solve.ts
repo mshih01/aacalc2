@@ -893,9 +893,23 @@ export function compute_prob_wins(problem: general_problem): void {
             }
             problem.setPwin(n, m, problem.pwin_acc);
           } else {
+            let pwin_retreat = 0;
+            let pwin_fight = problem.pwin_acc;
+            let can_retreat = true;
+            if (problem.is_amphibious) {
+              let retreatNode = attnode.next_retreat_amphibious ?? attnode;
+              const nn = retreatNode.index;
+              if (n == nn) {
+                // amphib units only... can't retreat;
+                can_retreat = false;
+              } else {
+                const ii = problem.getIndex(nn, m);
+                pwin_retreat = problem.Pwin_1d[ii];
+              }
+            }
             const is_retreat =
-              problem.pwin_acc < problem.retreat_pwin_threshold!;
-            const pwin = !is_retreat ? problem.pwin_acc : 0;
+              can_retreat && pwin_fight < problem.retreat_pwin_threshold!;
+            const pwin = !is_retreat ? pwin_fight : pwin_retreat;
             if (is_retreat) {
               problem.setRetreat(n, m, true);
             }

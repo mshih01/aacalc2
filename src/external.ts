@@ -931,17 +931,17 @@ function buildCumulativeCasualtiesInfo(
             continueStateProb = defenderHoldsStateProb;
           }
           if (isContinueState && continueStateProb > 0) {
-            /*
-			// don't need to cross multiply... defender in the next
-			// state already preserves
-            newContinues.push({
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: continueStateProb,
-            });
-*/
+            if (isNextWaveSwap) {
+              newContinues.push({
+                casualties: casStr,
+                survivors: remainStr,
+                retreaters: retreatStr,
+                ipcLoss: ipc,
+                prob: continueStateProb,
+              });
+            } else {
+              // don't need to cross multiply... defender in the next state already preserves
+            }
           }
           if (isTerminalState && terminalStateProb > 0) {
             mapCrossMul(att, pendingAtt, {
@@ -998,13 +998,28 @@ function buildCumulativeCasualtiesInfo(
               prob: cas.prob,
             });
           } else {
-            newContinuesDef.push({
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: cas.prob,
-            });
+            if (!isNextWaveSwap) {
+              newContinuesDef.push({
+                casualties: casStr,
+                survivors: remainStr,
+                retreaters: retreatStr,
+                ipcLoss: ipc,
+                prob: cas.prob,
+              });
+            } else {
+              // Swap transition: split land from air
+              const { air: casAir } = splitAirLand(um, cas.casualty);
+              const { air: remainAir } = splitAirLand(um, cas.remain);
+              const { air: retreatAir } = splitAirLand(um, cas.retreat);
+              const airIpc = get_cost_from_str(um, casAir);
+              pushCrossMul(newContinuesDef, pendingDef, {
+                casualties: get_external_unit_str(um, casAir),
+                survivors: get_external_unit_str(um, remainAir),
+                retreaters: get_external_unit_str(um, retreatAir),
+                ipcLoss: airIpc,
+                prob: cas.prob,
+              });
+            }
           }
         }
 
@@ -1127,7 +1142,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const t0_multi = performance.now();
   const internal_input = getInternalInput(input);
   const internal_output = multiwave(internal_input);
-  if (input.verbose_level > 0) {
+  if (input.verbose_level > 1) {
     console.log(
       'multiwave runtime:',
       (performance.now() - t0_multi).toFixed(2),
@@ -1161,7 +1176,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     input.verbose_level,
     input.report_prune_threshold,
   );
-  if (input.verbose_level > 0) {
+  if (input.verbose_level > 1) {
     console.log(
       'casualties computation runtime:',
       (performance.now() - t0_cas).toFixed(2),
@@ -1242,8 +1257,8 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     complexity: internal_output.complexity,
   };
   if (input.verbose_level > 2) {
-    console.log('multiwave output', out);
-    console.log('multiwave output', JSON.stringify(out, null, 4));
+	console.log('multiwave input', JSON.stringify(input, null));
+    console.log('multiwave output', JSON.stringify(out, null));
   }
 
   return out;

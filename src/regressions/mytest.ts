@@ -1231,7 +1231,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         is_crash_fighters: false,
         rounds: round,
         retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: 0,
+        retreat_expected_ipc_profit_threshold: -1,
         retreat_strafe_threshold: strafe,
         //retreat_lose_air_probability: 0.3,
       },
@@ -1247,9 +1247,9 @@ for (let i = 0; i < inputSettings.length; i++) {
     sortMode: 'ipc_cost',
     is_deadzone: is_deadzone,
     report_complexity_only: report_complexity_only,
-    territory_value: territory_value,
+    territory_value: 6,
     do_roundless_eval: do_roundless_eval,
-    retreat_round_zero: false,
+    retreat_round_zero: true,
   };
 
   let inputs: MultiwaveInput[] = [
