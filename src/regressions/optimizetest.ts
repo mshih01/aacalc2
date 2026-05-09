@@ -7,9 +7,10 @@ import {
   type SolveType,
   type ArmyRecommendInput,
   type Army,
+  type OptimizeMode,
 } from '../index.js';
 
-const verbose = 1;
+const verbose = 0;
 
 type Setting = [
   string, // description
@@ -175,20 +176,31 @@ solveTypeArr = [];
 //solveTypeArr.push('linearSearch');
 //solveTypeArr.push('exhaust');
 solveTypeArr.push('linearSearch');
-//solveTypeArr.push('gridSearch');
+solveTypeArr.push('gridSearch');
+
+let mySettings: [SolveType, OptimizeMode, number | undefined][] = [];
+
+mySettings.push(['gridSearch', 'maxProfit', 0]);
+mySettings.push(['linearSearch', 'maxProfit', 0]);
+mySettings.push(['gridSearch', 'maxProfit', undefined]);
+mySettings.push(['linearSearch', 'maxProfit', undefined]);
+mySettings.push(['gridSearch', 'targetWinPercentage', undefined]);
+mySettings.push(['linearSearch', 'targetWinPercentage', undefined]);
+mySettings.push(['fuzzyBinarySearch', 'targetWinPercentage', undefined]);
 
 if (true) {
   const out: [string, string, number][] = [];
-  for (let solveType of solveTypeArr) {
+  for (let [solveType, optimizeMode, retreat] of mySettings) {
+    let label = JSON.stringify([solveType, optimizeMode, retreat]);
     let input2: MultiwaveInput = {
       wave_info: [
         {
           attack: {
             units: {
-              inf: 40,
-              art: 40,
-              arm: 40,
-              fig: 2,
+              inf: 60,
+              art: 60,
+              arm: 60,
+              fig: 20,
               bom: 0,
             },
             ool: ['inf', 'art', 'arm', 'fig', 'bom'],
@@ -202,7 +214,7 @@ if (true) {
               arm: 1,
               fig: 0,
               bom: 0,
-              aa: 0,
+              aa: 2,
             },
             ool: ['aa', 'bom', 'inf', 'art', 'arm', 'fig'],
             takes: 0,
@@ -215,7 +227,7 @@ if (true) {
           is_crash_fighters: false,
           rounds: 100,
           retreat_threshold: 0,
-          retreat_expected_ipc_profit_threshold: 0,
+          retreat_expected_ipc_profit_threshold: retreat,
           retreat_strafe_threshold: undefined,
           retreat_lose_air_probability: undefined,
           retreat_pwin_threshold: undefined, // optional
@@ -239,24 +251,27 @@ if (true) {
     let input: ArmyRecommendInput = {
       ...input2,
       targetPercentage: 0.9,
-      optimizeMode: 'maxProfit',
       numRecommendations: 3,
       attDefType: 'attacker',
       pwinMode: 'destroys',
-      //solveType: 'gridSearch',
       solveType: solveType,
+      optimizeMode: optimizeMode,
       granularity: 3,
       beamWidth: 3,
     };
     let t0 = performance.now();
-    console.log(solveType, 'begin');
+    console.log(label, 'begin');
     let output = armyRecommend(input);
     console.log(JSON.stringify(input, null, 4));
     console.log(input.wave_info[0].attack.units);
     console.log(input.wave_info[0].defense.units);
-    console.log(solveType, 'end');
+    console.log(label, 'end');
     let t1 = performance.now() - t0;
-    out.push([solveType, JSON.stringify(output.recommendations, null, 0), t1]);
+    out.push([
+      JSON.stringify([solveType, optimizeMode, retreat]),
+      JSON.stringify(output.recommendations, null, 0),
+      t1,
+    ]);
   }
   for (let i = 0; i < out.length; i++) {
     let o = out[i];

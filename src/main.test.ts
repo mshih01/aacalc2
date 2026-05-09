@@ -333,7 +333,7 @@ let inputSettings4: Setting[] = [
   ], // EV retreat -- 6
   [
     'retreat lose air 0.0',
-    0,
+    undefined,
     undefined,
     'takes',
     0,
@@ -346,7 +346,7 @@ let inputSettings4: Setting[] = [
   ], // retreat air 0.0 -- 7
   [
     'retreat lose air 0.11',
-    0,
+    undefined,
     undefined,
     'takes',
     0,
@@ -358,8 +358,8 @@ let inputSettings4: Setting[] = [
     0.11,
   ], // retreat air 0.11 -- 8
   [
-    'retreat lose air 0.12',
-    0,
+    'retreat lose air 0.30',
+    undefined,
     undefined,
     'takes',
     0,
@@ -368,7 +368,7 @@ let inputSettings4: Setting[] = [
     0,
     true,
     false,
-    0.12,
+    0.3,
   ], // retreat air 0.12 -- 9
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
 ];
@@ -426,6 +426,9 @@ for (let i = 0; i < 1; i += 0.1) {
     ];
     inputSettings.push([mysetting, 2]);
     inputSettings.push([inputSettings4[6], 2]);
+    inputSettings.push([inputSettings4[7], 2]);
+    inputSettings.push([inputSettings4[8], 2]);
+    inputSettings.push([inputSettings4[9], 2]);
   }
 }
 
@@ -566,6 +569,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         retreat_strafe_threshold: strafe, // optional
         retreat_pwin_threshold: pwin_retreat, // optional
         pwinMode: pwin_mode, // optional
+        retreat_lose_air_probability: retreat_lose_air_probability, // optional
       },
     ],
     debug: false,
@@ -1234,14 +1238,14 @@ for (let i = 0; i < inputSettings.length; i++) {
     });
     let t1 = performance.now() - t0;
     console.timeEnd(description);
-    console.log(myinput);
+    console.log(JSON.stringify(myinput, null));
 
     testIndex++;
 
     attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
     defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
 
-    console.log(output, description);
+    console.log(JSON.stringify(output, null), description);
 
     let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
 
@@ -1251,7 +1255,7 @@ for (let i = 0; i < inputSettings.length; i++) {
       output.attack.ipcLoss[0].toFixed(precision),
       output.takesTerritory[0].toFixed(precision),
       t1.toFixed(precision),
-      description,
+      description + ' ' + fileindex.toFixed(0),
     ];
     out.push(o);
   }
