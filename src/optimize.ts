@@ -669,14 +669,16 @@ function doNeighborSearch(
   x: Vector,
   bound: [number, number][],
   delta: number,
+  zerodelta: number,
   verbose?: boolean,
 ): Vector {
   let range: Number[][] = [];
   for (let i = 0; i < x.length; i++) {
+    let mydelta = x[i] == 0 ? zerodelta : delta;
     let minval = bound[i][0];
     let maxval = bound[i][1];
-    let min = Math.max(x[i] - delta, minval);
-    let max = Math.min(x[i] + delta, maxval);
+    let min = Math.max(x[i] - mydelta, minval);
+    let max = Math.min(x[i] + mydelta, maxval);
     let v = getIntegersInRange(min, max, 1);
     range.push(v);
   }
@@ -840,7 +842,7 @@ function lineSearch(
     }
     if (same) {
       // do neighbor search
-      let xNew = doNeighborSearch(objectiveFn, x0, bound, 4, verbose);
+      let xNew = doNeighborSearch(objectiveFn, x0, bound, 4, 0, verbose);
       let same = true;
       for (let i = 0; i < xNew.length; i++) {
         if (xNew[i] != x0[i]) {
@@ -861,7 +863,7 @@ function lineSearch(
   // iterative final refinement
   let xFinal = x0;
   for (let ref = 0; ref < 5; ref++) {
-    const xNext = doNeighborSearch(objectiveFn, xFinal, bound, 4, verbose);
+    const xNext = doNeighborSearch(objectiveFn, xFinal, bound, 4, 0, verbose);
     let same = true;
     for (let i = 0; i < xNext.length; i++) {
       if (xNext[i] != xFinal[i]) {

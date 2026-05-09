@@ -121,6 +121,7 @@ export interface BattleInput {
   numWaves?: number
   amphibious?: boolean
   experimentalConvolution?: boolean
+  retreatZeroRound?: boolean
 }
 
 function computeBattle(input: BattleInput): MultiwaveOutput {
@@ -175,7 +176,7 @@ function computeBattle(input: BattleInput): MultiwaveOutput {
     sortMode: input.sortMode ?? 'unit_count',
     territory_value: input.territoryValue ?? 0,
     is_deadzone: input.isDeadzone ?? false,
-    retreat_round_zero: false,
+    retreat_round_zero: input.retreatZeroRound ?? false,
     do_roundless_eval: true,
     experimentalConvolution: input.experimentalConvolution,
   }
@@ -1324,6 +1325,7 @@ function App() {
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [experimentalConvolution, setExperimentalConvolution] = useState(false)
+  const [retreatZeroRound, setRetreatZeroRound] = useState(false)
   const [histogramZooms, setHistogramZooms] = useState<Record<number, number>>(() => {
     const initial: Record<number, number> = {}
     for (let i = 0; i < MAX_WAVES; i++) {
@@ -1498,10 +1500,10 @@ function App() {
       sortMode: sortMode ?? 'unit_count',
       territory_value: territoryValue ?? 0,
       is_deadzone: isDeadzone ?? false,
-      retreat_round_zero: false,
+    retreat_round_zero: retreatZeroRound ?? false,
       do_roundless_eval: true,
     }
-  }, [numWaves, pruneThreshold, reportPruneThreshold, mode, inProgress, verboseLevel, diceMode, sortMode, territoryValue, isDeadzone])
+  }, [numWaves, pruneThreshold, reportPruneThreshold, mode, inProgress, verboseLevel, diceMode, sortMode, territoryValue, isDeadzone, retreatZeroRound])
 
   // Auto-evaluate if complexity is below instantaneous evaluation threshold (with debounce)
   useEffect(() => {
@@ -1672,6 +1674,7 @@ function App() {
         numWaves,
         amphibious,
         experimentalConvolution,
+        retreatZeroRound,
       }
       
       // Check complexity before evaluating the battle
@@ -1741,7 +1744,7 @@ function App() {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold])
+  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold, retreatZeroRound])
 
   const loadFromHistory = (entry: HistoryEntry) => {
     // Set flag to prevent auto-saving when we run the battle
@@ -2166,6 +2169,16 @@ function App() {
                     onChange={(e) => setExperimentalConvolution(e.target.checked)}
                   />
                   Experimental: fix defender profit via convolution
+                </label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={retreatZeroRound}
+                    onChange={(e) => setRetreatZeroRound(e.target.checked)}
+                  />
+                  Allow retreat on round zero
                 </label>
               </div>
             </div>

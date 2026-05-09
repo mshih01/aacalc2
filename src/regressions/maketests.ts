@@ -198,10 +198,10 @@ if (true) {
           attack: {
             units: {
               inf: 20,
-              art: 20,
+              art: 5,
               arm: 5,
-              fig: 5,
-              bom: 5,
+              fig: 3,
+              bom: 3,
             },
             ool: ['inf', 'art', 'arm', 'fig', 'bom'],
             takes: 0,
@@ -212,7 +212,7 @@ if (true) {
               inf: 8,
               art: 2,
               arm: 1,
-              fig: 1,
+              fig: 0,
               bom: 0,
               aa: 1,
             },
@@ -240,7 +240,7 @@ if (true) {
       is_naval: false,
       in_progress: false,
       num_runs: 1,
-      verbose_level: verbose,
+      verbose_level: 1,
       diceMode: 'standard',
       sortMode: 'ipc_cost',
       is_deadzone: true,
@@ -268,7 +268,8 @@ if (true) {
     console.log(label, 'end');
     let t1 = performance.now() - t0;
     out.push([
-      JSON.stringify([solveType, optimizeMode, retreat]),
+      JSON.stringify(output.recommendations[0].cost) +
+        JSON.stringify([solveType, optimizeMode, retreat]),
       JSON.stringify(output.recommendations, null, 0),
       t1,
     ]);
