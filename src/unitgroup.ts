@@ -5,7 +5,6 @@ import { type DiceMode } from './solve.js';
 import { type casualty_1d } from './output.js';
 import { get_reduced_group_string } from './output.js';
 
-//import { solve_one_general_state_copy4 } from './solveone4.js';
 export class unit_group_manager {
   unit_group_arr: unit_group[];
   mymap: Map<string, number>;
@@ -523,7 +522,7 @@ export class unit_group {
         this.set_prob_table(i, j, 0);
       }
     }
-    //const biasedDice : number[] = [1, 2, 3, 2, 1, 1];
+    // 1, 2, 3, 4, 5, 6 ==> 1/10, 2/10, 3/10, 2/10, 1/10, 1/10
     const biasedDiceProb: number[] = [0, 1, 3, 6, 8, 9, 10];
     for (i = 0; i < this.size; i++) {
       const ii = i + 1;
@@ -863,14 +862,7 @@ export function hasDestroyer(
   group: general_unit_group,
   node: general_unit_graph_node,
 ): boolean {
-  const v1 = node.num_dest > 0;
-  /*
-    let v2 = hasDestroyerOrig(group, node);
-    if (v1 != v2) {
-        console.log(v1, v2, group, node);
-    }
-*/
-  return v1;
+  return node.num_dest > 0;
 }
 
 export function remove_subhits2(
@@ -1454,15 +1446,7 @@ export function compute_remove_hits(
     const nnnode = node.next_navalhit;
     const nanode = node.next_airhit;
     const nsnode = node.next_subhit;
-    /*
-        console.log (
-                naval_group.destroyer_last,
-                node.num_dest,
-                 node.num_naval,
-                nnnode.num_dest,
-                nanode.num_dest,
-                nsnode.num_dest);
-*/
+
     if (
       naval_group.destroyer_last &&
       node.num_dest == 1 &&

@@ -25,7 +25,7 @@ Axis & Allies 1942 Online probability calculator — a math-based battle odds li
 
 ## Generated code
 
-`solveone1.ts`–`solveone4.ts` are generated from `solveone.ts` by `scripts/copy.sh` (a `sed` that renames `solve_one_general_state` → `solve_one_general_state_copy$i`). Edit `solveone.ts`, then `npm run copy` to regenerate.
+`solveone1.ts`–`solveone3.ts` are generated from `solveone.ts` by `scripts/copy.sh` (a `sed` that renames `solve_one_general_state` → `solve_one_general_state_copy$i`). Edit `solveone.ts`, then `npm run copy` to regenerate.
 
 ## Code style
 

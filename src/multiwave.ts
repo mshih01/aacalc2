@@ -1,4 +1,5 @@
-import { general_problem, solve_general } from './solve.js';
+import { solve_general, type general_problem } from './solve.js';
+import { createGeneralProblem } from './problem-factory.js';
 import {
   collect_results,
   print_general_results,
@@ -60,9 +61,6 @@ export interface wave_input {
 export function multiwave(input: multiwave_input): multiwave_output {
   const umarr: unit_manager[] = [];
   const probArr: general_problem[] = [];
-  //let um = new unit_manager();
-  //let um2 = new unit_manager();
-  //let um3 = new unit_manager();
   const output: aacalc_output[] = [];
   const initIpcCost: number[] = [];
 
@@ -90,7 +88,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
         for (let j = 0; j < defend_dist.length; j++) {
           const cas = defend_dist[j];
           let p1;
-          //let p2;
           if (cas.remain.length == 0) {
             if (wave.use_attackers_from_previous_wave) {
               //if attacker doesn't take -- then no reinforce
@@ -137,13 +134,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
             prob: p1,
           };
           defend_add_reinforce.push(newcasualty);
-          /*
-                if (p2 > 0) {
-                    const newcasstr = apply_ool(cas.remain, wave.def_ool, wave.def_aalast);
-                    const newcasualty : casualty_1d = { remain : newcasstr, retreat : "", casualty : cas.casualty, prob : p2}
-                    //defend_add_reinforce.push(newcasualty);
-                }
-*/
         }
         const defender =
           defend_add_reinforce.length == 0
@@ -179,34 +169,13 @@ export function multiwave(input: multiwave_input): multiwave_output {
         }
       }
       probArr.push(
-        new general_problem(
-          input.verbose_level,
+        createGeneralProblem(
+          input,
+          wave,
           um,
           attackers_internal,
           defenders_internal,
-          1.0,
-          wave.att_dest_last,
-          wave.att_submerge,
-          wave.def_dest_last,
-          wave.def_submerge,
-          wave.rounds,
-          wave.retreat_threshold,
-          wave.is_crash_fighters,
-          input.is_naval,
           defend_add_reinforce,
-          false,
-          input.diceMode,
-          input.sortMode,
-          input.is_deadzone,
-          input.report_complexity_only,
-          input.territory_value,
-          input.retreat_round_zero,
-          input.do_roundless_eval,
-          wave.retreat_lose_air_probability,
-          wave.retreat_expected_ipc_profit_threshold,
-          wave.retreat_pwin_threshold,
-          wave.pwinMode,
-          wave.retreat_strafe_threshold,
         ),
       );
       let prob = probArr[i];

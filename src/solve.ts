@@ -24,6 +24,37 @@ import {
 import { type casualty_1d, collect_and_print_results } from './output.js';
 
 // General problem -- supports random order of loss cases
+
+export interface GeneralProblemConfig {
+  verbose_level: number;
+  um: unit_manager;
+  att_str: string;
+  def_str: string;
+  prob: number;
+  att_dest_last: boolean;
+  att_submerge: boolean;
+  def_dest_last: boolean;
+  def_submerge: boolean;
+  rounds: number;
+  retreat_threshold: number;
+  is_crash_fighters: boolean;
+  is_naval?: boolean;
+  def_cas?: casualty_1d[];
+  is_nonaval?: boolean;
+  diceMode?: DiceMode;
+  sortMode?: SortMode;
+  is_deadzone?: boolean;
+  skip_compute?: boolean;
+  territory_value?: number;
+  retreat_round_zero?: boolean;
+  do_roundless_eval?: boolean;
+  retreat_lose_air_probability: number;
+  retreat_expected_ipc_profit_threshold?: number;
+  retreat_pwin_threshold?: number;
+  pwinMode?: PwinMode;
+  retreat_strafe_threshold?: number;
+}
+
 export class general_problem {
   um: unit_manager;
   is_naval: boolean;
@@ -183,35 +214,36 @@ export class general_problem {
   get_complexity(): number {
     return this.att_data.nodeArr.length * this.def_data.nodeArr.length;
   }
-  constructor(
-    verbose_level: number,
-    um: unit_manager,
-    att_str: string,
-    def_str: string,
-    prob: number,
-    att_dest_last: boolean,
-    att_submerge: boolean,
-    def_dest_last: boolean,
-    def_submerge: boolean,
-    rounds: number,
-    retreat_threshold: number,
-    is_crash_fighters: boolean,
-    is_naval: boolean = true,
-    def_cas: casualty_1d[] | undefined = undefined,
-    is_nonaval: boolean = false,
-    diceMode: DiceMode = 'standard',
-    sortMode: SortMode = 'unit_count',
-    is_deadzone: boolean = false,
-    skip_compute: boolean = false,
-    territory_value: number = 0,
-    retreat_round_zero: boolean = true,
-    do_roundless_eval: boolean = false,
-    retreat_lose_air_probability: number,
-    retreat_expected_ipc_profit_threshold?: number,
-    retreat_pwin_threshold?: number,
-    pwinMode?: PwinMode,
-    retreat_strafe_threshold?: number,
-  ) {
+  constructor(config: GeneralProblemConfig) {
+    const {
+      verbose_level,
+      um,
+      att_str,
+      def_str,
+      prob,
+      att_dest_last,
+      att_submerge,
+      def_dest_last,
+      def_submerge,
+      rounds,
+      retreat_threshold,
+      is_crash_fighters,
+      is_naval = true,
+      def_cas = undefined,
+      is_nonaval = false,
+      diceMode = 'standard' as DiceMode,
+      sortMode = 'unit_count' as SortMode,
+      is_deadzone = false,
+      skip_compute = false,
+      territory_value = 0,
+      retreat_round_zero = true,
+      do_roundless_eval = false,
+      retreat_lose_air_probability,
+      retreat_expected_ipc_profit_threshold,
+      retreat_pwin_threshold,
+      pwinMode,
+      retreat_strafe_threshold,
+    } = config;
     this.um = um;
     this.verbose_level = verbose_level;
 
@@ -303,35 +335,35 @@ export class general_problem {
           this.att_data.sub_group.unit_str + this.att_data.air_group.unit_str;
         const def =
           this.def_data.sub_group.unit_str + this.def_data.air_group.unit_str;
-        this.nonavalproblem = new general_problem(
-          this.verbose_level,
+        this.nonavalproblem = new general_problem({
+          verbose_level: this.verbose_level,
           um,
-          att,
-          def,
-          0.0,
-          false,
-          false,
-          false,
-          false,
-          -1,
-          0,
-          false,
-          true,
-          undefined,
-          true,
-          this.diceMode,
-          this.sortMode,
-          this.is_deadzone,
-          this.skip_compute,
-          this.territory_value,
-          this.retreat_round_zero,
-          this.do_roundless_eval,
-          this.retreat_lose_air_probability,
-          this.retreat_expected_ipc_profit_threshold,
-          this.retreat_pwin_threshold,
-          this.pwinMode,
-          this.retreat_strafe_threshold,
-        );
+          att_str: att,
+          def_str: def,
+          prob: 0.0,
+          att_dest_last: false,
+          att_submerge: false,
+          def_dest_last: false,
+          def_submerge: false,
+          rounds: -1,
+          retreat_threshold: 0,
+          is_crash_fighters: false,
+          is_naval: true,
+          is_nonaval: true,
+          diceMode: this.diceMode,
+          sortMode: this.sortMode,
+          is_deadzone: this.is_deadzone,
+          skip_compute: this.skip_compute,
+          territory_value: this.territory_value,
+          retreat_round_zero: this.retreat_round_zero,
+          do_roundless_eval: this.do_roundless_eval,
+          retreat_lose_air_probability: this.retreat_lose_air_probability,
+          retreat_expected_ipc_profit_threshold:
+            this.retreat_expected_ipc_profit_threshold,
+          retreat_pwin_threshold: this.retreat_pwin_threshold,
+          pwinMode: this.pwinMode,
+          retreat_strafe_threshold: this.retreat_strafe_threshold,
+        });
         if (this.nonavalproblem != undefined) {
           for (let i = 0; i < this.att_data.nodeArr.length; i++) {
             const node = this.att_data.nodeArr[i];
@@ -413,24 +445,6 @@ function is_terminal_state(
   return out;
 }
 
-function has_retreat_condition(problem: general_problem): boolean {
-  if (problem.retreat_threshold > 0) {
-    return true;
-  }
-  if (problem.retreat_expected_ipc_profit_threshold != undefined) {
-    return true;
-  }
-  if (problem.retreat_pwin_threshold != undefined) {
-    return true;
-  }
-  if (problem.retreat_strafe_threshold != undefined) {
-    return true;
-  }
-  if (problem.retreat_lose_air_probability < 1.0) {
-    return true;
-  }
-  return false;
-}
 export function is_retreat_state(
   problem: general_problem,
   N: number,
@@ -1007,15 +1021,6 @@ function do_roundless_eval(
     console.log(sum, 'average rounds');
     console.timeEnd('do_roundless_eval');
   }
-  /*
-  if (problem.verbose_level > 2) {
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < M; j++) {
-        console.log(`result:  EV[%d][%d] = %d`, i, j, problem.getE(i, j));
-      }
-    }
-  }
-    */
 }
 
 function do_roundless_eval_without_rounds(problem: general_problem): void {

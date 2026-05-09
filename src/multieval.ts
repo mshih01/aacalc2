@@ -3,9 +3,10 @@
 import {
   compute_prob_wins,
   compute_retreat_state,
-  general_problem,
   do_round_eval,
+  type general_problem,
 } from './solve.js';
+import { createGeneralProblem } from './problem-factory.js';
 import {
   hasNonAAUnit,
   make_unit_group,
@@ -85,34 +86,13 @@ export function multiwaveMultiEval(input: multieval_input): multieval_output {
       }
     }
     probArr.push(
-      new general_problem(
-        input.verbose_level,
+      createGeneralProblem(
+        input,
+        wave,
         um,
         attackers_internal,
         defenders_internal,
-        1.0,
-        wave.att_dest_last,
-        wave.att_submerge,
-        wave.def_dest_last,
-        wave.def_submerge,
-        wave.rounds,
-        wave.retreat_threshold,
-        wave.is_crash_fighters,
-        input.is_naval,
         defend_add_reinforce,
-        false,
-        input.diceMode,
-        input.sortMode,
-        input.is_deadzone,
-        input.report_complexity_only,
-        input.territory_value,
-        input.retreat_round_zero,
-        input.do_roundless_eval,
-        wave.retreat_lose_air_probability,
-        wave.retreat_expected_ipc_profit_threshold,
-        wave.retreat_pwin_threshold,
-        wave.pwinMode,
-        wave.retreat_strafe_threshold,
       ),
     );
     complexity += probArr[i].get_complexity();

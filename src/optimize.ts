@@ -240,11 +240,6 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         let mid = Math.floor((low + high) / 2);
         const [army, cost, AS, DS] = armies[mid];
         let midPower = attDefType == 'defender' ? DS : AS;
-        /*
-          if (midPower == lowPower || midPower == highPower) {
-            break;
-          }
-            */
         if (midPower == highPower) {
           break;
         }

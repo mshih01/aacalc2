@@ -826,21 +826,7 @@ function buildCumulativeCasualtiesInfo(
         // Defender side with correct terminal/continued split
         const takesInc = currOutput.takesTerritory[0];
 
-        // For swap transition, compute true continuation prob from att_cas
-        let termScale = 1;
-        let defTermSum = 0;
-        if (nextSwapped) {
-          let contProb = 0;
-          for (const c of currOutput.att_cas) {
-            if (c.remain.length > 0) contProb += c.prob;
-          }
-          // Current terminal sum from def_cas perspective = 1 - takesInc
-          // Correct terminal sum = 1 - contProb
-          if (takesInc < 1) {
-            termScale = (1 - contProb) / (1 - takesInc);
-          }
-        }
-        termScale = 1.0; // undo previous fix;
+        const termScale = 1.0;
         for (let i = 0; i < currOutput.def_cas.length; i++) {
           const cas = currOutput.def_cas[i];
           const casStr = get_external_unit_str(um, cas.casualty);
@@ -851,7 +837,6 @@ function buildCumulativeCasualtiesInfo(
           if (nextSwapped) {
             if (cas.remain !== '') {
               const amt = cas.prob * termScale;
-              defTermSum += amt;
               addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
                 casualties: casStr,
                 survivors: remainStr,
@@ -861,7 +846,6 @@ function buildCumulativeCasualtiesInfo(
               });
             } else {
               const amt = (cas.prob - takesInc) * termScale;
-              defTermSum += amt;
               addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
                 casualties: casStr,
                 survivors: remainStr,
