@@ -1,0 +1,274 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Regression test for \${testName} 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 12.93361544362746,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 9,
+      },
+      "cost": 12.67702404677029,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 3,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 12.62720243363049,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 2`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 5,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 16,
+      },
+      "cost": 10.14459399321177,
+    },
+    {
+      "army": {
+        "arm": 5,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 15,
+      },
+      "cost": 10.12578306130016,
+    },
+    {
+      "army": {
+        "arm": 5,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 17,
+      },
+      "cost": 10.09525869390980,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 3`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 12.51511514846144,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 9,
+      },
+      "cost": 12.16758477341717,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 3,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 7,
+      },
+      "cost": 12.07594826117491,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 4`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 12.51511514846144,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 9,
+      },
+      "cost": 12.16758477341717,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 3,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 7,
+      },
+      "cost": 12.07594826117491,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 5`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 0,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 12,
+      },
+      "cost": 52,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
+    {
+      "army": {
+        "arm": 2,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 7,
+      },
+      "cost": 53,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 6`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 0,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 12,
+      },
+      "cost": 52,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 11,
+      },
+      "cost": 53,
+    },
+    {
+      "army": {
+        "arm": 0,
+        "art": 3,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 14,
+      },
+      "cost": 54,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for \${testName} 7`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
+  ],
+}
+`;
