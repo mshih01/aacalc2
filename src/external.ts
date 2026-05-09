@@ -1257,7 +1257,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     complexity: internal_output.complexity,
   };
   if (input.verbose_level > 2) {
-	console.log('multiwave input', JSON.stringify(input, null));
+    console.log('multiwave input', JSON.stringify(input, null));
     console.log('multiwave output', JSON.stringify(out, null));
   }
 
