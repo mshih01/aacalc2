@@ -62,14 +62,12 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   const pwinMode = input.pwinMode ?? 'destroys';
   const optimizeMode = input.optimizeMode;
   const numRecommendations = input.numRecommendations;
-  let armyRecommendOutput: ArmyRecommendOutput = {
-    recommendations: [{ army: {}, cost: 0 }],
-  };
+
   if (optimizeMode == 'maxProfit' && solveType == 'fuzzyBinarySearch') {
     console.error(
       'maxProfit optimizeMode does not work with fuzzyBinarySearch solveType',
     );
-    return armyRecommendOutput;
+    return { recommendations: [{ army: {}, cost: 0 }] };
   }
 
   let maxArmy: Army;
@@ -93,558 +91,572 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   if (input.verbose_level && input.verbose_level > 0) {
     console.log(input);
   }
-  switch (solveType) {
-    case 'multiEval': {
-      let armylist = armies.map((tuple) => tuple[0]);
-      let multiEvalInput: MultiEvalInput = {
-        ...input,
-        defenderList: armylist,
-        attackerList: [],
-      };
-      multiEvalInput.wave_info[0].defense.units = maxArmy;
-      let t0 = performance.now();
-      let description = 'multiEval';
-      console.time(description);
-      let output = multiEvalExternal(multiEvalInput);
-      let t1 = performance.now() - t0;
-      console.timeEnd(description);
-      if (input.verbose_level && input.verbose_level > 0) {
-        console.log(input);
-        console.log(output);
-      }
 
-      let multiEvalResult: [string, number, number, number][] =
-        output.resultList.map(
-          (tuple) =>
-            [tuple[0], tuple[1], 1 - tuple[2], tuple[3]] as [
-              string,
-              number,
-              number,
-              number,
-            ],
-        );
-      multiEvalResult.sort((a, b) => {
-        const av: number = Number(a[2] < surviveThreshold) ? 1.0 : 0.0;
-        const bv: number = Number(b[2] < surviveThreshold) ? 1.0 : 0.0;
+  switch (solveType) {
+    case 'multiEval':
+      solveMultiEval(input, armies, surviveThreshold, maxArmy);
+      return { recommendations: [{ army: {}, cost: 0 }] };
+    case 'exhaust':
+      return {
+        recommendations: solveExhaust(
+          input,
+          attDefType,
+          armies,
+          surviveThreshold,
+          optimizeMode,
+          numRecommendations,
+        ),
+      };
+    case 'fuzzyBinarySearch':
+      return {
+        recommendations: solveFuzzyBinarySearch(
+          input,
+          attDefType,
+          armies,
+          surviveThreshold,
+        ),
+      };
+    case 'linearSearch':
+    case 'gridSearch':
+      return {
+        recommendations: solveLinearOrGridSearch(
+          input,
+          attDefType,
+          maxArmy,
+          surviveThreshold,
+          optimizeMode,
+          numRecommendations,
+          solveType,
+        ),
+      };
+    default:
+      return { recommendations: [{ army: {}, cost: 0 }] };
+  }
+}
+
+function solveMultiEval(
+  input: ArmyRecommendInput,
+  armies: [Army, number, number, number][],
+  surviveThreshold: number,
+  maxArmy: Army,
+): void {
+  let armylist = armies.map((tuple) => tuple[0]);
+  let multiEvalInput: MultiEvalInput = {
+    ...input,
+    defenderList: armylist,
+    attackerList: [],
+  };
+  multiEvalInput.wave_info[0].defense.units = maxArmy;
+  let t0 = performance.now();
+  let description = 'multiEval';
+  console.time(description);
+  let output = multiEvalExternal(multiEvalInput);
+  let t1 = performance.now() - t0;
+  console.timeEnd(description);
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(input);
+    console.log(output);
+  }
+
+  let multiEvalResult: [string, number, number, number][] =
+    output.resultList.map(
+      (tuple) =>
+        [tuple[0], tuple[1], 1 - tuple[2], tuple[3]] as [
+          string,
+          number,
+          number,
+          number,
+        ],
+    );
+  multiEvalResult.sort((a, b) => {
+    const av: number = Number(a[2] < surviveThreshold) ? 1.0 : 0.0;
+    const bv: number = Number(b[2] < surviveThreshold) ? 1.0 : 0.0;
+    if (av != bv) {
+      return bv - av;
+    } else {
+      return Number(b[3]) - Number(a[3]);
+    }
+  });
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(multiEvalResult);
+    for (let k = 0; k < multiEvalResult.length; k++) {
+      console.log(JSON.stringify(multiEvalResult[k]));
+    }
+  }
+}
+
+function solveExhaust(
+  input: ArmyRecommendInput,
+  attDefType: AttDefType,
+  armies: [Army, number, number, number][],
+  surviveThreshold: number,
+  optimizeMode: OptimizeMode,
+  numRecommendations: number,
+): Recommendation[] {
+  let out: [Army, number, number, number][] = [];
+  for (let i = 0; i < armies.length; i++) {
+    const [army, cost, AS, DS] = armies[i];
+    const myinput: MultiwaveInput = {
+      ...input,
+    };
+    if (attDefType == 'defender') {
+      myinput.wave_info[0].defense.units = army;
+    } else {
+      myinput.wave_info[0].attack.units = army;
+    }
+    const output = multiwaveExternal(myinput);
+    const survive =
+      attDefType == 'defender'
+        ? output.defense.survives[0]
+        : output.attack.survives[0];
+    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+    if (input.verbose_level && input.verbose_level > 2) {
+      console.log(
+        myinput,
+        output,
+        output.complexity,
+        profit,
+        survive,
+        'input, output, complexity, profit, survive',
+      );
+    }
+    out.push([army, survive, cost, profit]);
+  }
+  if (optimizeMode == 'targetWinPercentage') {
+    out.sort(
+      (
+        a: [Army, number, number, number],
+        b: [Army, number, number, number],
+      ) => {
+        const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
+        const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
         if (av != bv) {
           return bv - av;
         } else {
-          return Number(b[3]) - Number(a[3]);
+          return Number(b[2]) - Number(a[2]);
         }
-      });
-      if (input.verbose_level && input.verbose_level > 0) {
-        console.log(multiEvalResult);
-        for (let k = 0; k < multiEvalResult.length; k++) {
-          console.log(JSON.stringify(multiEvalResult[k]));
-        }
-      }
-      break;
-    }
-    case 'exhaust': {
-      // brute force
-      let out: [Army, number, number, number][] = [];
-      for (let i = 0; i < armies.length; i++) {
-        const [army, cost, AS, DS] = armies[i];
-        const myinput: MultiwaveInput = {
-          ...input,
-        };
-        if (attDefType == 'defender') {
-          myinput.wave_info[0].defense.units = army;
+      },
+    );
+    return [{ army: out[0][0], cost: out[0][2] }];
+  } else {
+    out.sort(
+      (
+        a: [Army, number, number, number],
+        b: [Army, number, number, number],
+      ) => {
+        const av: number = Number(a[3]);
+        const bv: number = Number(b[3]);
+        if (av != bv) {
+          return bv - av;
         } else {
-          myinput.wave_info[0].attack.units = army;
+          return Number(b[2]) - Number(a[2]);
         }
-        //myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
-        //myinput.wave_info[0].retreat_pwin_threshold = undefined;
-        const output = multiwaveExternal(myinput);
-        const survive =
-          attDefType == 'defender'
-            ? output.defense.survives[0]
-            : output.attack.survives[0];
-        const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-        if (input.verbose_level && input.verbose_level > 2) {
-          console.log(
-            myinput,
-            output,
-            output.complexity,
-            profit,
-            survive,
-            'input, output, complexity, profit, survive',
-          );
-        }
-        out.push([army, survive, cost, profit]);
+      },
+    );
+    let recommendations: Recommendation[] = [];
+    for (let i = 0; i < numRecommendations; i++) {
+      recommendations.push({ army: out[i][0], cost: out[i][3] });
+    }
+    if (input.verbose_level && input.verbose_level > 2) {
+      for (let k = 0; k < out.length; k++) {
+        console.log(JSON.stringify(out[k]));
       }
-      if (optimizeMode == 'targetWinPercentage') {
-        out.sort(
-          (
-            a: [Army, number, number, number],
-            b: [Army, number, number, number],
-          ) => {
-            const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
-            const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
-            if (av != bv) {
-              return bv - av;
-            } else {
-              return Number(b[2]) - Number(a[2]);
-            }
-          },
-        );
-        armyRecommendOutput.recommendations = [
-          {
-            army: out[0][0],
-            cost: out[0][2],
-          },
-        ];
+    }
+    return recommendations;
+  }
+}
+
+function solveFuzzyBinarySearch(
+  input: ArmyRecommendInput,
+  attDefType: AttDefType,
+  armies: [Army, number, number, number][],
+  surviveThreshold: number,
+): Recommendation[] {
+  armies.sort(
+    (a: [Army, number, number, number], b: [Army, number, number, number]) => {
+      const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+      const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+      if (av != bv) {
+        return av - bv;
       } else {
-        // maxProfit
-        out.sort(
-          (
-            a: [Army, number, number, number],
-            b: [Army, number, number, number],
-          ) => {
-            const av: number = Number(a[3]);
-            const bv: number = Number(b[3]);
-            if (av != bv) {
-              return bv - av;
-            } else {
-              return Number(b[2]) - Number(a[2]);
-            }
-          },
-        );
-        // numRecommendations
-        armyRecommendOutput.recommendations = [];
-        for (let i = 0; i < numRecommendations; i++) {
-          armyRecommendOutput.recommendations.push({
-            army: out[i][0],
-            cost: out[i][3],
-          });
-        }
+        return Number(a[1]) - Number(b[1]);
       }
-      if (input.verbose_level && input.verbose_level > 2) {
-        for (let k = 0; k < out.length; k++) {
-          console.log(JSON.stringify(out[k]));
-        }
+    },
+  );
+  if (input.verbose_level && input.verbose_level > 2) {
+    console.log('sorted 1');
+    for (let i = 0; i < armies.length; i++) {
+      console.log(i, JSON.stringify(armies[i]));
+    }
+  }
+  let low = 0;
+  let high = armies.length - 1;
+  let iter = 0;
+  let lowPower = attDefType == 'defender' ? armies[low][3] : armies[low][2];
+  let highPower = attDefType == 'defender' ? armies[high][3] : armies[high][2];
+  while (low < high && high - low > 1 && lowPower < highPower) {
+    let mid = Math.floor((low + high) / 2);
+    const [army, cost, AS, DS] = armies[mid];
+    let midPower = attDefType == 'defender' ? DS : AS;
+    if (midPower == highPower) {
+      break;
+    }
+    let midIndexArray: number[] = [];
+    for (let i = mid; i > low; i--) {
+      const [army, cost, AS, DS] = armies[i];
+      let thePower = attDefType == 'defender' ? DS : AS;
+      if (thePower == midPower) {
+        midIndexArray.push(i);
+        continue;
       }
       break;
     }
-    case 'fuzzyBinarySearch':
-      armies.sort(
-        (
-          a: [Army, number, number, number],
-          b: [Army, number, number, number],
-        ) => {
-          const av: number =
-            attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-          const bv: number =
-            attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-          if (av != bv) {
-            return av - bv;
-          } else {
-            return Number(a[1]) - Number(b[1]);
-          }
-        },
-      );
-      if (input.verbose_level && input.verbose_level > 2) {
-        console.log('sorted 1');
-        for (let i = 0; i < armies.length; i++) {
-          console.log(i, JSON.stringify(armies[i]));
-        }
+    for (let i = mid + 1; i < high; i++) {
+      const [army, cost, AS, DS] = armies[i];
+      let thePower = attDefType == 'defender' ? DS : AS;
+      if (thePower == midPower) {
+        midIndexArray.push(i);
+        continue;
       }
-      let low = 0;
-      let high = armies.length - 1;
-      let iter = 0;
-      let lowPower = attDefType == 'defender' ? armies[low][3] : armies[low][2];
-      let highPower =
-        attDefType == 'defender' ? armies[high][3] : armies[high][2];
-      while (low < high && high - low > 1 && lowPower < highPower) {
-        let mid = Math.floor((low + high) / 2);
-        const [army, cost, AS, DS] = armies[mid];
-        let midPower = attDefType == 'defender' ? DS : AS;
-        if (midPower == highPower) {
-          break;
-        }
-        let midIndexArray: number[] = [];
-        for (let i = mid; i > low; i--) {
-          const [army, cost, AS, DS] = armies[i];
-          let thePower = attDefType == 'defender' ? DS : AS;
-          if (thePower == midPower) {
-            midIndexArray.push(i);
-            continue;
-          }
-          break;
-        }
-        for (let i = mid + 1; i < high; i++) {
-          const [army, cost, AS, DS] = armies[i];
-          let thePower = attDefType == 'defender' ? DS : AS;
-          if (thePower == midPower) {
-            midIndexArray.push(i);
-            continue;
-          }
-          break;
-        }
-        midIndexArray.sort();
-        let midIndexArr2: number[] = [];
-        if (midIndexArray.length <= 3) {
-          midIndexArr2 = midIndexArray;
-        } else {
-          midIndexArr2.push(midIndexArray[0]);
-          midIndexArr2.push(
-            midIndexArray[Math.floor(midIndexArray.length / 2)],
-          );
-          midIndexArr2.push(midIndexArray[midIndexArray.length - 1]);
-        }
-        //midIndexArray  = [];
-        //midIndexArray.push(mid);
-        let anySurvive: boolean = false;
-        let allSurvive: boolean = true;
-        //console.log(midIndexArr2, 'midIndexArr2');
-        for (let i = 0; i < midIndexArr2.length; i++) {
-          let ii = midIndexArr2[i];
-          const [army, cost, AS, DS] = armies[ii];
-          const myinput: MultiwaveInput = {
-            ...input,
-          };
-          if (attDefType == 'defender') {
-            myinput.wave_info[0].defense.units = army;
-          } else {
-            myinput.wave_info[0].attack.units = army;
-          }
-          myinput.wave_info[0].retreat_expected_ipc_profit_threshold =
-            undefined;
-          myinput.wave_info[0].retreat_pwin_threshold = undefined;
-          const output = multiwaveExternal(myinput);
-          iter++;
-          const survive =
-            attDefType == 'defender'
-              ? output.defense.survives[0]
-              : output.attack.survives[0];
-          if (survive >= surviveThreshold) {
-            anySurvive = true;
-          } else {
-            allSurvive = false;
-          }
-        }
-        if (input.verbose_level && input.verbose_level > 2) {
-          console.log(
-            low,
-            high,
-            lowPower,
-            highPower,
-            'lowIndex, highIndex, lowPower, highPower',
-          );
-        }
-        if (allSurvive) {
-          high = midIndexArray[0] - 1;
-          highPower =
-            attDefType == 'defender' ? armies[high][3] : armies[high][2];
-        }
-        if (!anySurvive) {
-          low = midIndexArray[midIndexArray.length - 1];
-          lowPower = attDefType == 'defender' ? armies[low][3] : armies[low][2];
-        } else {
-          high = midIndexArray[0];
-          highPower =
-            attDefType == 'defender' ? armies[high][3] : armies[high][2];
-        }
-      }
-      let bestArmy = armies[high];
-      let bestPower = attDefType == 'attacker' ? bestArmy[2] : bestArmy[3];
-      bestPower = bestPower * 1.0 - 2;
-      if (input.verbose_level && input.verbose_level > 0) {
-        console.log('bestArmy', bestArmy);
-        console.log('iterations', iter);
-      }
-      armies.sort(
-        (
-          a: [Army, number, number, number],
-          b: [Army, number, number, number],
-        ) => {
-          const av: number =
-            attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-          const bv: number =
-            attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-          const acost: number = av >= bestPower ? 0 : 1;
-          const bcost: number = bv >= bestPower ? 0 : 1;
-          if (acost != bcost) {
-            return acost - bcost;
-          } else {
-            return Number(a[1]) - Number(b[1]);
-          }
-        },
-      );
-      if (input.verbose_level && input.verbose_level > 2) {
-        console.log('sorted 2');
-        for (let i = 0; i < armies.length; i++) {
-          console.log(i, JSON.stringify(armies[i]));
-        }
-      }
-      for (let i = 0; i < armies.length; i++) {
-        const [army, cost, AS, DS] = armies[i];
-        const myinput: MultiwaveInput = {
-          ...input,
-        };
-        if (attDefType == 'defender') {
-          myinput.wave_info[0].defense.units = army;
-        } else {
-          myinput.wave_info[0].attack.units = army;
-        }
-        myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
-        myinput.wave_info[0].retreat_pwin_threshold = undefined;
-        const output = multiwaveExternal(myinput);
-        iter++;
-
-        if (input.verbose_level && input.verbose_level > 0) {
-          console.log(iter, 'iter');
-        }
-        //console.log(myinput.wave_info[0].attack.units);
-        //console.log(myinput.wave_info[0].defense.units);
-        //console.log(output);
-        const survive =
-          attDefType == 'defender'
-            ? output.defense.survives[0]
-            : output.attack.survives[0];
-        if (survive >= surviveThreshold) {
-          bestArmy = armies[i];
-          break;
-        }
-      }
-
-      armyRecommendOutput.recommendations = [
-        {
-          army: bestArmy[0],
-          cost: bestArmy[1],
-        },
-      ];
-      console.log('Optimized Integer Parameters:', bestArmy);
-      console.log('Minimum value found:', bestArmy[1]);
-      console.log('iterations', iter);
+      break;
+    }
+    midIndexArray.sort();
+    let midIndexArr2: number[] = [];
+    if (midIndexArray.length <= 3) {
+      midIndexArr2 = midIndexArray;
+    } else {
+      midIndexArr2.push(midIndexArray[0]);
+      midIndexArr2.push(midIndexArray[Math.floor(midIndexArray.length / 2)]);
+      midIndexArr2.push(midIndexArray[midIndexArray.length - 1]);
+    }
+    let anySurvive: boolean = false;
+    let allSurvive: boolean = true;
+    for (let i = 0; i < midIndexArr2.length; i++) {
+      let ii = midIndexArr2[i];
+      const [army, cost, AS, DS] = armies[ii];
       const myinput: MultiwaveInput = {
         ...input,
       };
-      const [army, cost, AS, DS] = bestArmy;
       if (attDefType == 'defender') {
         myinput.wave_info[0].defense.units = army;
       } else {
         myinput.wave_info[0].attack.units = army;
       }
+      myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
+      myinput.wave_info[0].retreat_pwin_threshold = undefined;
       const output = multiwaveExternal(myinput);
-      if (input.verbose_level && input.verbose_level > 0) {
-        console.log(myinput);
-        console.log(output);
-      }
-
-      break;
-    case 'linearSearch':
-    case 'gridSearch': {
-      const maxUnits = maxArmy;
-
-      const mymap: Map<string, number> = new Map();
-      let callCount = 0;
-      function getArmy(vars: number[]): Army {
-        // vars: [inf, art, arm, fig, bom, aa]
-
-        const army: Army =
-          attDefType == 'defender'
-            ? {
-                inf: Math.round(vars[0]),
-                art: Math.round(vars[1]),
-                arm: Math.round(vars[2]),
-                fig: Math.round(vars[3]),
-                bom: Math.round(vars[4]),
-                aa: Math.round(vars[5]),
-              }
-            : {
-                inf: Math.round(vars[0]),
-                art: Math.round(vars[1]),
-                arm: Math.round(vars[2]),
-                fig: Math.round(vars[3]),
-                bom: Math.round(vars[4]),
-                bat: Math.round(vars[5]),
-                cru: Math.round(vars[6]),
-              };
-        return army;
-      }
-      function armyCostObjective(vars: number[]): number {
-        let key = JSON.stringify(vars);
-        let retval = mymap.get(key);
-        if (retval != undefined) {
-          return retval;
-        }
-        callCount++;
-        let t0 = performance.now();
-        retval = armyCostObjectiveHelper(vars);
-        let t1 = performance.now() - t0;
-        //console.log(callCount, t1, vars, retval, 'call objective');
-        mymap.set(key, retval);
-        return retval;
-      }
-      function armyCostObjectiveHelper(vars: number[]): number {
-        // vars: [inf, art, arm, fig, bom, aa]
-        const army: Army = getArmy(vars);
-        if (attDefType == 'defender') {
-          input.wave_info[0].defense.units = army;
-        } else {
-          input.wave_info[0].attack.units = army;
-        }
-
-        const output = multiwaveExternal(input);
-        const survive =
-          attDefType == 'defender'
-            ? output.defense.survives[0]
-            : output.attack.survives[0];
-        const cost = getArmyCost(army);
-
-        let overflow = 0;
-        for (const [uid, count] of Object.entries(army)) {
-          if (count < 0) {
-            overflow += -count;
-          }
-          let max = maxUnits[<UnitIdentifier>uid] ?? 0;
-          if (count > max) {
-            overflow += count;
-          }
-        }
-        if (overflow > 0) {
-          return cost + 500 * overflow;
-        }
-
-        // Penalty if constraint not met
-        if (survive < surviveThreshold) {
-          return cost + 1000000 * (surviveThreshold - survive); // Large penalty
-        }
-        return cost;
-      }
-
-      const profitMap: Map<string, number> = new Map();
-      function armyProfitObjective(vars: number[]): number {
-        let key = JSON.stringify(vars);
-        let retval = profitMap.get(key);
-        if (retval != undefined) {
-          return retval;
-        }
-        callCount++;
-        retval = armyProfitObjectiveHelper(vars);
-        profitMap.set(key, retval);
-        return retval;
-      }
-      function armyProfitObjectiveHelper(vars: number[]): number {
-        const army: Army = getArmy(vars);
-        if (attDefType == 'defender') {
-          input.wave_info[0].defense.units = army;
-        } else {
-          input.wave_info[0].attack.units = army;
-        }
-
-        const output = multiwaveExternal(input);
-        const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-        let overflow = 0;
-        for (const [uid, count] of Object.entries(army)) {
-          if (count < 0) {
-            overflow += -count;
-          }
-          let max = maxUnits[<UnitIdentifier>uid] ?? 0;
-          if (count > max) {
-            overflow += count;
-          }
-        }
-        if (overflow > 0) {
-          return 1000000 * overflow;
-        }
-        return -profit;
-      }
-
-      // Initial guess (e.g., max units)
-      const numInf: number = maxArmy['inf'] ?? 0;
-      const numArt: number = maxArmy['art'] ?? 0;
-      const numArm: number = maxArmy['arm'] ?? 0;
-      const numFig: number = maxArmy['fig'] ?? 0;
-      const numBom: number = maxArmy['bom'] ?? 0;
-      const numCru: number = maxArmy['cru'] ?? 0;
-      const numBat: number = maxArmy['bat'] ?? 0;
-      const numAA: number = maxArmy['aa'] ?? 0;
-
-      const initial: number[] =
+      iter++;
+      const survive =
         attDefType == 'defender'
-          ? [numInf, numArt, numArm, numFig, numBom, numAA]
-          : [numInf, numArt, numArm, numFig, numBom, numBat, numCru];
-      const bounds: [number, number][] =
-        attDefType == 'defender'
-          ? [
-              [0, numInf],
-              [0, numArt],
-              [0, numArm],
-              [0, numFig],
-              [0, numBom],
-              [0, numAA],
-            ]
-          : [
-              [0, numInf],
-              [0, numArt],
-              [0, numArm],
-              [0, numFig],
-              [0, numBom],
-              [0, numBat],
-              [0, numCru],
-            ];
-
-      const objectiveFn =
-        optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
-
-      const verbose = !!(input.verbose_level && input.verbose_level > 0);
-
-      // Example Usage
-      const initialGuess = initial;
-      if (verbose) console.log(initialGuess, 'initialGuess');
-      if (verbose) console.log(bounds, 'bounds');
-      const beamWidth = input.beamWidth ?? 3;
-      const granularity = input.granularity ?? 3;
-      if (solveType == 'gridSearch') {
-        const gridResults = gridSearch(
-          objectiveFn,
-          bounds,
-          verbose,
-          beamWidth,
-          granularity,
-        );
-        if (verbose)
-          console.log(
-            'Optimized Integer Parameters:',
-            gridResults.length > 0 ? gridResults[0] : 'N/A',
-          );
+          ? output.defense.survives[0]
+          : output.attack.survives[0];
+      if (survive >= surviveThreshold) {
+        anySurvive = true;
       } else {
-        const lineResult = lineSearch(
-          objectiveFn,
-          initialGuess,
-          bounds,
-          20,
-          verbose,
-        );
-        if (verbose) console.log('Optimized Integer Parameters:', lineResult);
+        allSurvive = false;
       }
-      const relevantMap = optimizeMode == 'maxProfit' ? profitMap : mymap;
-      const sortedEntries = Array.from(relevantMap.entries())
-        .map(([key, value]) => ({ vars: JSON.parse(key) as number[], value }))
-        .sort((a, b) => a.value - b.value);
-
-      if (verbose) {
-        console.log(relevantMap.size, 'map size');
+    }
+    if (input.verbose_level && input.verbose_level > 2) {
+      console.log(
+        low,
+        high,
+        lowPower,
+        highPower,
+        'lowIndex, highIndex, lowPower, highPower',
+      );
+    }
+    if (allSurvive) {
+      high = midIndexArray[0] - 1;
+      highPower = attDefType == 'defender' ? armies[high][3] : armies[high][2];
+    }
+    if (!anySurvive) {
+      low = midIndexArray[midIndexArray.length - 1];
+      lowPower = attDefType == 'defender' ? armies[low][3] : armies[low][2];
+    } else {
+      high = midIndexArray[0];
+      highPower = attDefType == 'defender' ? armies[high][3] : armies[high][2];
+    }
+  }
+  let bestArmy = armies[high];
+  let bestPower = attDefType == 'attacker' ? bestArmy[2] : bestArmy[3];
+  bestPower = bestPower * 1.0 - 2;
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log('bestArmy', bestArmy);
+    console.log('iterations', iter);
+  }
+  armies.sort(
+    (a: [Army, number, number, number], b: [Army, number, number, number]) => {
+      const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+      const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+      const acost: number = av >= bestPower ? 0 : 1;
+      const bcost: number = bv >= bestPower ? 0 : 1;
+      if (acost != bcost) {
+        return acost - bcost;
+      } else {
+        return Number(a[1]) - Number(b[1]);
       }
+    },
+  );
+  if (input.verbose_level && input.verbose_level > 2) {
+    console.log('sorted 2');
+    for (let i = 0; i < armies.length; i++) {
+      console.log(i, JSON.stringify(armies[i]));
+    }
+  }
+  for (let i = 0; i < armies.length; i++) {
+    const [army, cost, AS, DS] = armies[i];
+    const myinput: MultiwaveInput = {
+      ...input,
+    };
+    if (attDefType == 'defender') {
+      myinput.wave_info[0].defense.units = army;
+    } else {
+      myinput.wave_info[0].attack.units = army;
+    }
+    myinput.wave_info[0].retreat_expected_ipc_profit_threshold = undefined;
+    myinput.wave_info[0].retreat_pwin_threshold = undefined;
+    const output = multiwaveExternal(myinput);
+    iter++;
 
-      armyRecommendOutput.recommendations = [];
-      const n = Math.min(numRecommendations, sortedEntries.length);
-      for (let i = 0; i < n; i++) {
-        const vars = sortedEntries[i].vars;
-        const army = getArmy(vars);
-        const cost =
-          optimizeMode == 'maxProfit'
-            ? -sortedEntries[i].value
-            : getArmyCost(army);
-        armyRecommendOutput.recommendations.push({ army, cost });
-      }
-
+    if (input.verbose_level && input.verbose_level > 0) {
+      console.log(iter, 'iter');
+    }
+    const survive =
+      attDefType == 'defender'
+        ? output.defense.survives[0]
+        : output.attack.survives[0];
+    if (survive >= surviveThreshold) {
+      bestArmy = armies[i];
       break;
     }
   }
-  return armyRecommendOutput;
+
+  console.log('Optimized Integer Parameters:', bestArmy);
+  console.log('Minimum value found:', bestArmy[1]);
+  console.log('iterations', iter);
+  const myinput: MultiwaveInput = {
+    ...input,
+  };
+  const [army, cost, AS, DS] = bestArmy;
+  if (attDefType == 'defender') {
+    myinput.wave_info[0].defense.units = army;
+  } else {
+    myinput.wave_info[0].attack.units = army;
+  }
+  const output = multiwaveExternal(myinput);
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(myinput);
+    console.log(output);
+  }
+
+  return [{ army: bestArmy[0], cost: bestArmy[1] }];
+}
+
+function solveLinearOrGridSearch(
+  input: ArmyRecommendInput,
+  attDefType: AttDefType,
+  maxArmy: Army,
+  surviveThreshold: number,
+  optimizeMode: OptimizeMode,
+  numRecommendations: number,
+  solveType: SolveType | undefined,
+): Recommendation[] {
+  const maxUnits = maxArmy;
+
+  const mymap: Map<string, number> = new Map();
+  let callCount = 0;
+  function getArmy(vars: number[]): Army {
+    const army: Army =
+      attDefType == 'defender'
+        ? {
+            inf: Math.round(vars[0]),
+            art: Math.round(vars[1]),
+            arm: Math.round(vars[2]),
+            fig: Math.round(vars[3]),
+            bom: Math.round(vars[4]),
+            aa: Math.round(vars[5]),
+          }
+        : {
+            inf: Math.round(vars[0]),
+            art: Math.round(vars[1]),
+            arm: Math.round(vars[2]),
+            fig: Math.round(vars[3]),
+            bom: Math.round(vars[4]),
+            bat: Math.round(vars[5]),
+            cru: Math.round(vars[6]),
+          };
+    return army;
+  }
+  function armyCostObjectiveHelper(vars: number[]): number {
+    const army: Army = getArmy(vars);
+    if (attDefType == 'defender') {
+      input.wave_info[0].defense.units = army;
+    } else {
+      input.wave_info[0].attack.units = army;
+    }
+
+    const output = multiwaveExternal(input);
+    const survive =
+      attDefType == 'defender'
+        ? output.defense.survives[0]
+        : output.attack.survives[0];
+    const cost = getArmyCost(army);
+
+    let overflow = 0;
+    for (const [uid, count] of Object.entries(army)) {
+      if (count < 0) {
+        overflow += -count;
+      }
+      let max = maxUnits[<UnitIdentifier>uid] ?? 0;
+      if (count > max) {
+        overflow += count;
+      }
+    }
+    if (overflow > 0) {
+      return cost + 500 * overflow;
+    }
+
+    if (survive < surviveThreshold) {
+      return cost + 1000000 * (surviveThreshold - survive);
+    }
+    return cost;
+  }
+  function armyCostObjective(vars: number[]): number {
+    let key = JSON.stringify(vars);
+    let retval = mymap.get(key);
+    if (retval != undefined) {
+      return retval;
+    }
+    callCount++;
+    retval = armyCostObjectiveHelper(vars);
+    mymap.set(key, retval);
+    return retval;
+  }
+
+  const profitMap: Map<string, number> = new Map();
+  function armyProfitObjectiveHelper(vars: number[]): number {
+    const army: Army = getArmy(vars);
+    if (attDefType == 'defender') {
+      input.wave_info[0].defense.units = army;
+    } else {
+      input.wave_info[0].attack.units = army;
+    }
+
+    const output = multiwaveExternal(input);
+    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+    let overflow = 0;
+    for (const [uid, count] of Object.entries(army)) {
+      if (count < 0) {
+        overflow += -count;
+      }
+      let max = maxUnits[<UnitIdentifier>uid] ?? 0;
+      if (count > max) {
+        overflow += count;
+      }
+    }
+    if (overflow > 0) {
+      return 1000000 * overflow;
+    }
+    return -profit;
+  }
+  function armyProfitObjective(vars: number[]): number {
+    let key = JSON.stringify(vars);
+    let retval = profitMap.get(key);
+    if (retval != undefined) {
+      return retval;
+    }
+    callCount++;
+    retval = armyProfitObjectiveHelper(vars);
+    profitMap.set(key, retval);
+    return retval;
+  }
+
+  const numInf: number = maxArmy['inf'] ?? 0;
+  const numArt: number = maxArmy['art'] ?? 0;
+  const numArm: number = maxArmy['arm'] ?? 0;
+  const numFig: number = maxArmy['fig'] ?? 0;
+  const numBom: number = maxArmy['bom'] ?? 0;
+  const numCru: number = maxArmy['cru'] ?? 0;
+  const numBat: number = maxArmy['bat'] ?? 0;
+  const numAA: number = maxArmy['aa'] ?? 0;
+
+  const initial: number[] =
+    attDefType == 'defender'
+      ? [numInf, numArt, numArm, numFig, numBom, numAA]
+      : [numInf, numArt, numArm, numFig, numBom, numBat, numCru];
+  const bounds: [number, number][] =
+    attDefType == 'defender'
+      ? [
+          [0, numInf],
+          [0, numArt],
+          [0, numArm],
+          [0, numFig],
+          [0, numBom],
+          [0, numAA],
+        ]
+      : [
+          [0, numInf],
+          [0, numArt],
+          [0, numArm],
+          [0, numFig],
+          [0, numBom],
+          [0, numBat],
+          [0, numCru],
+        ];
+
+  const objectiveFn =
+    optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
+
+  const verbose = !!(input.verbose_level && input.verbose_level > 0);
+
+  const initialGuess = initial;
+  if (verbose) console.log(initialGuess, 'initialGuess');
+  if (verbose) console.log(bounds, 'bounds');
+  const beamWidth = input.beamWidth ?? 3;
+  const granularity = input.granularity ?? 3;
+  if (solveType == 'gridSearch') {
+    const gridResults = gridSearch(
+      objectiveFn,
+      bounds,
+      verbose,
+      beamWidth,
+      granularity,
+    );
+    if (verbose)
+      console.log(
+        'Optimized Integer Parameters:',
+        gridResults.length > 0 ? gridResults[0] : 'N/A',
+      );
+  } else {
+    const lineResult = lineSearch(
+      objectiveFn,
+      initialGuess,
+      bounds,
+      20,
+      verbose,
+    );
+    if (verbose) console.log('Optimized Integer Parameters:', lineResult);
+  }
+  const relevantMap = optimizeMode == 'maxProfit' ? profitMap : mymap;
+  const sortedEntries = Array.from(relevantMap.entries())
+    .map(([key, value]) => ({ vars: JSON.parse(key) as number[], value }))
+    .sort((a, b) => a.value - b.value);
+
+  if (verbose) {
+    console.log(relevantMap.size, 'map size');
+  }
+
+  let recommendations: Recommendation[] = [];
+  const n = Math.min(numRecommendations, sortedEntries.length);
+  for (let i = 0; i < n; i++) {
+    const vars = sortedEntries[i].vars;
+    const army = getArmy(vars);
+    const cost =
+      optimizeMode == 'maxProfit' ? -sortedEntries[i].value : getArmyCost(army);
+    recommendations.push({ army, cost });
+  }
+
+  return recommendations;
 }
 
 function approximateGradient(
