@@ -727,6 +727,62 @@ export function compute_expected_value(problem: general_problem): void {
   const factor = 1.4;
   const verify_optimization = false;
 
+  const onResult1 = (
+    problem: general_problem,
+    ii: number,
+    prob: number,
+    n: number,
+    m: number,
+    _num_rounds: number,
+  ) => {
+    const attloss = problem.base_attcost - problem.att_data.nodeCostArr[n];
+    const defloss = problem.base_defcost - problem.def_data.nodeCostArr[m];
+    problem.accumulate += (defloss - attloss + problem.E_1d[ii]) * prob;
+  };
+  const onStart1 = (problem: general_problem, n: number, m: number) => {
+    problem.accumulate = 0;
+    problem.base_attcost = problem.att_data.nodeCostArr[n];
+    problem.base_defcost = problem.def_data.nodeCostArr[m];
+    return 1;
+  };
+  const onEnd1 = (problem: general_problem, n: number, m: number) => {
+    const attnode = problem.att_data.nodeArr[n];
+    const defnode = problem.def_data.nodeArr[m];
+    if (is_terminal_state(problem, n, m, false, false)) {
+      problem.accumulate = 0;
+      if (problem.is_deadzone && defnode.N == 0) {
+        problem.accumulate -= attnode.deadzone_cost;
+      }
+      if (defnode.N == 0 && attnode.hasLand) {
+        problem.accumulate += problem.territory_value;
+      }
+      problem.setE(n, m, problem.accumulate);
+    } else {
+      {
+        let ev_fight = problem.accumulate;
+        let ev_retreat = 0;
+        if (problem.is_amphibious) {
+          let retreatNode = attnode.next_retreat_amphibious ?? attnode;
+          const nn = retreatNode.index;
+          if (n == nn) {
+            ev_retreat = problem.accumulate - 1e9;
+          } else {
+            const ii = problem.getIndex(nn, m);
+            ev_retreat = problem.E_1d[ii];
+          }
+        }
+        const evdiff = ev_fight - ev_retreat;
+        const is_retreat =
+          evdiff < problem.retreat_expected_ipc_profit_threshold!;
+        const ev = !is_retreat ? ev_fight : ev_retreat;
+        if (is_retreat) {
+          problem.setRetreat(n, m, true);
+        }
+        problem.setE(n, m, ev);
+      }
+    }
+  };
+
   for (i = N - 1; i >= 0; i--) {
     for (j = M - 1; j >= 0; j--) {
       const attNode = attData.nodeArr[i];
@@ -774,64 +830,9 @@ export function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
-        (
-          problem: general_problem,
-          ii: number,
-          prob: number,
-          n: number,
-          m: number,
-          num_rounds: number,
-        ) => {
-          const attloss =
-            problem.base_attcost - problem.att_data.nodeCostArr[n];
-          const defloss =
-            problem.base_defcost - problem.def_data.nodeCostArr[m];
-          problem.accumulate += (defloss - attloss + problem.E_1d[ii]) * prob;
-        },
-        (problem, n: number, m: number) => {
-          problem.accumulate = 0;
-          problem.base_attcost = problem.att_data.nodeCostArr[n];
-          problem.base_defcost = problem.def_data.nodeCostArr[m];
-          return 1;
-        },
-        (problem, n: number, m: number) => {
-          const attnode = problem.att_data.nodeArr[n];
-          const defnode = problem.def_data.nodeArr[m];
-          if (is_terminal_state(problem, n, m, false, false)) {
-            problem.accumulate = 0;
-            if (problem.is_deadzone && defnode.N == 0) {
-              problem.accumulate -= attnode.deadzone_cost;
-            }
-            if (defnode.N == 0 && attnode.hasLand) {
-              problem.accumulate += problem.territory_value;
-            }
-            problem.setE(n, m, problem.accumulate);
-          } else {
-            {
-              let ev_fight = problem.accumulate;
-              let ev_retreat = 0;
-              if (problem.is_amphibious) {
-                let retreatNode = attnode.next_retreat_amphibious ?? attnode;
-                const nn = retreatNode.index;
-                if (n == nn) {
-                  // amphib units only... can't retreat;
-                  ev_retreat = problem.accumulate - 1e9;
-                } else {
-                  const ii = problem.getIndex(nn, m);
-                  ev_retreat = problem.E_1d[ii];
-                }
-              }
-              const evdiff = ev_fight - ev_retreat;
-              const is_retreat =
-                evdiff < problem.retreat_expected_ipc_profit_threshold!;
-              const ev = !is_retreat ? ev_fight : ev_retreat;
-              if (is_retreat) {
-                problem.setRetreat(n, m, true);
-              }
-              problem.setE(n, m, ev);
-            }
-          }
-        },
+        onResult1,
+        onStart1,
+        onEnd1,
       );
       if (isVerifyOptimization && !problem.getRetreat(i, j)) {
         throw new Error(
@@ -865,16 +866,58 @@ export function compute_prob_wins(problem: general_problem): void {
       problem.setPwin(i, j, 0.0);
     }
   }
+  const onResult3 = (
+    problem: general_problem,
+    ii: number,
+    prob: number,
+    _n: number,
+    _m: number,
+    _num_rounds: number,
+  ) => {
+    problem.pwin_acc += prob * problem.Pwin_1d[ii];
+  };
+  const onStart3 = (problem: general_problem, _n: number, _m: number) => {
+    problem.pwin_acc = 0;
+    return 1;
+  };
+  const onEnd3 = (problem: general_problem, n: number, m: number) => {
+    const attnode = problem.att_data.nodeArr[n];
+    const defnode = problem.def_data.nodeArr[m];
+    if (is_terminal_state(problem, n, m, false, false)) {
+      problem.pwin_acc = 0;
+      if (
+        defnode.N == 0 &&
+        (attnode.hasLand || problem.pwinMode == 'destroys')
+      ) {
+        problem.pwin_acc = 1;
+      }
+      problem.setPwin(n, m, problem.pwin_acc);
+    } else {
+      let pwin_retreat = 0;
+      let pwin_fight = problem.pwin_acc;
+      let can_retreat = true;
+      if (problem.is_amphibious) {
+        let retreatNode = attnode.next_retreat_amphibious ?? attnode;
+        const nn = retreatNode.index;
+        if (n == nn) {
+          can_retreat = false;
+        } else {
+          const ii = problem.getIndex(nn, m);
+          pwin_retreat = problem.Pwin_1d[ii];
+        }
+      }
+      const is_retreat =
+        can_retreat && pwin_fight < problem.retreat_pwin_threshold!;
+      const pwin = !is_retreat ? pwin_fight : pwin_retreat;
+      if (is_retreat) {
+        problem.setRetreat(n, m, true);
+      }
+      problem.setPwin(n, m, pwin);
+    }
+  };
+
   for (i = N - 1; i >= 0; i--) {
     for (j = M - 1; j >= 0; j--) {
-      // for each state... compute the Pwin(i, j)
-      // Pwin(i, j) =
-      //    for terminal state -- 0, or 1 based on if the state should be
-      //            considered a win.  (e.g. takes)
-      //    for non-terminal state --
-      //      Pwin(i,j) = sum of (ii, jj all possible next states :=
-      //            prob(ii, jj) * Pwin(ii, jj);
-
       solve_one_general_state_copy3(
         problem,
         i,
@@ -883,56 +926,9 @@ export function compute_prob_wins(problem: general_problem): void {
         0,
         false,
         false,
-        (
-          problem: general_problem,
-          ii: number,
-          prob: number,
-          n: number,
-          m: number,
-          num_rounds: number,
-        ) => {
-          problem.pwin_acc += prob * problem.Pwin_1d[ii];
-        },
-        (problem, n: number, m: number) => {
-          problem.pwin_acc = 0;
-          return 1;
-        },
-        (problem, n: number, m: number) => {
-          const attnode = problem.att_data.nodeArr[n];
-          const defnode = problem.def_data.nodeArr[m];
-          if (is_terminal_state(problem, n, m, false, false)) {
-            problem.pwin_acc = 0;
-            if (
-              defnode.N == 0 &&
-              (attnode.hasLand || problem.pwinMode == 'destroys')
-            ) {
-              problem.pwin_acc = 1; // attacker wins
-            }
-            problem.setPwin(n, m, problem.pwin_acc);
-          } else {
-            let pwin_retreat = 0;
-            let pwin_fight = problem.pwin_acc;
-            let can_retreat = true;
-            if (problem.is_amphibious) {
-              let retreatNode = attnode.next_retreat_amphibious ?? attnode;
-              const nn = retreatNode.index;
-              if (n == nn) {
-                // amphib units only... can't retreat;
-                can_retreat = false;
-              } else {
-                const ii = problem.getIndex(nn, m);
-                pwin_retreat = problem.Pwin_1d[ii];
-              }
-            }
-            const is_retreat =
-              can_retreat && pwin_fight < problem.retreat_pwin_threshold!;
-            const pwin = !is_retreat ? pwin_fight : pwin_retreat;
-            if (is_retreat) {
-              problem.setRetreat(n, m, true);
-            }
-            problem.setPwin(n, m, pwin);
-          }
-        },
+        onResult3,
+        onStart3,
+        onEnd3,
       );
     }
   }
@@ -973,6 +969,32 @@ function do_roundless_eval(
     console.log(problem.ERound_1d.length, 'ERound_1d length');
   }
 
+  const onResult2 = (
+    problem: general_problem,
+    ii: number,
+    prob: number,
+    _n: number,
+    _m: number,
+    num_rounds: number,
+  ) => {
+    problem.P_1d[ii] += prob;
+    problem.ERound_1d[ii] += prob * num_rounds;
+  };
+  const onStart2 = (problem: general_problem, n: number, m: number) => {
+    const p_init = problem.getP(n, m);
+    if (p_init == 0) {
+      problem.init_rounds = 0;
+      return p_init;
+    }
+    problem.init_rounds = problem.getERound(n, m) / p_init;
+    return p_init;
+  };
+  const onEnd2 = (problem: general_problem, n: number, m: number) => {
+    if (problem.getP(n, m) == 0) {
+      problem.setERound(n, m, 0.0);
+    }
+  };
+
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
       solve_one_general_state_copy2(
@@ -983,31 +1005,9 @@ function do_roundless_eval(
         0,
         false,
         false,
-        (
-          problem,
-          ii: number,
-          prob: number,
-          n: number,
-          m: number,
-          num_rounds: number,
-        ) => {
-          problem.P_1d[ii] += prob;
-          problem.ERound_1d[ii] += prob * num_rounds;
-        },
-        (problem, n: number, m: number) => {
-          const p_init = problem.getP(n, m);
-          if (p_init == 0) {
-            problem.init_rounds = 0;
-            return p_init;
-          }
-          problem.init_rounds = problem.getERound(n, m) / p_init;
-          return p_init;
-        },
-        (problem, n: number, m: number) => {
-          if (problem.getP(n, m) == 0) {
-            problem.setERound(n, m, 0.0);
-          }
-        },
+        onResult2,
+        onStart2,
+        onEnd2,
       );
     }
   }
