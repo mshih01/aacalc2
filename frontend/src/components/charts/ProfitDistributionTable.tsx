@@ -9,7 +9,7 @@ interface ProfitDistributionTableProps {
 
 export function ProfitDistributionTable({ waveIndex, profitDist, decimalPlaces }: ProfitDistributionTableProps) {
   if (!profitDist || Object.keys(profitDist).length === 0) {
-    return <div style={{ padding: '12px', color: '#999' }}>No profit distribution data available</div>
+    return <div className="info-box">No profit distribution data available</div>
   }
 
   const sortedEntries = Object.entries(profitDist)
@@ -22,13 +22,13 @@ export function ProfitDistributionTable({ waveIndex, profitDist, decimalPlaces }
   const percentiles = [5, 32, 50, 68, 95]
 
   return (
-    <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px' }}>
+    <table className="table">
       <thead>
-        <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
-          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Probability %</th>
-          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Confidence %</th>
-          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>Reverse Confidence %</th>
-          <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600' }}>IPC Profit</th>
+        <tr>
+          <th>Probability %</th>
+          <th>Confidence %</th>
+          <th>Reverse Confidence %</th>
+          <th>IPC Profit</th>
         </tr>
       </thead>
       <tbody>
@@ -58,10 +58,10 @@ export function ProfitDistributionTable({ waveIndex, profitDist, decimalPlaces }
                 borderLeft: percentile ? `4px solid ${colors.border}` : 'none'
               }}
             >
-              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{(probValue * 100).toFixed(decimalPlaces)}%</td>
-              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{cumulativeProb.toFixed(decimalPlaces)}%</td>
-              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left' }}>{reverseProb.toFixed(decimalPlaces)}%</td>
-              <td style={{ padding: '12px', fontSize: '13px', textAlign: 'left', fontWeight: '500', color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
+              <td>{(probValue * 100).toFixed(decimalPlaces)}%</td>
+              <td>{cumulativeProb.toFixed(decimalPlaces)}%</td>
+              <td>{reverseProb.toFixed(decimalPlaces)}%</td>
+              <td style={{ fontWeight: 500, color: ipcValue >= 0 ? '#2e7d32' : '#d32f2f' }}>
                 {ipcValue.toFixed(1)} {percentile && `📊 ${percentile}%`}
               </td>
             </tr>

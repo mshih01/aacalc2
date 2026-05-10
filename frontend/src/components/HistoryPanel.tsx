@@ -19,24 +19,13 @@ export function HistoryPanel({ history, onLoad, onDelete, onClearAll }: HistoryP
     }}>
       <div style={{ padding: '12px', borderBottom: '1px solid #ddd', backgroundColor: '#f0f0f0' }}>
         <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>History ({history.length})</h3>
-        <button
-          onClick={onClearAll}
-          style={{
-            fontSize: '11px',
-            padding: '4px 8px',
-            backgroundColor: '#ddd',
-            border: 'none',
-            borderRadius: '3px',
-            cursor: 'pointer',
-            color: '#333'
-          }}
-        >
+        <button onClick={onClearAll} className="btn" style={{ fontSize: '11px', padding: '4px 8px', backgroundColor: '#ddd', color: '#333', borderRadius: '3px' }}>
           Clear All
         </button>
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {history.length === 0 ? (
-          <div style={{ padding: '12px', color: '#999', fontSize: '12px' }}>No history yet</div>
+          <div className="info-box" style={{ fontSize: '12px' }}>No history yet</div>
         ) : (
           history.map((entry) => (
             <div
@@ -64,20 +53,7 @@ export function HistoryPanel({ history, onLoad, onDelete, onClearAll }: HistoryP
               >
                 {entry.name}
               </div>
-              <button
-                onClick={() => onDelete(entry.id)}
-                style={{
-                  padding: '2px 6px',
-                  backgroundColor: 'transparent',
-                  color: '#cc0000',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  minWidth: '24px',
-                  textAlign: 'center'
-                }}
-              >
+              <button onClick={() => onDelete(entry.id)} className="btn" style={{ padding: '2px 6px', backgroundColor: 'transparent', color: '#cc0000', fontSize: '16px', fontWeight: 'bold', minWidth: '24px', textAlign: 'center' }}>
                 ✕
               </button>
             </div>

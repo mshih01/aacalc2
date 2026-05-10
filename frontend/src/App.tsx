@@ -669,33 +669,15 @@ function App() {
               setToast({ message: '✗ Failed to copy link' })
             })
           }}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#28a745',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
+          className="btn"
+          style={{ backgroundColor: '#28a745', color: 'white' }}
         >
           Share
         </button>
         <button
           onClick={() => setShowHistory(!showHistory)}
-          style={{
-            padding: '8px 12px',
-            backgroundColor: '#0066cc',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
+          className="btn"
+          style={{ backgroundColor: '#0066cc', color: 'white' }}
         >
           {showHistory ? 'Hide' : 'Show'} History ({history.length})
         </button>
@@ -732,7 +714,7 @@ function App() {
           Advanced Options
         </button>
         {showAdvanced && (
-          <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '6px', borderLeft: '4px solid #1d4ed8' }}>
+          <div className="mt-15" style={{ padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '6px', borderLeft: '4px solid #1d4ed8' }}>
           <div className="advanced-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
               <div className="floating-label-group">
                 <input

@@ -24,7 +24,7 @@ export function WaveCard({
   onUnitChange, onSwapSides, onSwapWave, onUpdateConfig,
 }: WaveCardProps) {
   return (
-    <div key={`wave-card-${waveIdx}`} style={{ border: '2px solid #333', borderRadius: '8px', padding: '15px', marginBottom: '15px', backgroundColor: '#f9f9f9' }}>
+    <div className="card">
       <h2 style={{ marginTop: 0 }}>Wave {waveIdx + 1}</h2>
 
       <div className="wave-layout" style={{ display: 'grid', gridTemplateColumns: 'minmax(200px, 1fr) auto minmax(200px, 1fr)', gap: '20px', marginBottom: '15px', alignItems: 'start' }}>
@@ -47,14 +47,14 @@ export function WaveCard({
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: '#666', fontWeight: '500' }}>Units:</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
-              {((modeUnitMap[mode] || []) as readonly (UnitId | 'inf_a' | 'art_a' | 'arm_a')[]).concat(
-                amphibious && mode === 'land' ? ['inf_a', 'art_a', 'arm_a'] : []
-              ).map((unit) => {
-                const isDisabled = unit === 'aa' || (mode === 'sea' && unit === 'tra')
-                return (
-                  <div key={`att-${waveIdx}-${unit}`} className="floating-label-group" style={{ opacity: isDisabled ? 0.5 : 1 }}>
+<label className="label-muted">Units:</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
+                      {((modeUnitMap[mode] || []) as readonly (UnitId | 'inf_a' | 'art_a' | 'arm_a')[]).concat(
+                        amphibious && mode === 'land' ? ['inf_a', 'art_a', 'arm_a'] : []
+                      ).map((unit) => {
+                        const isDisabled = unit === 'aa' || (mode === 'sea' && unit === 'tra')
+                        return (
+                          <div key={`att-${waveIdx}-${unit}`} className="floating-label-group" style={{ opacity: isDisabled ? 0.5 : 1 }}>
                     <input
                       type="number"
                       min={0}
@@ -81,21 +81,7 @@ export function WaveCard({
         </div>
 
         {/* Swap Button */}
-        <button
-          onClick={onSwapSides}
-          style={{
-            alignSelf: 'center',
-            padding: '8px 12px',
-            backgroundColor: '#1d4ed8',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
-        >
+        <button onClick={onSwapSides} className="btn btn-blue" style={{ alignSelf: 'center' }}>
           ⇄ Swap
         </button>
 
@@ -118,9 +104,9 @@ export function WaveCard({
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', color: '#666', fontWeight: '500' }}>Units:</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
-              {(modeUnitMap[mode] || []).map((unit) => {
+<label className="label-muted">Units:</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
+                      {(modeUnitMap[mode] || []).map((unit) => {
                 const isDisabled = mode === 'sea' ? unit === 'bom' : (unit === 'cru' || unit === 'bat')
                 return (
                   <div key={`def-${waveIdx}-${unit}`} className="floating-label-group" style={{ opacity: isDisabled ? 0.5 : 1 }}>
@@ -159,21 +145,7 @@ export function WaveCard({
       />
 
       {waveIdx < numWaves - 1 && (
-        <button
-          onClick={onSwapWave}
-          style={{
-            margin: '10px auto',
-            padding: '8px 12px',
-            backgroundColor: '#1d4ed8',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            fontWeight: '600',
-            whiteSpace: 'nowrap'
-          }}
-        >
+        <button onClick={onSwapWave} className="btn btn-blue" style={{ margin: '10px auto' }}>
           ↓ Swap Wave {waveIdx + 1} ↔ {waveIdx + 2}
         </button>
       )}

@@ -11,7 +11,7 @@ export function CollapsibleSection({ title, children, defaultOpen = false, heade
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div style={{ marginTop: '30px' }}>
+    <div className="mt-30">
       <div
         onClick={() => setIsOpen(!isOpen)}
         style={{

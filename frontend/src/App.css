@@ -396,6 +396,132 @@ input[type='number'] {
   position: relative;
   margin-top: 8px;
 }
+/* ===== Utility Classes ===== */
+
+/* Buttons */
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.btn-blue {
+  background-color: #1d4ed8;
+  color: white;
+}
+
+.btn-red {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-gray {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-light {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.table thead tr {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+}
+
+.table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.table td {
+  padding: 12px;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* Cards */
+.card {
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+/* Info box */
+.info-box {
+  padding: 12px;
+  color: #999;
+  font-size: 13px;
+}
+
+/* Labels */
+.label-muted {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Results */
+.result-summary {
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.result-summary h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+/* Stat boxes in results */
+.stat-box {
+  flex: 0 1 auto;
+  min-width: 75px;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #666;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+/* Common spacing */
+.mb-15 { margin-bottom: 15px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.mt-30 { margin-top: 30px; }
+.m-0 { margin: 0; }
+
 /* Wave layout responsive grid */
 .wave-layout {
   display: grid;

@@ -25,7 +25,7 @@ export function SBRModeSection({ diceMode, onDiceModeChange, attack, defense, on
         </div>
       </section>
 
-      <section style={{ border: '2px solid #333', borderRadius: '8px', padding: '15px', marginBottom: '15px', backgroundColor: '#f9f9f9' }}>
+      <section className="card">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
           <div>
             <h3>Bombers</h3>

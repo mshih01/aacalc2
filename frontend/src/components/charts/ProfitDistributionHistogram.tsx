@@ -20,7 +20,7 @@ export function ProfitDistributionHistogram({
   const scrollRef = useRef<HTMLDivElement>(null)
 
   if (!profitDist || Object.keys(profitDist).length === 0) {
-    return <div style={{ padding: '12px', color: '#999' }}>No profit distribution data available</div>
+    return <div className="info-box">No profit distribution data available</div>
   }
 
   const binned = Object.entries(profitDist)
