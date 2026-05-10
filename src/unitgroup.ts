@@ -1243,6 +1243,44 @@ export function get_cost_from_str(
 function make_node_key(s: string, retreat: string) {
   return s + ';' + retreat;
 }
+function getOrCreateGraphNode(
+  mymap: Map<string, general_unit_graph_node>,
+  myheap: Heap<general_unit_graph_node>,
+  um: unit_manager,
+  unit_str: string,
+  retreat: string,
+  is_nonaval: boolean,
+  computeDlast: (node: general_unit_graph_node) => boolean,
+): general_unit_graph_node {
+  const key = make_node_key(unit_str, retreat);
+  const existing = mymap.get(key);
+  if (existing != undefined) return existing;
+  const node = new general_unit_graph_node(um, unit_str, retreat, is_nonaval);
+  node.dlast = computeDlast(node);
+  mymap.set(key, node);
+  myheap.push(node);
+  return node;
+}
+
+function traverseChain(
+  node: general_unit_graph_node,
+  next: (n: general_unit_graph_node) => general_unit_graph_node | undefined,
+  maxHits: number,
+): number[] {
+  const arr: number[] = [];
+  let prev: general_unit_graph_node | undefined;
+  let cur: general_unit_graph_node | undefined;
+  for (cur = node; cur != undefined && cur != prev; cur = next(cur)) {
+    prev = cur;
+    arr.push(cur.index);
+  }
+  if (prev == undefined) throw new Error();
+  for (let i = arr.length; i < maxHits; i++) {
+    arr.push(prev.index);
+  }
+  return arr;
+}
+
 // compute all possible sub-states (and all possible casualties from every state).
 export function compute_remove_hits(
   naval_group: general_unit_group,
@@ -1251,16 +1289,7 @@ export function compute_remove_hits(
   cas: casualty_1d[] | undefined,
   is_amphibious: boolean,
 ) {
-  // compute next state graph
-  // start with initial state.
-  // from each node --  next states are:
-  //   remove 1sub hit
-  //   remove 1air hit  (no destroyer)
-  //   remove 1naval hit (unconstrained)
-  // root node
   const s = naval_group.unit_str;
-  //printf ("%s", s);
-  //console.log(naval_group);
   let node = new general_unit_graph_node(
     naval_group.um,
     s,
@@ -1271,8 +1300,6 @@ export function compute_remove_hits(
 
   const nodeVec: general_unit_graph_node[] = [];
   const mymap: Map<string, general_unit_graph_node> = new Map();
-  //const q : number[] = [];
-  // information to uniquely identify a node
   const mycompare = (a: general_unit_graph_node, b: general_unit_graph_node) =>
     b.cost - a.cost;
   const myheap = new Heap(mycompare);
@@ -1286,18 +1313,14 @@ export function compute_remove_hits(
     if (naval_group.um.verbose_level > 3) {
       console.log(num_shots, 'num_shots');
     }
-
     naval_group.num_aashot = num_shots;
-
     let att_str = s;
-    let att_cas = '';
     let prev = node;
     let nnode = node;
     for (let i = 0; i <= num_shots; i++) {
       if (i > 0) {
-        let cas;
-        [att_str, cas] = remove_one_plane(naval_group.um, att_str);
-        att_cas += cas;
+        const [new_str, cas] = remove_one_plane(naval_group.um, att_str);
+        att_str = new_str;
         nnode = new general_unit_graph_node(
           naval_group.um,
           att_str,
@@ -1316,36 +1339,27 @@ export function compute_remove_hits(
   if (cas != undefined) {
     for (let i = 0; i < cas.length; i++) {
       const s = cas[i].remain;
-      const key = make_node_key(s, '');
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        const newnode = new general_unit_graph_node(
-          naval_group.um,
-          s,
-          '',
-          naval_group.is_nonaval,
-        );
-        if (newnode.num_naval > 0) {
-          newnode.dlast = node.dlast;
-        } else {
-          newnode.dlast = false;
-        }
-        mymap.set(key, newnode);
-        myheap.push(newnode);
-        //console.log (newnode.index, "push 0");
-      }
+      getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s,
+        '',
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
   }
 
   while (myheap.length > 0) {
-    const node = myheap.pop();
-    if (node == undefined) {
+    const heapq = myheap.pop();
+    if (heapq == undefined) {
       throw new Error();
     }
+    node = heapq;
     node.index = nodeVec.length;
     nodeVec.push(node);
 
-    //console.log (node.index, node, nodeVec.length, "pop");
     if (node.N == 0) {
       node.next_navalhit = node;
       node.next_airhit = node;
@@ -1357,88 +1371,45 @@ export function compute_remove_hits(
       continue;
     }
     const ch = node.unit_str[node.N - 1];
-
-    // unconstrained next:  remove last unit
     const s = node.unit_str.substring(0, node.unit_str.length - 1);
 
-    let newnode: general_unit_graph_node;
-
-    const key = make_node_key(s, node.retreat);
-    const ii = mymap.get(key);
-    if (ii == undefined) {
-      newnode = new general_unit_graph_node(
-        naval_group.um,
-        s,
-        node.retreat,
-        naval_group.is_nonaval,
-      );
-      if (newnode.num_naval > 0) {
-        newnode.dlast = node.dlast;
-      } else {
-        newnode.dlast = false;
-      }
-      mymap.set(key, newnode);
-      myheap.push(newnode);
-      //console.log (newnode.index, "push 0");
-    } else {
-      newnode = ii;
-    }
-    node.next_navalhit = newnode;
+    node.next_navalhit = getOrCreateGraphNode(
+      mymap,
+      myheap,
+      naval_group.um,
+      s,
+      node.retreat,
+      naval_group.is_nonaval,
+      (n) => n.num_naval > 0 && node.dlast,
+    );
 
     if (!naval_group.is_naval || !isAir(naval_group.um, ch)) {
-      // sub is the same as unconstrained/
-      node.next_subhit = newnode;
+      node.next_subhit = node.next_navalhit;
     } else {
       const s2 = remove_one_notplane(naval_group.um, node.unit_str, false);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        if (node2.num_naval > 0) {
-          node2.dlast = node.dlast;
-        } else {
-          node2.dlast = false;
-        }
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2.index, "push 1");
-      } else {
-        node2 = ii;
-      }
-      node.next_subhit = node2;
+      node.next_subhit = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
     if (!naval_group.is_naval || !isSub(naval_group.um, ch)) {
-      node.next_airhit = newnode;
+      node.next_airhit = node.next_navalhit;
     } else {
       const s2 = remove_one_notsub(naval_group.um, node.unit_str, false);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        if (node2.num_naval > 0) {
-          node2.dlast = node.dlast;
-        } else {
-          node2.dlast = false;
-        }
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2.index, "push 2");
-      } else {
-        node2 = ii;
-      }
-      node.next_airhit = node2;
+      node.next_airhit = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
     node.next_dlast_navalhit = node.next_navalhit;
     node.next_dlast_airhit = node.next_airhit;
@@ -1452,82 +1423,48 @@ export function compute_remove_hits(
       node.num_dest == 1 &&
       nnnode.num_dest == 0
     ) {
-      //console.log ("here");
-      // next naval
       const s2 = remove_one_notdestroyer(naval_group.um, node.unit_str);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        node2.dlast = true;
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 3");
-        //console.log (node2.index, "push 3");
-      } else {
-        node2 = ii;
-      }
-      node.next_dlast_navalhit = node2;
+      node.next_dlast_navalhit = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        () => true,
+      );
     }
     if (
       naval_group.destroyer_last &&
       node.num_dest == 1 &&
       nanode.num_dest == 0
     ) {
-      // next air
       const s2 = remove_one_notsub(naval_group.um, node.unit_str, true);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        node2.dlast = true;
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 4");
-        //console.log (node2.index, "push 4");
-      } else {
-        node2 = ii;
-      }
-      node.next_dlast_airhit = node2;
+      node.next_dlast_airhit = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        () => true,
+      );
     }
     if (
       naval_group.destroyer_last &&
       node.num_dest == 1 &&
       nsnode.num_dest == 0
     ) {
-      // next sub
       const s2 = remove_one_notplane(naval_group.um, node.unit_str, true);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        node2.dlast = true;
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 5");
-        //console.log (node2.index, "push 5");
-      } else {
-        node2 = ii;
-      }
-      node.next_dlast_subhit = node2;
+      node.next_dlast_subhit = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        () => true,
+      );
     }
     if (
       naval_group.submerge_sub &&
@@ -1535,243 +1472,90 @@ export function compute_remove_hits(
       node.retreat.length == 0
     ) {
       const retreat_subs_output = retreat_subs(naval_group.um, node.unit_str);
-      const s2 = retreat_subs_output.s;
-      const subs = retreat_subs_output.subs;
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, subs);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          subs,
-          naval_group.is_nonaval,
-        );
-        if (node2.num_naval > 0) {
-          node2.dlast = node.dlast;
-        } else {
-          node2.dlast = false;
-        }
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 6");
-        //console.log (node2.index, "push 6");
-      } else {
-        node2 = ii;
-      }
-      node.next_submerge = node2;
+      node.next_submerge = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        retreat_subs_output.s,
+        retreat_subs_output.subs,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
     if (is_amphibious && node.unit_str.length > 0 && node.retreat.length == 0) {
       const [s2, amphibious] = retreat_non_amphibious(
         naval_group.um,
         node.unit_str,
       );
-      //if (true || hasAmphibious (naval_group.um, s2))
-      {
-        let node2: general_unit_graph_node;
-        const key = make_node_key(s2, amphibious);
-        const ii = mymap.get(key);
-        if (ii == undefined) {
-          node2 = new general_unit_graph_node(
-            naval_group.um,
-            s2,
-            amphibious,
-            naval_group.is_nonaval,
-          );
-          if (node2.num_naval > 0) {
-            node2.dlast = node.dlast;
-          } else {
-            node2.dlast = false;
-          }
-          mymap.set(key, node2);
-          myheap.push(node2);
-          //console.log (node2, "push 6");
-          //console.log (node2.index, "push 6");
-        } else {
-          node2 = ii;
-        }
-        node.next_retreat_amphibious = node2;
-      }
+      node.next_retreat_amphibious = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        amphibious,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
     if (naval_group.is_crash_fighters) {
       const s2 = crash_fighters(naval_group.um, node.unit_str);
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        if (node2.num_naval > 0) {
-          node2.dlast = node.dlast;
-        } else {
-          node2.dlast = false;
-        }
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 6");
-        //console.log (node2.index, "push 6");
-      } else {
-        node2 = ii;
-      }
-      node.next_crash_fighters = node2;
+      node.next_crash_fighters = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        s2,
+        node.retreat,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
 
     if (
       is_only_transports_remain(naval_group.um, node.unit_str) ||
       is_only_aa_remain(naval_group.um, node.unit_str)
     ) {
-      const s2 = '';
-      let node2: general_unit_graph_node;
-      const key = make_node_key(s2, node.retreat);
-      const ii = mymap.get(key);
-      if (ii == undefined) {
-        node2 = new general_unit_graph_node(
-          naval_group.um,
-          s2,
-          node.retreat,
-          naval_group.is_nonaval,
-        );
-        if (node2.num_naval > 0) {
-          node2.dlast = node.dlast;
-        } else {
-          node2.dlast = false;
-        }
-        mymap.set(key, node2);
-        myheap.push(node2);
-        //console.log (node2, "push 6");
-        //console.log (node2.index, "push 6");
-      } else {
-        node2 = ii;
-      }
-      node.next_remove_noncombat = node2;
+      node.next_remove_noncombat = getOrCreateGraphNode(
+        mymap,
+        myheap,
+        naval_group.um,
+        '',
+        node.retreat,
+        naval_group.is_nonaval,
+        (n) => n.num_naval > 0 && node.dlast,
+      );
     }
-  } // end of while heap loop
+  }
 
-  //console.log("done queue");
   naval_group.nodeArr = nodeVec;
   naval_group.nodeCostArr = new Array(nodeVec.length);
   for (let i = 0; i < naval_group.nodeCostArr.length; i++) {
     naval_group.nodeCostArr[i] = nodeVec[i].cost;
   }
-  //console.log(naval_group.nodeArr.length, "length");
-  let i;
-  for (i = 0; i < naval_group.nodeArr.length; i++) {
+
+  for (let i = 0; i < naval_group.nodeArr.length; i++) {
     node = naval_group.nodeArr[i];
-    //console.log(i, node);
-    // compute nextsub array
-    node.nsubArr = [];
-
-    let prev: general_unit_graph_node | undefined = undefined;
-    let node2: general_unit_graph_node | undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_subhit
-    ) {
-      prev = node2;
-      node.nsubArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.nsubArr.length; i < max_remove_hits; i++) {
-      node.nsubArr.push(prev.index);
-    }
-
-    // compute nextair array
-    node.nairArr = [];
-    prev = undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_airhit
-    ) {
-      prev = node2;
-      node.nairArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.nairArr.length; i < max_remove_hits; i++) {
-      node.nairArr.push(prev.index);
-    }
-
-    node.nnavalArr = [];
-    // compute nextnaval array
-    prev = undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_navalhit
-    ) {
-      prev = node2;
-      node.nnavalArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.nnavalArr.length; i < max_remove_hits; i++) {
-      node.nnavalArr.push(prev.index);
-    }
-
-    // compute next_dlast_sub array
-    node.ndlastsubArr = [];
-    prev = undefined;
-
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_dlast_subhit
-    ) {
-      prev = node2;
-      node.ndlastsubArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.ndlastsubArr.length; i < max_remove_hits; i++) {
-      node.ndlastsubArr.push(prev.index);
-    }
-
-    // compute nextair array
-    node.ndlastairArr = [];
-    prev = undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_dlast_airhit
-    ) {
-      prev = node2;
-      node.ndlastairArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.ndlastairArr.length; i < max_remove_hits; i++) {
-      node.ndlastairArr.push(prev.index);
-    }
-
-    node.ndlastnavalArr = [];
-    // compute nextnaval array
-    prev = undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_dlast_navalhit
-    ) {
-      prev = node2;
-      node.ndlastnavalArr.push(node2.index);
-    }
-    if (prev == undefined) {
-      throw new Error();
-    }
-    for (let i = node.ndlastnavalArr.length; i < max_remove_hits; i++) {
-      node.ndlastnavalArr.push(prev.index);
-    }
+    node.nsubArr = traverseChain(node, (n) => n.next_subhit, max_remove_hits);
+    node.nairArr = traverseChain(node, (n) => n.next_airhit, max_remove_hits);
+    node.nnavalArr = traverseChain(
+      node,
+      (n) => n.next_navalhit,
+      max_remove_hits,
+    );
+    node.ndlastsubArr = traverseChain(
+      node,
+      (n) => n.next_dlast_subhit,
+      max_remove_hits,
+    );
+    node.ndlastairArr = traverseChain(
+      node,
+      (n) => n.next_dlast_airhit,
+      max_remove_hits,
+    );
+    node.ndlastnavalArr = traverseChain(
+      node,
+      (n) => n.next_dlast_navalhit,
+      max_remove_hits,
+    );
 
     if (node.num_subs == 0) {
       node.nosub_group = make_unit_group(
@@ -1782,10 +1566,9 @@ export function compute_remove_hits(
       );
     } else {
       const retreat_subs_output = retreat_subs(naval_group.um, node.unit_str);
-      const s2 = retreat_subs_output.s;
       node.nosub_group = make_unit_group(
         naval_group.um,
-        s2,
+        retreat_subs_output.s,
         naval_group.attdef,
         naval_group.diceMode,
       );
@@ -1807,10 +1590,8 @@ export function compute_remove_hits(
       );
     }
   }
-  // aahits
   {
     node = naval_group.nodeArr[0];
-    // compute nextsub array
     node.naaArr = [];
     let prev: general_unit_graph_node | undefined = undefined;
     let node2: general_unit_graph_node | undefined;
@@ -1823,7 +1604,6 @@ export function compute_remove_hits(
       node.naaArr.push(node2.index);
     }
   }
-  //console.log("done queue 2");
   for (let i = 0; i < naval_group.nodeArr.length; i++) {
     node = naval_group.nodeArr[i];
     const red_str = get_reduced_group_string(node.unit_str);
@@ -1833,9 +1613,6 @@ export function compute_remove_hits(
       console.log(
         `${node.index}:  ${red_str}:${red_retreat_str} ${node.num_subs} ${node.num_air} ${node.num_naval} ${node.num_dest} ${node.dlast} ${node.cost}`,
       );
-      //		if (node.next_subhit != undefined && node.next_airhit != undefined && node.next_navalhit != undefined){
-      //			console.log(node.index, node.next_subhit.index, node.next_airhit.index, node.next_navalhit.index);
-      //		}
       if (naval_group.um.verbose_level > 3) {
         if (node.next_crash_fighters != undefined) {
           console.log(
