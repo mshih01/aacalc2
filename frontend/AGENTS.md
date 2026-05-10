@@ -10,6 +10,8 @@ React + Vite + TypeScript frontend for the Axis & Allies 1942 Online probability
 | `npm run build`    | `tsc -b && vite build` — type-check then bundle             |
 | `npm run lint`     | `eslint .`                                                  |
 | `npm run preview`  | `vite preview` — serve production build locally             |
+| `npm run test`     | `vitest run`                                                 |
+| `npm run test:watch` | `vitest` — watch mode                                      |
 | `LOCAL_ENGINE=true npm run dev` | Dev server using root `dist/` instead of published package |
 
 ## Architecture
@@ -70,7 +72,16 @@ All state lives in `App.tsx` via `useState` hooks (no global state library). Per
 - Prefer `className` over inline `style={{}}` where practical. Utility classes are in `App.css` (`.btn`, `.table`, `.card`, `.info-box`, etc.).
 - No `as any` casts. If TypeScript complains, fix the types.
 - Prettier config matches root: single quotes, trailing commas, 80 print width.
-- No tests yet (Phase 6 not started).
+
+## Tests
+
+- Uses `vitest` with `jsdom` environment and `@testing-library/react`.
+- Test files: `src/**/*.test.{ts,tsx}`, co-located with the module under test.
+- Run with `npm run test` or `npm run test:watch`.
+- Test setup in `src/test-setup.ts` (imports `@testing-library/jest-dom` matchers).
+- Pure functions (formatting, validation, unit stats) are well-tested. Component tests are minimal (App smoke test).
+- The `aacalc2` library module resolves naturally from `node_modules` in tests (no mocking needed for the smoke test).
+- To add a new test: create a `.test.ts` file next to the source file.
 
 ## Data flow
 
