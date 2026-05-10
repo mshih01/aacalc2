@@ -64,9 +64,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   const numRecommendations = input.numRecommendations;
 
   if (optimizeMode == 'maxProfit' && solveType == 'fuzzyBinarySearch') {
-    console.error(
-      'maxProfit optimizeMode does not work with fuzzyBinarySearch solveType',
-    );
+    console.error('maxProfit optimizeMode does not work with fuzzyBinarySearch solveType');
     return { recommendations: [{ army: {}, cost: 0 }] };
   }
 
@@ -109,12 +107,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       };
     case 'fuzzyBinarySearch':
       return {
-        recommendations: solveFuzzyBinarySearch(
-          input,
-          attDefType,
-          armies,
-          surviveThreshold,
-        ),
+        recommendations: solveFuzzyBinarySearch(input, attDefType, armies, surviveThreshold),
       };
     case 'linearSearch':
     case 'gridSearch':
@@ -158,16 +151,9 @@ function solveMultiEval(
     console.log(output);
   }
 
-  let multiEvalResult: [string, number, number, number][] =
-    output.resultList.map(
-      (tuple) =>
-        [tuple[0], tuple[1], 1 - tuple[2], tuple[3]] as [
-          string,
-          number,
-          number,
-          number,
-        ],
-    );
+  let multiEvalResult: [string, number, number, number][] = output.resultList.map(
+    (tuple) => [tuple[0], tuple[1], 1 - tuple[2], tuple[3]] as [string, number, number, number],
+  );
   multiEvalResult.sort((a, b) => {
     const av: number = Number(a[2] < surviveThreshold) ? 1.0 : 0.0;
     const bv: number = Number(b[2] < surviveThreshold) ? 1.0 : 0.0;
@@ -206,9 +192,7 @@ function solveExhaust(
     }
     const output = multiwaveExternal(myinput);
     const survive =
-      attDefType == 'defender'
-        ? output.defense.survives[0]
-        : output.attack.survives[0];
+      attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
     const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
     if (input.verbose_level && input.verbose_level > 2) {
       console.log(
@@ -223,36 +207,26 @@ function solveExhaust(
     out.push([army, survive, cost, profit]);
   }
   if (optimizeMode == 'targetWinPercentage') {
-    out.sort(
-      (
-        a: [Army, number, number, number],
-        b: [Army, number, number, number],
-      ) => {
-        const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
-        const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
-        if (av != bv) {
-          return bv - av;
-        } else {
-          return Number(b[2]) - Number(a[2]);
-        }
-      },
-    );
+    out.sort((a: [Army, number, number, number], b: [Army, number, number, number]) => {
+      const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
+      const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
+      if (av != bv) {
+        return bv - av;
+      } else {
+        return Number(b[2]) - Number(a[2]);
+      }
+    });
     return [{ army: out[0][0], cost: out[0][2] }];
   } else {
-    out.sort(
-      (
-        a: [Army, number, number, number],
-        b: [Army, number, number, number],
-      ) => {
-        const av: number = Number(a[3]);
-        const bv: number = Number(b[3]);
-        if (av != bv) {
-          return bv - av;
-        } else {
-          return Number(b[2]) - Number(a[2]);
-        }
-      },
-    );
+    out.sort((a: [Army, number, number, number], b: [Army, number, number, number]) => {
+      const av: number = Number(a[3]);
+      const bv: number = Number(b[3]);
+      if (av != bv) {
+        return bv - av;
+      } else {
+        return Number(b[2]) - Number(a[2]);
+      }
+    });
     let recommendations: Recommendation[] = [];
     for (let i = 0; i < numRecommendations; i++) {
       recommendations.push({ army: out[i][0], cost: out[i][3] });
@@ -272,17 +246,15 @@ function solveFuzzyBinarySearch(
   armies: [Army, number, number, number][],
   surviveThreshold: number,
 ): Recommendation[] {
-  armies.sort(
-    (a: [Army, number, number, number], b: [Army, number, number, number]) => {
-      const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-      const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-      if (av != bv) {
-        return av - bv;
-      } else {
-        return Number(a[1]) - Number(b[1]);
-      }
-    },
-  );
+  armies.sort((a: [Army, number, number, number], b: [Army, number, number, number]) => {
+    const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+    const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+    if (av != bv) {
+      return av - bv;
+    } else {
+      return Number(a[1]) - Number(b[1]);
+    }
+  });
   if (input.verbose_level && input.verbose_level > 2) {
     console.log('sorted 1');
     for (let i = 0; i < armies.length; i++) {
@@ -347,9 +319,7 @@ function solveFuzzyBinarySearch(
       const output = multiwaveExternal(myinput);
       iter++;
       const survive =
-        attDefType == 'defender'
-          ? output.defense.survives[0]
-          : output.attack.survives[0];
+        attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
       if (survive >= surviveThreshold) {
         anySurvive = true;
       } else {
@@ -357,13 +327,7 @@ function solveFuzzyBinarySearch(
       }
     }
     if (input.verbose_level && input.verbose_level > 2) {
-      console.log(
-        low,
-        high,
-        lowPower,
-        highPower,
-        'lowIndex, highIndex, lowPower, highPower',
-      );
+      console.log(low, high, lowPower, highPower, 'lowIndex, highIndex, lowPower, highPower');
     }
     if (allSurvive) {
       high = midIndexArray[0] - 1;
@@ -384,19 +348,17 @@ function solveFuzzyBinarySearch(
     console.log('bestArmy', bestArmy);
     console.log('iterations', iter);
   }
-  armies.sort(
-    (a: [Army, number, number, number], b: [Army, number, number, number]) => {
-      const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-      const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-      const acost: number = av >= bestPower ? 0 : 1;
-      const bcost: number = bv >= bestPower ? 0 : 1;
-      if (acost != bcost) {
-        return acost - bcost;
-      } else {
-        return Number(a[1]) - Number(b[1]);
-      }
-    },
-  );
+  armies.sort((a: [Army, number, number, number], b: [Army, number, number, number]) => {
+    const av: number = attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+    const bv: number = attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+    const acost: number = av >= bestPower ? 0 : 1;
+    const bcost: number = bv >= bestPower ? 0 : 1;
+    if (acost != bcost) {
+      return acost - bcost;
+    } else {
+      return Number(a[1]) - Number(b[1]);
+    }
+  });
   if (input.verbose_level && input.verbose_level > 2) {
     console.log('sorted 2');
     for (let i = 0; i < armies.length; i++) {
@@ -422,9 +384,7 @@ function solveFuzzyBinarySearch(
       console.log(iter, 'iter');
     }
     const survive =
-      attDefType == 'defender'
-        ? output.defense.survives[0]
-        : output.attack.survives[0];
+      attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
     if (survive >= surviveThreshold) {
       bestArmy = armies[i];
       break;
@@ -497,9 +457,7 @@ function solveLinearOrGridSearch(
 
     const output = multiwaveExternal(input);
     const survive =
-      attDefType == 'defender'
-        ? output.defense.survives[0]
-        : output.attack.survives[0];
+      attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
     const cost = getArmyCost(army);
 
     let overflow = 0;
@@ -604,8 +562,7 @@ function solveLinearOrGridSearch(
           [0, numCru],
         ];
 
-  const objectiveFn =
-    optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
+  const objectiveFn = optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
 
   const verbose = !!(input.verbose_level && input.verbose_level > 0);
 
@@ -615,26 +572,11 @@ function solveLinearOrGridSearch(
   const beamWidth = input.beamWidth ?? 3;
   const granularity = input.granularity ?? 3;
   if (solveType == 'gridSearch') {
-    const gridResults = gridSearch(
-      objectiveFn,
-      bounds,
-      verbose,
-      beamWidth,
-      granularity,
-    );
+    const gridResults = gridSearch(objectiveFn, bounds, verbose, beamWidth, granularity);
     if (verbose)
-      console.log(
-        'Optimized Integer Parameters:',
-        gridResults.length > 0 ? gridResults[0] : 'N/A',
-      );
+      console.log('Optimized Integer Parameters:', gridResults.length > 0 ? gridResults[0] : 'N/A');
   } else {
-    const lineResult = lineSearch(
-      objectiveFn,
-      initialGuess,
-      bounds,
-      20,
-      verbose,
-    );
+    const lineResult = lineSearch(objectiveFn, initialGuess, bounds, 20, verbose);
     if (verbose) console.log('Optimized Integer Parameters:', lineResult);
   }
   const relevantMap = optimizeMode == 'maxProfit' ? profitMap : mymap;
@@ -651,8 +593,7 @@ function solveLinearOrGridSearch(
   for (let i = 0; i < n; i++) {
     const vars = sortedEntries[i].vars;
     const army = getArmy(vars);
-    const cost =
-      optimizeMode == 'maxProfit' ? -sortedEntries[i].value : getArmyCost(army);
+    const cost = optimizeMode == 'maxProfit' ? -sortedEntries[i].value : getArmyCost(army);
     recommendations.push({ army, cost });
   }
 
@@ -686,8 +627,7 @@ function approximateGradient(
     const fMinusDelta = objectiveFunction(params);
 
     // Calculate approximate gradient using finite difference
-    gradients[j] =
-      xplus != xminus ? (fPlusDelta - fMinusDelta) / (xplus - xminus) : 0;
+    gradients[j] = xplus != xminus ? (fPlusDelta - fMinusDelta) / (xplus - xminus) : 0;
 
     // Restore original parameter value
     params[j] = originalVal;
@@ -844,15 +784,7 @@ function lineSearch(
         direction[i] = 0;
       }
     }
-    let stepSize = backtrackingLineSearch(
-      objectiveFn,
-      x0,
-      bound,
-      direction,
-      0.5,
-      0.9,
-      20.0,
-    );
+    let stepSize = backtrackingLineSearch(objectiveFn, x0, bound, direction, 0.5, 0.9, 20.0);
     const newX: Vector = x0.map((val, i) => {
       let v = Math.round(val + stepSize * direction[i]);
       if (v < bound[i][0]) {
@@ -933,9 +865,7 @@ function backtrackingLineSearch(
   // Backtracking loop
   while (true) {
     // Calculate the new point with the current step size
-    let xNew: Vector = x.map((val, i) =>
-      Math.round(val + stepSize * direction[i]),
-    );
+    let xNew: Vector = x.map((val, i) => Math.round(val + stepSize * direction[i]));
     for (let i = 0; i < xNew.length; i++) {
       let max = bound[i][1];
       let min = bound[i][0];

@@ -29,17 +29,11 @@ export function is_round_zero_retreat_state(
     if (doAA) {
       const aaData = buildAAGroup(problem.um, num_aashots, problem.diceMode);
       let accumulate = 0.0;
-      forEachAAOutcome(
-        aaData,
-        problem.att_data,
-        aaData.tbl_size,
-        N,
-        (prob, n) => {
-          const attnode2 = problem.att_data.nodeArr[n];
-          const attloss = attnode.cost - attnode2.cost;
-          accumulate += prob * (-attloss + problem.getE(n, M));
-        },
-      );
+      forEachAAOutcome(aaData, problem.att_data, aaData.tbl_size, N, (prob, n) => {
+        const attnode2 = problem.att_data.nodeArr[n];
+        const attloss = attnode.cost - attnode2.cost;
+        accumulate += prob * (-attloss + problem.getE(n, M));
+      });
       if (accumulate < problem.retreat_expected_ipc_profit_threshold) {
         return true;
       }

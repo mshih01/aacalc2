@@ -57,358 +57,28 @@ export class unit_manager {
     this.skip_compute = skip_compute;
   }
   init_units() {
-    this.make_unit(
-      '',
-      'e',
-      'c',
-      0,
-      0,
-      5,
-      1,
-      false,
-      false,
-      false,
-      false,
-      true,
-      false,
-      false,
-    );
-    this.make_unit(
-      'AA',
-      'c',
-      'c',
-      0,
-      0,
-      5,
-      1,
-      false,
-      false,
-      false,
-      false,
-      true,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Inf',
-      'i',
-      'i',
-      1,
-      2,
-      3,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Inf_a',
-      'j',
-      'j',
-      1,
-      2,
-      3,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-    );
-    this.make_unit(
-      'Art',
-      'a',
-      'a',
-      2,
-      2,
-      4,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Art_a',
-      'g',
-      'g',
-      2,
-      2,
-      4,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-    );
-    this.make_unit(
-      '',
-      'd',
-      'i',
-      2,
-      2,
-      3,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      '',
-      'h',
-      'j',
-      2,
-      2,
-      3,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-    );
-    this.make_unit(
-      'Arm',
-      't',
-      't',
-      3,
-      3,
-      6,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Arm_a',
-      'u',
-      'u',
-      3,
-      3,
-      6,
-      1,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-    );
-    this.make_unit(
-      'Fig',
-      'f',
-      'f',
-      3,
-      4,
-      10,
-      1,
-      false,
-      false,
-      false,
-      true,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Bom',
-      'b',
-      'b',
-      4,
-      1,
-      12,
-      1,
-      false,
-      false,
-      false,
-      true,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'ACC',
-      'A',
-      'A',
-      1,
-      2,
-      14,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Cru',
-      'C',
-      'C',
-      3,
-      3,
-      12,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-      false,
-    );
-    this.make_unit(
-      'Des',
-      'D',
-      'D',
-      2,
-      2,
-      8,
-      1,
-      false,
-      false,
-      true,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Sub',
-      'S',
-      'S',
-      2,
-      1,
-      6,
-      1,
-      false,
-      true,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Bat',
-      'B',
-      'B',
-      4,
-      4,
-      20,
-      2,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-      false,
-    );
-    this.make_unit(
-      '',
-      'E',
-      'E',
-      0,
-      0,
-      0,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'Tra',
-      'T',
-      'T',
-      0,
-      0,
-      7,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'DBat',
-      'F',
-      'B',
-      4,
-      4,
-      20,
-      2,
-      false,
-      false,
-      false,
-      false,
-      false,
-      true,
-      false,
-    );
-    this.make_unit(
-      '+',
-      '+',
-      '+',
-      0,
-      0,
-      0,
-      0,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
-    this.make_unit(
-      'IC',
-      'p',
-      'p',
-      0,
-      0,
-      1,
-      1,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-      false,
-    );
+    this.make_unit('', 'e', 'c', 0, 0, 5, 1, false, false, false, false, true, false, false);
+    this.make_unit('AA', 'c', 'c', 0, 0, 5, 1, false, false, false, false, true, false, false);
+    this.make_unit('Inf', 'i', 'i', 1, 2, 3, 1, true, false, false, false, false, false, false);
+    this.make_unit('Inf_a', 'j', 'j', 1, 2, 3, 1, true, false, false, false, false, false, true);
+    this.make_unit('Art', 'a', 'a', 2, 2, 4, 1, true, false, false, false, false, false, false);
+    this.make_unit('Art_a', 'g', 'g', 2, 2, 4, 1, true, false, false, false, false, false, true);
+    this.make_unit('', 'd', 'i', 2, 2, 3, 1, false, false, false, false, false, false, false);
+    this.make_unit('', 'h', 'j', 2, 2, 3, 1, false, false, false, false, false, false, true);
+    this.make_unit('Arm', 't', 't', 3, 3, 6, 1, true, false, false, false, false, false, false);
+    this.make_unit('Arm_a', 'u', 'u', 3, 3, 6, 1, true, false, false, false, false, false, true);
+    this.make_unit('Fig', 'f', 'f', 3, 4, 10, 1, false, false, false, true, false, false, false);
+    this.make_unit('Bom', 'b', 'b', 4, 1, 12, 1, false, false, false, true, false, false, false);
+    this.make_unit('ACC', 'A', 'A', 1, 2, 14, 1, false, false, false, false, false, false, false);
+    this.make_unit('Cru', 'C', 'C', 3, 3, 12, 1, false, false, false, false, false, true, false);
+    this.make_unit('Des', 'D', 'D', 2, 2, 8, 1, false, false, true, false, false, false, false);
+    this.make_unit('Sub', 'S', 'S', 2, 1, 6, 1, false, true, false, false, false, false, false);
+    this.make_unit('Bat', 'B', 'B', 4, 4, 20, 2, false, false, false, false, false, true, false);
+    this.make_unit('', 'E', 'E', 0, 0, 0, 1, false, false, false, false, false, false, false);
+    this.make_unit('Tra', 'T', 'T', 0, 0, 7, 1, false, false, false, false, false, false, false);
+    this.make_unit('DBat', 'F', 'B', 4, 4, 20, 2, false, false, false, false, false, true, false);
+    this.make_unit('+', '+', '+', 0, 0, 0, 0, false, false, false, false, false, false, false);
+    this.make_unit('IC', 'p', 'p', 0, 0, 1, 1, false, false, false, false, false, false, false);
   }
   make_unit(
     fullname: string,
@@ -489,12 +159,7 @@ export class unit_group {
     this.prob_table2[ii] = val;
   }
 
-  constructor(
-    manager: unit_manager,
-    input_str: string,
-    attdef: number,
-    diceMode: DiceMode,
-  ) {
+  constructor(manager: unit_manager, input_str: string, attdef: number, diceMode: DiceMode) {
     this.unit_str = input_str;
     this.size = input_str.length;
     this.tbl_size = this.size + 1;
@@ -575,8 +240,7 @@ export class unit_group {
         if (j == i) {
           this.pgreater[i][j] = this.get_prob_table(i, j);
         } else {
-          this.pgreater[i][j] =
-            this.pgreater[i][j + 1] + this.get_prob_table(i, j);
+          this.pgreater[i][j] = this.pgreater[i][j + 1] + this.get_prob_table(i, j);
         }
       }
     }
@@ -685,12 +349,7 @@ export class general_unit_graph_node {
   nosub_group: unit_group | undefined = undefined;
   naval_group: unit_group | undefined = undefined;
   numBB: number = 0;
-  constructor(
-    um: unit_manager,
-    unit_str: string,
-    retreat: string,
-    is_nonaval: boolean,
-  ) {
+  constructor(um: unit_manager, unit_str: string, retreat: string, is_nonaval: boolean) {
     this.unit_str = unit_str;
     this.retreat = retreat;
     this.N = unit_str.length;
@@ -800,9 +459,7 @@ export class general_unit_group {
 
     if (first_destroyer_index >= 0) {
       const destlast =
-        'D' +
-        naval.substr(0, first_destroyer_index) +
-        naval.substr(first_destroyer_index + 1);
+        'D' + naval.substr(0, first_destroyer_index) + naval.substr(first_destroyer_index + 1);
       this.dlast_group = make_unit_group(um, destlast, attdef, this.diceMode);
     } else {
       this.dlast_group = this.naval_group;
@@ -858,34 +515,21 @@ export class unit_stat {
   }
 }
 
-export function hasDestroyer(
-  group: general_unit_group,
-  node: general_unit_graph_node,
-): boolean {
+export function hasDestroyer(group: general_unit_group, node: general_unit_graph_node): boolean {
   return node.num_dest > 0;
 }
 
-export function remove_subhits2(
-  node: general_unit_graph_node,
-  hits: number,
-): number {
+export function remove_subhits2(node: general_unit_graph_node, hits: number): number {
   const n = hits;
   return node.nsubArr[n];
 }
-export function remove_aahits(
-  group: general_unit_group,
-  hits: number,
-  index: number,
-): number {
+export function remove_aahits(group: general_unit_group, hits: number, index: number): number {
   const node = group.nodeArr[index];
   const n = hits;
   return node.naaArr[n];
 }
 
-export function remove_dlast_subhits2(
-  node: general_unit_graph_node,
-  hits: number,
-): number {
+export function remove_dlast_subhits2(node: general_unit_graph_node, hits: number): number {
   const n = hits;
   return node.ndlastsubArr[n];
 }
@@ -916,18 +560,12 @@ export function remove_dlast_planehits2(
   }
 }
 
-export function remove_navalhits2(
-  node: general_unit_graph_node,
-  hits: number,
-): number {
+export function remove_navalhits2(node: general_unit_graph_node, hits: number): number {
   const n = hits;
   return node.nnavalArr[n];
 }
 
-export function remove_dlast_navalhits2(
-  node: general_unit_graph_node,
-  hits: number,
-): number {
+export function remove_dlast_navalhits2(node: general_unit_graph_node, hits: number): number {
   const n = hits;
   return node.ndlastnavalArr[n];
 }
@@ -981,10 +619,7 @@ export function hasNonAAUnit(um: unit_manager, input: string): boolean {
   }
   return false;
 }
-export function remove_one_plane(
-  um: unit_manager,
-  input_str: string,
-): [string, string] {
+export function remove_one_plane(um: unit_manager, input_str: string): [string, string] {
   const N = input_str.length;
   for (let i = N - 1; i >= 0; i--) {
     const ch = input_str.charAt(i);
@@ -995,10 +630,7 @@ export function remove_one_plane(
   }
   return [input_str, ''];
 }
-export function remove_one_notdestroyer(
-  um: unit_manager,
-  input_str: string,
-): string {
+export function remove_one_notdestroyer(um: unit_manager, input_str: string): string {
   const N = input_str.length;
   for (let i = N - 1; i >= 0; i--) {
     const ch = input_str.charAt(i);
@@ -1015,18 +647,11 @@ export function remove_one_notdestroyer(
   }
   return input_str;
 }
-export function remove_one_notplane(
-  um: unit_manager,
-  input_str: string,
-  skipd: boolean,
-): string {
+export function remove_one_notplane(um: unit_manager, input_str: string, skipd: boolean): string {
   const N = input_str.length;
   for (let i = N - 1; i >= 0; i--) {
     const ch = input_str.charAt(i);
-    if (
-      !isAir(um, ch) &&
-      (!skipd || (!isDestroyer(um, ch) && !isTransport(um, ch)))
-    ) {
+    if (!isAir(um, ch) && (!skipd || (!isDestroyer(um, ch) && !isTransport(um, ch)))) {
       const out = input_str.substring(0, i) + input_str.substring(i + 1, N);
       return out;
     }
@@ -1043,18 +668,11 @@ export function remove_one_notplane(
 
   return input_str;
 }
-export function remove_one_notsub(
-  um: unit_manager,
-  input_str: string,
-  skipd: boolean,
-): string {
+export function remove_one_notsub(um: unit_manager, input_str: string, skipd: boolean): string {
   const N = input_str.length;
   for (let i = N - 1; i >= 0; i--) {
     const ch = input_str.charAt(i);
-    if (
-      !isSub(um, ch) &&
-      (!skipd || (!isDestroyer(um, ch) && !isTransport(um, ch)))
-    ) {
+    if (!isSub(um, ch) && (!skipd || (!isDestroyer(um, ch) && !isTransport(um, ch)))) {
       const out = input_str.substring(0, i) + input_str.substring(i + 1, N);
       return out;
     }
@@ -1076,10 +694,7 @@ interface retreat_subs_output {
   num_subs: number;
   subs: string;
 }
-export function retreat_subs(
-  um: unit_manager,
-  input_str: string,
-): retreat_subs_output {
+export function retreat_subs(um: unit_manager, input_str: string): retreat_subs_output {
   const N = input_str.length;
   let out = '';
   let subs = '';
@@ -1095,17 +710,11 @@ export function retreat_subs(
   }
   return { s: out, num_subs: num_subs, subs: subs };
 }
-export function is_only_transports_remain(
-  um: unit_manager,
-  input_str: string,
-): boolean {
+export function is_only_transports_remain(um: unit_manager, input_str: string): boolean {
   const num_transports = count_units(input_str, 'T');
   return num_transports == input_str.length;
 }
-export function is_only_aa_remain(
-  um: unit_manager,
-  input_str: string,
-): boolean {
+export function is_only_aa_remain(um: unit_manager, input_str: string): boolean {
   const num_aa = count_units(input_str, 'c') + count_units(input_str, 'e');
   return num_aa == input_str.length;
 }
@@ -1130,10 +739,7 @@ export function crash_fighters(um: unit_manager, input_str: string): string {
   }
   return out;
 }
-export function retreat_non_amphibious(
-  um: unit_manager,
-  input_str: string,
-): [string, string] {
+export function retreat_non_amphibious(um: unit_manager, input_str: string): [string, string] {
   const N = input_str.length;
   let out = '';
   let retreat = '';
@@ -1167,10 +773,7 @@ export function get_deadzone_cost_from_str(
 }
 // returns the number of casualties to lose first air.  -1 if no air units
 
-export function getFirstAirCasualty(
-  um: unit_manager,
-  unit_str: string,
-): number {
+export function getFirstAirCasualty(um: unit_manager, unit_str: string): number {
   const len = unit_str.length;
   for (let cas = 1; cas <= len; cas++) {
     const i = len - cas;
@@ -1181,11 +784,7 @@ export function getFirstAirCasualty(
   }
   return -1; // no air casualty
 }
-function get_cost_remain(
-  um: unit_manager,
-  group: unit_group,
-  ii: number,
-): number {
+function get_cost_remain(um: unit_manager, group: unit_group, ii: number): number {
   let cost = 0;
   let i;
   for (i = 0; i < ii; i++) {
@@ -1221,11 +820,7 @@ export function get_general_cost_remain(
     );
   }
 }
-export function get_cost_from_str(
-  um: unit_manager,
-  s: string,
-  retreat: string = '',
-): number {
+export function get_cost_from_str(um: unit_manager, s: string, retreat: string = ''): number {
   let cost = 0;
   let i;
   for (i = 0; i < s.length; i++) {
@@ -1290,18 +885,12 @@ export function compute_remove_hits(
   is_amphibious: boolean,
 ) {
   const s = naval_group.unit_str;
-  let node = new general_unit_graph_node(
-    naval_group.um,
-    s,
-    '',
-    naval_group.is_nonaval,
-  );
+  let node = new general_unit_graph_node(naval_group.um, s, '', naval_group.is_nonaval);
   node.dlast = false;
 
   const nodeVec: general_unit_graph_node[] = [];
   const mymap: Map<string, general_unit_graph_node> = new Map();
-  const mycompare = (a: general_unit_graph_node, b: general_unit_graph_node) =>
-    b.cost - a.cost;
+  const mycompare = (a: general_unit_graph_node, b: general_unit_graph_node) => b.cost - a.cost;
   const myheap = new Heap(mycompare);
   mymap.set(make_node_key(s, ''), node);
   myheap.push(node);
@@ -1321,12 +910,7 @@ export function compute_remove_hits(
       if (i > 0) {
         const [new_str, cas] = remove_one_plane(naval_group.um, att_str);
         att_str = new_str;
-        nnode = new general_unit_graph_node(
-          naval_group.um,
-          att_str,
-          '',
-          naval_group.is_nonaval,
-        );
+        nnode = new general_unit_graph_node(naval_group.um, att_str, '', naval_group.is_nonaval);
         myheap.push(nnode);
         mymap.set(make_node_key(att_str, ''), nnode);
         prev.next_aahit = nnode;
@@ -1418,11 +1002,7 @@ export function compute_remove_hits(
     const nanode = node.next_airhit;
     const nsnode = node.next_subhit;
 
-    if (
-      naval_group.destroyer_last &&
-      node.num_dest == 1 &&
-      nnnode.num_dest == 0
-    ) {
+    if (naval_group.destroyer_last && node.num_dest == 1 && nnnode.num_dest == 0) {
       const s2 = remove_one_notdestroyer(naval_group.um, node.unit_str);
       node.next_dlast_navalhit = getOrCreateGraphNode(
         mymap,
@@ -1434,11 +1014,7 @@ export function compute_remove_hits(
         () => true,
       );
     }
-    if (
-      naval_group.destroyer_last &&
-      node.num_dest == 1 &&
-      nanode.num_dest == 0
-    ) {
+    if (naval_group.destroyer_last && node.num_dest == 1 && nanode.num_dest == 0) {
       const s2 = remove_one_notsub(naval_group.um, node.unit_str, true);
       node.next_dlast_airhit = getOrCreateGraphNode(
         mymap,
@@ -1450,11 +1026,7 @@ export function compute_remove_hits(
         () => true,
       );
     }
-    if (
-      naval_group.destroyer_last &&
-      node.num_dest == 1 &&
-      nsnode.num_dest == 0
-    ) {
+    if (naval_group.destroyer_last && node.num_dest == 1 && nsnode.num_dest == 0) {
       const s2 = remove_one_notplane(naval_group.um, node.unit_str, true);
       node.next_dlast_subhit = getOrCreateGraphNode(
         mymap,
@@ -1466,11 +1038,7 @@ export function compute_remove_hits(
         () => true,
       );
     }
-    if (
-      naval_group.submerge_sub &&
-      node.num_subs > 0 &&
-      node.retreat.length == 0
-    ) {
+    if (naval_group.submerge_sub && node.num_subs > 0 && node.retreat.length == 0) {
       const retreat_subs_output = retreat_subs(naval_group.um, node.unit_str);
       node.next_submerge = getOrCreateGraphNode(
         mymap,
@@ -1483,10 +1051,7 @@ export function compute_remove_hits(
       );
     }
     if (is_amphibious && node.unit_str.length > 0 && node.retreat.length == 0) {
-      const [s2, amphibious] = retreat_non_amphibious(
-        naval_group.um,
-        node.unit_str,
-      );
+      const [s2, amphibious] = retreat_non_amphibious(naval_group.um, node.unit_str);
       node.next_retreat_amphibious = getOrCreateGraphNode(
         mymap,
         myheap,
@@ -1536,26 +1101,10 @@ export function compute_remove_hits(
     node = naval_group.nodeArr[i];
     node.nsubArr = traverseChain(node, (n) => n.next_subhit, max_remove_hits);
     node.nairArr = traverseChain(node, (n) => n.next_airhit, max_remove_hits);
-    node.nnavalArr = traverseChain(
-      node,
-      (n) => n.next_navalhit,
-      max_remove_hits,
-    );
-    node.ndlastsubArr = traverseChain(
-      node,
-      (n) => n.next_dlast_subhit,
-      max_remove_hits,
-    );
-    node.ndlastairArr = traverseChain(
-      node,
-      (n) => n.next_dlast_airhit,
-      max_remove_hits,
-    );
-    node.ndlastnavalArr = traverseChain(
-      node,
-      (n) => n.next_dlast_navalhit,
-      max_remove_hits,
-    );
+    node.nnavalArr = traverseChain(node, (n) => n.next_navalhit, max_remove_hits);
+    node.ndlastsubArr = traverseChain(node, (n) => n.next_dlast_subhit, max_remove_hits);
+    node.ndlastairArr = traverseChain(node, (n) => n.next_dlast_airhit, max_remove_hits);
+    node.ndlastnavalArr = traverseChain(node, (n) => n.next_dlast_navalhit, max_remove_hits);
 
     if (node.num_subs == 0) {
       node.nosub_group = make_unit_group(
@@ -1595,11 +1144,7 @@ export function compute_remove_hits(
     node.naaArr = [];
     let prev: general_unit_graph_node | undefined = undefined;
     let node2: general_unit_graph_node | undefined;
-    for (
-      node2 = node;
-      node2 != undefined && node2 != prev;
-      node2 = node2.next_aahit
-    ) {
+    for (node2 = node; node2 != undefined && node2 != prev; node2 = node2.next_aahit) {
       prev = node2;
       node.naaArr.push(node2.index);
     }
@@ -1615,25 +1160,13 @@ export function compute_remove_hits(
       );
       if (naval_group.um.verbose_level > 3) {
         if (node.next_crash_fighters != undefined) {
-          console.log(
-            node.index,
-            node.next_crash_fighters.index,
-            'next crash fighter',
-          );
+          console.log(node.index, node.next_crash_fighters.index, 'next crash fighter');
         }
         if (node.next_remove_noncombat != undefined) {
-          console.log(
-            node.index,
-            node.next_remove_noncombat.index,
-            'next remove transports ',
-          );
+          console.log(node.index, node.next_remove_noncombat.index, 'next remove transports ');
         }
         if (node.next_retreat_amphibious != undefined) {
-          console.log(
-            node.index,
-            node.next_retreat_amphibious.index,
-            'next retreat amphibious',
-          );
+          console.log(node.index, node.next_retreat_amphibious.index, 'next retreat amphibious');
         }
       }
       if (naval_group.um.verbose_level > 4) {
@@ -1644,9 +1177,7 @@ export function compute_remove_hits(
           node.num_naval,
           naval_group.sub_group.unit_str.substr(0, node.num_subs),
           naval_group.naval_group.unit_str.substr(0, node.num_naval),
-          node.naval_group != undefined
-            ? node.naval_group.unit_str.substr(0, node.num_naval)
-            : '',
+          node.naval_group != undefined ? node.naval_group.unit_str.substr(0, node.num_naval) : '',
           naval_group.air_group.unit_str.substr(0, node.num_air),
         );
       }
@@ -1661,27 +1192,13 @@ export function make_unit_group(
   diceMode: DiceMode,
 ): unit_group {
   if (um.skip_compute) {
-    return um.unit_group_manager.get_or_create_unit_group(
-      um,
-      '',
-      attdef,
-      diceMode,
-    );
+    return um.unit_group_manager.get_or_create_unit_group(um, '', attdef, diceMode);
   } else {
-    return um.unit_group_manager.get_or_create_unit_group(
-      um,
-      input_str,
-      attdef,
-      diceMode,
-    );
+    return um.unit_group_manager.get_or_create_unit_group(um, input_str, attdef, diceMode);
   }
 }
 
-export function buildAAGroup(
-  um: unit_manager,
-  numShots: number,
-  diceMode: DiceMode,
-): unit_group {
+export function buildAAGroup(um: unit_manager, numShots: number, diceMode: DiceMode): unit_group {
   let aashots = '';
   for (let i = 0; i < numShots; i++) {
     aashots += 'c';

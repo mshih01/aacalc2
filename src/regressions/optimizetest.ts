@@ -80,11 +80,7 @@ const precision = 3;
 // repeat N times
 const N = 1;
 for (let index = 0; index < N; index++) {
-  for (let solveType of [
-    'gridSearch',
-    'fuzzyBinarySearch',
-    'linearSearch',
-  ] as SolveType[]) {
+  for (let solveType of ['gridSearch', 'fuzzyBinarySearch', 'linearSearch'] as SolveType[]) {
     // settings
     for (const setting of settings) {
       const [

@@ -1,10 +1,6 @@
 import { solve_general, type general_problem } from './solve.js';
 import { createGeneralProblem } from './problem-factory.js';
-import {
-  collect_results,
-  print_general_results,
-  get_general_cost,
-} from './output.js';
+import { collect_results, print_general_results, get_general_cost } from './output.js';
 import { get_cost_from_str } from './unitgroup.js';
 import { unit_manager } from './unitgroup.js';
 import { hasLand } from './unitgroup.js';
@@ -68,9 +64,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
   for (let runs = 0; runs < input.num_runs; runs++) {
     for (let i = 0; i < input.wave_info.length; i++) {
-      umarr.push(
-        new unit_manager(input.verbose_level, input.report_complexity_only),
-      );
+      umarr.push(new unit_manager(input.verbose_level, input.report_complexity_only));
       const um = umarr[i];
       const wave = input.wave_info[i];
 
@@ -113,19 +107,13 @@ export function multiwave(input: multiwave_input): multiwave_output {
           // retreated subs fight in the second wave.
           const isAttacker = wave.use_attackers_from_previous_wave;
           const newcasstr_ool = apply_ool(
-            (isAttacker ? remove_planes(cas.remain) : cas.remain) +
-              cas.retreat +
-              def_token,
+            (isAttacker ? remove_planes(cas.remain) : cas.remain) + cas.retreat + def_token,
             wave.def_ool,
             wave.def_aalast,
           );
-          const newcasstr = input.is_naval
-            ? preparse_battleship(newcasstr_ool)
-            : newcasstr_ool;
+          const newcasstr = input.is_naval ? preparse_battleship(newcasstr_ool) : newcasstr_ool;
 
-          const newcas = isAttacker
-            ? remove_planes(cas.casualty)
-            : cas.casualty;
+          const newcas = isAttacker ? remove_planes(cas.casualty) : cas.casualty;
 
           const newcasualty: casualty_1d = {
             remain: newcasstr,
@@ -140,19 +128,14 @@ export function multiwave(input: multiwave_input): multiwave_output {
             ? ''
             : apply_ool(
                 defend_add_reinforce[defend_add_reinforce.length - 1].remain +
-                  defend_add_reinforce[defend_add_reinforce.length - 1]
-                    .casualty,
+                  defend_add_reinforce[defend_add_reinforce.length - 1].casualty,
                 wave.def_ool,
                 wave.def_aalast,
               );
         defenders_internal = preparse(input.is_naval, defender, 1);
       } else {
         const defenders_token = preparse_token(wave.defender);
-        const defenders_ool = apply_ool(
-          defenders_token,
-          wave.def_ool,
-          wave.def_aalast,
-        );
+        const defenders_ool = apply_ool(defenders_token, wave.def_ool, wave.def_aalast);
         const skipAA = input.in_progress;
         defenders_internal = preparse(input.is_naval, defenders_ool, 1, skipAA);
       }
@@ -181,11 +164,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
       let prob = probArr[i];
       const init_ipc_cost = defend_add_reinforce
         ? defend_add_reinforce.reduce((acc, cas) => {
-            const ipcCost = get_cost_from_str(
-              prob.um,
-              cas.casualty,
-              cas.retreat,
-            );
+            const ipcCost = get_cost_from_str(prob.um, cas.casualty, cas.retreat);
             acc += cas.prob * ipcCost;
             return acc;
           }, 0)
@@ -344,11 +323,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
 }
 
 //
-export function apply_ool(
-  input: string,
-  ool: string,
-  aalast: boolean = false,
-): string {
+export function apply_ool(input: string, ool: string, aalast: boolean = false): string {
   if (ool == '') {
     return input;
   }
@@ -393,9 +368,7 @@ export function apply_ool(
   }
   return out;
 }
-export function get_defender_distribution(
-  problem: general_problem,
-): casualty_1d[] {
+export function get_defender_distribution(problem: general_problem): casualty_1d[] {
   const N = problem.def_data.nodeArr.length;
   let result: casualty_1d[] = [];
   for (let i = 0; i < N; i++) {

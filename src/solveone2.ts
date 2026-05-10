@@ -31,16 +31,9 @@ export function solve_one_general_state_copy2(
     problem.P_1d[ii] += prob;
     // problem.setiP(ii, problem.getiP(ii) + prob);
   },
-  onInitState: (problem: general_problem, n: number, m: number) => number = (
-    problem,
-    n,
-    m,
-  ) => problem.getP(n, m),
-  onExitState: (problem: general_problem, n: number, m: number) => void = (
-    problem,
-    n,
-    m,
-  ) => {},
+  onInitState: (problem: general_problem, n: number, m: number) => number = (problem, n, m) =>
+    problem.getP(n, m),
+  onExitState: (problem: general_problem, n: number, m: number) => void = (problem, n, m) => {},
 ) {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
@@ -108,10 +101,8 @@ export function solve_one_general_state_copy2(
   const att_dlast = problem.att_data.destroyer_last && M1 > 0;
   const def_dlast = problem.def_data.destroyer_last && N1 > 0;
 
-  const att_submerge =
-    problem.att_data.submerge_sub && N1 > 0 && !def_destroyer;
-  const def_submerge =
-    problem.def_data.submerge_sub && M1 > 0 && !att_destroyer;
+  const att_submerge = problem.att_data.submerge_sub && N1 > 0 && !def_destroyer;
+  const def_submerge = problem.def_data.submerge_sub && M1 > 0 && !att_destroyer;
 
   if (att_submerge || def_submerge) {
     let n = attnode.index;
@@ -273,18 +264,13 @@ export function solve_one_general_state_copy2(
   const enable_airsub_optimization = true;
   const enable_airsub_optimization2 = true;
 
-  if (
-    !hasSubs &&
-    attnode.nosub_group != undefined &&
-    defnode.nosub_group != undefined
-  ) {
+  if (!hasSubs && attnode.nosub_group != undefined && defnode.nosub_group != undefined) {
     const att_nosub = attnode.nosub_group;
     const def_nosub = defnode.nosub_group;
     let i, j;
     const NNN = N2 + N3;
     const MMM = M2 + M3;
-    const P0 =
-      att_nosub.get_prob_table(NNN, 0) * def_nosub.get_prob_table(MMM, 0);
+    const P0 = att_nosub.get_prob_table(NNN, 0) * def_nosub.get_prob_table(MMM, 0);
     const r2 = 1 / (1 - P0);
     const total_rounds = state_init_rounds + r2;
     let r = p_init * r2;
@@ -339,8 +325,7 @@ export function solve_one_general_state_copy2(
       problem.setNoNavalP(N1, M1, N2, M2, p_init);
     } else {
       if (N1 > 0 && M1 > 0) {
-        const P0 =
-          att_sub.get_prob_table(N1, 0) * def_sub.get_prob_table(M1, 0);
+        const P0 = att_sub.get_prob_table(N1, 0) * def_sub.get_prob_table(M1, 0);
         const r2 = 1 / (1 - P0);
         const total_rounds = state_init_rounds + r2;
         let r = p_init * r2;
@@ -359,8 +344,7 @@ export function solve_one_general_state_copy2(
           }
         }
       } else if (N2 > 0 && M2 > 0) {
-        const P0 =
-          att_air.get_prob_table(N2, 0) * def_air.get_prob_table(M2, 0);
+        const P0 = att_air.get_prob_table(N2, 0) * def_air.get_prob_table(M2, 0);
         const r2 = 1 / (1 - P0);
         const total_rounds = state_init_rounds + r2;
         let r = p_init * r2;
@@ -467,25 +451,17 @@ export function solve_one_general_state_copy2(
           newN3 = attnode2.num_naval;
         }
         if (att_destroyer && !def_destroyer) {
-          prob =
-            att_sub.get_prob_table(N1, i1) *
-            def_sub.get_prob_table(newM1, j1) *
-            r;
+          prob = att_sub.get_prob_table(N1, i1) * def_sub.get_prob_table(newM1, j1) * r;
         } else if (!att_destroyer && def_destroyer) {
-          prob =
-            att_sub.get_prob_table(newN1, i1) *
-            def_sub.get_prob_table(M1, j1) *
-            r;
+          prob = att_sub.get_prob_table(newN1, i1) * def_sub.get_prob_table(M1, j1) * r;
         } else {
-          prob =
-            att_sub.get_prob_table(N1, i1) * def_sub.get_prob_table(M1, j1) * r;
+          prob = att_sub.get_prob_table(N1, i1) * def_sub.get_prob_table(M1, j1) * r;
         }
         const maxV1 = att_air.max_prob_table[newN2];
         const maxV2 = def_air.max_prob_table[newM2];
         const maxV3 = att_naval.max_prob_table[newN3];
         const maxV4 = def_naval.max_prob_table[newM3];
-        const ept0 =
-          problem.early_prune_threshold / (maxV1 * maxV2 * maxV3 * maxV4);
+        const ept0 = problem.early_prune_threshold / (maxV1 * maxV2 * maxV3 * maxV4);
         const ept1 = ept0 * maxV1;
         const ept2 = ept1 * maxV2;
         const ept3 = ept2 * maxV3;
@@ -513,19 +489,13 @@ export function solve_one_general_state_copy2(
               if (p1 < ept5) {
                 continue;
               }
-              const m = def_remove_navalhits_function(
-                defnode2,
-                i + att_sub_unconstrained_hits,
-              );
+              const m = def_remove_navalhits_function(defnode2, i + att_sub_unconstrained_hits);
               for (j = 0; j <= MMM; j++) {
                 const p2 = p1 * def_nosub.get_prob_table(MMM, j);
                 if (p2 < ept4) {
                   continue;
                 }
-                const n = att_remove_navalhits_function(
-                  attnode2,
-                  j + def_sub_unconstrained_hits,
-                );
+                const n = att_remove_navalhits_function(attnode2, j + def_sub_unconstrained_hits);
                 const ii = problem.getIndex(n, m);
                 onNextState(problem, ii, p2, n, m, total_rounds);
                 //problem.setiP(ii, problem.getiP(ii) + p2);
@@ -546,11 +516,7 @@ export function solve_one_general_state_copy2(
                 if (p3 < ept3) {
                   continue;
                 }
-                const n2 = att_remove_planehits_function(
-                  attnode2,
-                  def_destroyer,
-                  j2,
-                );
+                const n2 = att_remove_planehits_function(attnode2, def_destroyer, j2);
                 const attnode3 = problem.att_data.nodeArr[n2];
                 for (j3 = 0; j3 <= newM3; j3++) {
                   p5 = p3 * def_naval.get_prob_table(newM3, j3);
@@ -582,11 +548,7 @@ export function solve_one_general_state_copy2(
                 if (p3 < ept7) {
                   continue;
                 }
-                const m2 = def_remove_planehits_function(
-                  defnode2,
-                  att_destroyer,
-                  i2,
-                );
+                const m2 = def_remove_planehits_function(defnode2, att_destroyer, i2);
                 const defnode3 = problem.def_data.nodeArr[m2];
                 for (i3 = 0; i3 <= newN3; i3++) {
                   p5 = p3 * att_naval.get_prob_table(newN3, i3);
@@ -610,32 +572,21 @@ export function solve_one_general_state_copy2(
             if (p2 < ept1) {
               continue;
             }
-            const m2 = def_remove_planehits_function(
-              defnode2,
-              att_destroyer,
-              i2,
-            );
+            const m2 = def_remove_planehits_function(defnode2, att_destroyer, i2);
             const defnode3 = problem.def_data.nodeArr[m2];
             for (j2 = 0; j2 <= newM2; j2++) {
               p3 = p2 * def_air.get_prob_table(newM2, j2);
               if (p3 < ept2) {
                 continue;
               }
-              const n2 = att_remove_planehits_function(
-                attnode2,
-                def_destroyer,
-                j2,
-              );
+              const n2 = att_remove_planehits_function(attnode2, def_destroyer, j2);
               const attnode3 = problem.att_data.nodeArr[n2];
               for (i3 = 0; i3 <= newN3; i3++) {
                 p4 = p3 * att_naval.get_prob_table(newN3, i3);
                 if (p4 < ept3) {
                   continue;
                 }
-                const m3 = def_remove_navalhits_function(
-                  defnode3,
-                  i3 + att_sub_unconstrained_hits,
-                );
+                const m3 = def_remove_navalhits_function(defnode3, i3 + att_sub_unconstrained_hits);
                 for (j3 = 0; j3 <= newM3; j3++) {
                   p5 = p4 * def_naval.get_prob_table(newM3, j3);
                   if (p5 < ept4) {

@@ -42,9 +42,7 @@ export function multiwaveMultiEval(input: multieval_input): multieval_output {
   let out: multi_eval_output = { result: [] };
 
   for (let i = 0; i < input.wave_info.length; i++) {
-    umarr.push(
-      new unit_manager(input.verbose_level, input.report_complexity_only),
-    );
+    umarr.push(new unit_manager(input.verbose_level, input.report_complexity_only));
     const um = umarr[i];
     const wave = input.wave_info[i];
 
@@ -164,16 +162,11 @@ export function solve_multi_eval(problem: general_problem): multi_eval_output {
     let aaData: unit_group | undefined;
     let aaTblSize: number | undefined;
     if (problem.att_data.num_aashot > 0) {
-      aaData = buildAAGroup(
-        problem.um,
-        problem.att_data.num_aashot,
-        problem.diceMode,
-      );
+      aaData = buildAAGroup(problem.um, problem.att_data.num_aashot, problem.diceMode);
       aaTblSize = aaData.tbl_size;
     }
     const numBombard = !problem.is_naval
-      ? count_units(problem.att_data.unit_str, 'B') +
-        count_units(problem.att_data.unit_str, 'C')
+      ? count_units(problem.att_data.unit_str, 'B') + count_units(problem.att_data.unit_str, 'C')
       : 0;
     let doBombard = false;
     if (numBombard > 0) {
@@ -196,18 +189,12 @@ export function solve_multi_eval(problem: general_problem): multi_eval_output {
           hasNonAAUnit(problem.um, problem.def_cas[i].remain);
         if (doAA && aaData != undefined && aaTblSize != undefined) {
           const numOutcomes = Math.min(numAA * 3 + 1, aaTblSize);
-          forEachAAOutcome(
-            aaData,
-            problem.att_data,
-            numOutcomes,
-            0,
-            (prob, n) => {
-              prob_win += problem.getPwin(n, ii) * prob;
-              if (doBombard) {
-                problem.setP(n, ii, prob);
-              }
-            },
-          );
+          forEachAAOutcome(aaData, problem.att_data, numOutcomes, 0, (prob, n) => {
+            prob_win += problem.getPwin(n, ii) * prob;
+            if (doBombard) {
+              problem.setP(n, ii, prob);
+            }
+          });
         } else {
           prob_win += problem.getPwin(0, ii);
           if (doBombard) {

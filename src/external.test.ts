@@ -202,10 +202,8 @@ test('multiwaveExternal 2-wave swap', () => {
 
   let attTotal = 0;
   let defTotal = 0;
-  for (const v of Object.values(output.casualtiesInfo.attack))
-    attTotal += v.amount;
-  for (const v of Object.values(output.casualtiesInfo.defense))
-    defTotal += v.amount;
+  for (const v of Object.values(output.casualtiesInfo.attack)) attTotal += v.amount;
+  for (const v of Object.values(output.casualtiesInfo.defense)) defTotal += v.amount;
   expect(attTotal).to.closeTo(1.0, 0.001);
   expect(defTotal).to.closeTo(1.0, 0.001);
 });
@@ -328,10 +326,8 @@ test('multiwaveExternal 3-wave swap', () => {
 
   let attTotal = 0;
   let defTotal = 0;
-  for (const v of Object.values(output.casualtiesInfo.attack))
-    attTotal += v.amount;
-  for (const v of Object.values(output.casualtiesInfo.defense))
-    defTotal += v.amount;
+  for (const v of Object.values(output.casualtiesInfo.attack)) attTotal += v.amount;
+  for (const v of Object.values(output.casualtiesInfo.defense)) defTotal += v.amount;
   expect(attTotal).to.closeTo(1.0, 0.001);
   expect(defTotal).to.closeTo(1.0, 0.001);
 });

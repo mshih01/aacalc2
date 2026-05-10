@@ -24,31 +24,18 @@ export function collect_results(parent_prob: general_problem): result_data_t[] {
 
   let att_cost, def_cost;
 
-  const NN_base = get_general_cost_remain(
-    parent_prob.um,
-    parent_prob.att_data,
-    0,
-  );
-  const MM_base = get_general_cost_remain(
-    parent_prob.um,
-    parent_prob.def_data,
-    0,
-  );
+  const NN_base = get_general_cost_remain(parent_prob.um, parent_prob.att_data, 0);
+  const MM_base = get_general_cost_remain(parent_prob.um, parent_prob.def_data, 0);
   const max_cost = NN_base + MM_base;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
       //let p = report_filter(P[i][j]);
-      const p = report_filter(
-        problem.report_prune_threshold,
-        problem.getP(i, j),
-      );
+      const p = report_filter(problem.report_prune_threshold, problem.getP(i, j));
       if (p > 0) {
         att_cost = get_general_cost_remain(problem.um, problem.att_data, i);
         def_cost = get_general_cost_remain(problem.um, problem.def_data, j);
-        const i2 =
-          problem.att_data.nodeArr[i].N - problem.att_data.nodeArr[i].numBB;
-        const j2 =
-          problem.def_data.nodeArr[j].N - problem.def_data.nodeArr[j].numBB;
+        const i2 = problem.att_data.nodeArr[i].N - problem.att_data.nodeArr[i].numBB;
+        const j2 = problem.def_data.nodeArr[j].N - problem.def_data.nodeArr[j].numBB;
         const cost = j2 - i2 + (def_cost - att_cost) / max_cost;
 
         const attcascost = NN_base - att_cost;
@@ -58,14 +45,9 @@ export function collect_results(parent_prob: general_problem): result_data_t[] {
           problem.is_deadzone && problem.def_data.nodeArr[j].N == 0
             ? problem.att_data.nodeArr[i].deadzone_cost
             : 0;
-        const takes =
-          problem.def_data.nodeArr[j].N == 0 &&
-          problem.att_data.nodeArr[i].hasLand;
+        const takes = problem.def_data.nodeArr[j].N == 0 && problem.att_data.nodeArr[i].hasLand;
         const territoryValue = takes ? problem.territory_value : 0;
-        const cost3 =
-          parent_prob.sortMode == 'unit_count'
-            ? cost
-            : cost2 + dzcost - territoryValue;
+        const cost3 = parent_prob.sortMode == 'unit_count' ? cost : cost2 + dzcost - territoryValue;
 
         const data = new result_data_t(i, j, cost3, p);
         resultArr.push(data);
@@ -204,16 +186,8 @@ export function print_general_results(
   let red_att_cas: string;
   let red_def_cas: string;
 
-  [att, retreat_att] = get_general_group_string(
-    baseproblem.um,
-    baseproblem.att_data,
-    0,
-  );
-  [def, retreat_def] = get_general_group_string(
-    baseproblem.um,
-    baseproblem.def_data,
-    0,
-  );
+  [att, retreat_att] = get_general_group_string(baseproblem.um, baseproblem.att_data, 0);
+  [def, retreat_def] = get_general_group_string(baseproblem.um, baseproblem.def_data, 0);
   red_att = get_reduced_group_string(att);
   red_def = get_reduced_group_string(def);
   if (baseproblem.verbose_level > 2) {
@@ -232,14 +206,10 @@ export function print_general_results(
     const p = result.p;
     sum += p;
     result.cumm = sum;
-    if (
-      get_general_cost_remain(baseproblem.um, problem.att_data, result.i) > 0
-    ) {
+    if (get_general_cost_remain(baseproblem.um, problem.att_data, result.i) > 0) {
       attsurvive += p;
     }
-    if (
-      get_general_cost_remain(baseproblem.um, problem.def_data, result.j) > 0
-    ) {
+    if (get_general_cost_remain(baseproblem.um, problem.def_data, result.j) > 0) {
       defsurvive += p;
     }
   }
@@ -266,30 +236,14 @@ export function print_general_results(
   for (let ii = 0; ii < mergedArr.length; ii++) {
     const result = mergedArr[ii];
     const problem = baseproblem;
-    [att, retreat_att] = get_general_group_string(
-      problem.um,
-      problem.att_data,
-      result.i,
-    );
-    [def, retreat_def] = get_general_group_string(
-      problem.um,
-      problem.def_data,
-      result.j,
-    );
+    [att, retreat_att] = get_general_group_string(problem.um, problem.att_data, result.i);
+    [def, retreat_def] = get_general_group_string(problem.um, problem.def_data, result.j);
     const red_retreat_att = get_reduced_group_string(retreat_att);
     const red_retreat_def = get_reduced_group_string(retreat_def);
     red_att = get_reduced_group_string(att);
     red_def = get_reduced_group_string(def);
-    const att_naval_cost = get_general_cost(
-      problem,
-      problem.att_data,
-      result.i,
-    );
-    const def_naval_cost = get_general_cost(
-      problem,
-      problem.def_data,
-      result.j,
-    );
+    const att_naval_cost = get_general_cost(problem, problem.att_data, result.i);
+    const def_naval_cost = get_general_cost(problem, problem.def_data, result.j);
     red_att_cas = get_reduced_group_string(att_naval_cost.casualty);
     red_def_cas = get_reduced_group_string(def_naval_cost.casualty);
     const p = report_filter(problem.report_prune_threshold, result.p);
@@ -318,11 +272,7 @@ export function print_general_results(
     if (p > 0) {
       let attloss = att_naval_cost.cost;
       const defloss = def_naval_cost.cost;
-      if (
-        !baseproblem.is_naval &&
-        hasLand(problem.um, att) &&
-        def.length == 0
-      ) {
+      if (!baseproblem.is_naval && hasLand(problem.um, att) && def.length == 0) {
         takes += p;
         attloss -= problem.territory_value;
         //totalattloss -= problem.territory_value * p;
@@ -373,16 +323,8 @@ export function print_general_results(
 
   for (const [i, p] of att_map) {
     //console.log(i, p, "i, p");
-    const [att, retreat_att] = get_general_group_string(
-      baseproblem.um,
-      baseproblem.att_data,
-      i,
-    );
-    const att_naval_cost = get_general_cost(
-      baseproblem,
-      baseproblem.att_data,
-      i,
-    );
+    const [att, retreat_att] = get_general_group_string(baseproblem.um, baseproblem.att_data, i);
+    const att_naval_cost = get_general_cost(baseproblem, baseproblem.att_data, i);
     const att_cas = att_naval_cost.casualty;
     const cas: casualty_1d = {
       remain: att,
@@ -394,16 +336,8 @@ export function print_general_results(
   }
   for (const [i, p] of att_retreat_map) {
     //console.log(i, p, "i, p");
-    const [att, retreat_att] = get_general_group_string(
-      baseproblem.um,
-      baseproblem.att_data,
-      i,
-    );
-    const att_naval_cost = get_general_cost(
-      baseproblem,
-      baseproblem.att_data,
-      i,
-    );
+    const [att, retreat_att] = get_general_group_string(baseproblem.um, baseproblem.att_data, i);
+    const att_naval_cost = get_general_cost(baseproblem, baseproblem.att_data, i);
     const att_cas = att_naval_cost.casualty;
     const cas: casualty_1d = {
       remain: '',
@@ -416,16 +350,8 @@ export function print_general_results(
   //console.log("att_cas_1d", JSON.stringify(att_cas_1d, null, 4));
   for (const [j, p] of def_map) {
     //console.log(j, p, "j, p");
-    const [def, retreat_def] = get_general_group_string(
-      baseproblem.um,
-      baseproblem.def_data,
-      j,
-    );
-    const def_naval_cost = get_general_cost(
-      baseproblem,
-      baseproblem.def_data,
-      j,
-    );
+    const [def, retreat_def] = get_general_group_string(baseproblem.um, baseproblem.def_data, j);
+    const def_naval_cost = get_general_cost(baseproblem, baseproblem.def_data, j);
     const def_cas = def_naval_cost.casualty;
     const cas: casualty_1d = {
       remain: def,

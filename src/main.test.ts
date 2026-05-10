@@ -279,71 +279,11 @@ let inputSettings4: Setting[] = [
     false,
     1.0,
   ], // no retreat  (A)
-  [
-    'strafe 0 roundless',
-    undefined,
-    undefined,
-    'takes',
-    0,
-    0.05,
-    false,
-    0,
-    true,
-    false,
-    1.0,
-  ], // no retreat  (A)
-  [
-    'strafe 100 rounds',
-    undefined,
-    undefined,
-    'takes',
-    100,
-    0.05,
-    false,
-    0,
-    false,
-    false,
-    1.0,
-  ], // no retreat  (A)
-  [
-    'no retreat roundless',
-    undefined,
-    undefined,
-    'takes',
-    0,
-    undefined,
-    false,
-    0,
-    true,
-    false,
-    1.0,
-  ], // no retreat  (A)
-  [
-    'EV retreat roundless',
-    0,
-    undefined,
-    'takes',
-    0,
-    undefined,
-    false,
-    0,
-    true,
-    false,
-    1.0,
-  ], // EV retreat -- 6
-  [
-    'retreat lose air 0.0',
-    undefined,
-    undefined,
-    'takes',
-    0,
-    undefined,
-    false,
-    0,
-    true,
-    false,
-    0.0,
-  ], // retreat air 0.0 -- 7
+  ['strafe 0 roundless', undefined, undefined, 'takes', 0, 0.05, false, 0, true, false, 1.0], // no retreat  (A)
+  ['strafe 100 rounds', undefined, undefined, 'takes', 100, 0.05, false, 0, false, false, 1.0], // no retreat  (A)
+  ['no retreat roundless', undefined, undefined, 'takes', 0, undefined, false, 0, true, false, 1.0], // no retreat  (A)
+  ['EV retreat roundless', 0, undefined, 'takes', 0, undefined, false, 0, true, false, 1.0], // EV retreat -- 6
+  ['retreat lose air 0.0', undefined, undefined, 'takes', 0, undefined, false, 0, true, false, 0.0], // retreat air 0.0 -- 7
   [
     'retreat lose air 0.11',
     undefined,
@@ -377,19 +317,7 @@ let inputSettings: [Setting, number][] = [];
 
 for (let i = 0; i < 1; i += 0.1) {
   let desc = 'pwin retreat: ' + i.toFixed(1);
-  let mysetting: Setting = [
-    desc,
-    undefined,
-    i,
-    'takes',
-    0,
-    undefined,
-    false,
-    0,
-    true,
-    false,
-    1.0,
-  ];
+  let mysetting: Setting = [desc, undefined, i, 'takes', 0, undefined, false, 0, true, false, 1.0];
   // ['no retreat 0 roundless', undefined, 0, 0.05, false, 0, true], // no retreat  (A)
   if (i == 0) {
     let desc = 'no retreat: ';

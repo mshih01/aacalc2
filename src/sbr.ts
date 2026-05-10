@@ -22,11 +22,7 @@ import { make_unit_group } from './unitgroup.js';
 import { unit_manager, unit_group } from './unitgroup.js';
 import type { DiceMode } from './solve.js';
 
-function compute_prob_table(
-  N: number,
-  p: number[],
-  prune_threshold: number,
-): number[][] {
+function compute_prob_table(N: number, p: number[], prune_threshold: number): number[][] {
   let P: number[][] = [];
   let maxsum = N * 6;
   let minsum = N * 1;
@@ -113,11 +109,7 @@ class SbrProblem {
       // low luck
       this.phit = [0, 0, 0, 0.5, 0.5, 0, 0];
     }
-    this.P = compute_prob_table(
-      this.numBombers,
-      this.phit,
-      this.prune_threshold,
-    );
+    this.P = compute_prob_table(this.numBombers, this.phit, this.prune_threshold);
   }
   solve() {
     const N = this.numBombers;
@@ -138,11 +130,7 @@ class SbrProblem {
     }
     for (let i = 0; i < M; i++) {
       // aa hits
-      let prob = this.in_progress
-        ? i == 0
-          ? 1.0
-          : 0.0
-        : aa_data.get_prob_table(M - 1, i);
+      let prob = this.in_progress ? (i == 0 ? 1.0 : 0.0) : aa_data.get_prob_table(M - 1, i);
       if (prob == 0) {
         continue;
       }

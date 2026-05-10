@@ -52,8 +52,5 @@ for (let i = 0; i < 10; i++) {
   const output = multiwaveExternal(input);
   const t1 = performance.now() - t0;
   console.log(`runtime: ${t1.toFixed(1)}ms`);
-  console.log(
-    'profit:',
-    (output.defense.ipcLoss[0] - output.attack.ipcLoss[0]).toFixed(3),
-  );
+  console.log('profit:', (output.defense.ipcLoss[0] - output.attack.ipcLoss[0]).toFixed(3));
 }

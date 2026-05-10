@@ -139,22 +139,8 @@ function run4(argc: number, argv: string[]) {
   console.log(takes, 'takes');
   console.log(aalast, 'aalast');
   console.log(isnaval, 'isnaval');
-  const unitstr = make_unit_group_string(
-    units,
-    ool,
-    takes,
-    aalast,
-    isnaval,
-    verbose_level,
-  );
-  const unitstr2 = make_unit_group_string(
-    units2,
-    ool2,
-    takes,
-    aalast,
-    isnaval,
-    verbose_level,
-  );
+  const unitstr = make_unit_group_string(units, ool, takes, aalast, isnaval, verbose_level);
+  const unitstr2 = make_unit_group_string(units2, ool2, takes, aalast, isnaval, verbose_level);
 
   console.log(unitstr, 'unit_str, ool_str');
   console.log(unitstr2, 'unit_str, ool_str');
@@ -263,22 +249,8 @@ function run5(argc: number, argv: string[]) {
   const takes = 0;
   const aalast = false;
   const isnaval = false;
-  const unitstr = make_unit_group_string(
-    units,
-    ool,
-    takes,
-    aalast,
-    isnaval,
-    verbose_level,
-  );
-  const unitstr2 = make_unit_group_string(
-    units2,
-    ool2,
-    takes,
-    aalast,
-    isnaval,
-    verbose_level,
-  );
+  const unitstr = make_unit_group_string(units, ool, takes, aalast, isnaval, verbose_level);
+  const unitstr2 = make_unit_group_string(units2, ool2, takes, aalast, isnaval, verbose_level);
 
   console.log(unitstr, 'unit_str, ool_str');
   console.log(unitstr2, 'unit_str, ool_str');

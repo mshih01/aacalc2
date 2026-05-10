@@ -183,10 +183,7 @@ export interface SbrInput {
 export type Side = 'attack' | 'defense';
 export type CasualtiesInfo = Record<Side, Record<string, CasualtyInfo>>;
 // wave, side, casualty details string -> casualty info
-export type CasualtiesInfoArr = Record<
-  number,
-  Record<Side, Record<string, CasualtyInfo>>
->;
+export type CasualtiesInfoArr = Record<number, Record<Side, Record<string, CasualtyInfo>>>;
 
 export interface CasualtyInfo {
   casualties: string;
@@ -333,18 +330,14 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
     // attacker
     attacker_counts.num_subs = count_units(att_unit_group_string.unit, 'S');
     attacker_counts.num_air =
-      count_units(att_unit_group_string.unit, 'f') +
-      count_units(att_unit_group_string.unit, 'b');
+      count_units(att_unit_group_string.unit, 'f') + count_units(att_unit_group_string.unit, 'b');
     attacker_counts.num_naval =
-      att_unit_group_string.unit.length -
-      attacker_counts.num_subs -
-      attacker_counts.num_air;
+      att_unit_group_string.unit.length - attacker_counts.num_subs - attacker_counts.num_air;
     attacker_counts.num_aa = count_units(att_unit_group_string.unit, 'c');
 
     let subs = count_units(def_unit_group_string.unit, 'S');
     let air =
-      count_units(def_unit_group_string.unit, 'f') +
-      count_units(def_unit_group_string.unit, 'b');
+      count_units(def_unit_group_string.unit, 'f') + count_units(def_unit_group_string.unit, 'b');
     let naval = def_unit_group_string.unit.length - subs - air;
 
     defender_counts.num_subs += subs;
@@ -353,13 +346,9 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
     defender_counts.num_aa += count_units(def_unit_group_string.unit, 'c');
 
     attacker_counts.N =
-      attacker_counts.num_air +
-      attacker_counts.num_subs +
-      attacker_counts.num_naval;
+      attacker_counts.num_air + attacker_counts.num_subs + attacker_counts.num_naval;
     defender_counts.N =
-      defender_counts.num_air +
-      defender_counts.num_subs +
-      defender_counts.num_naval;
+      defender_counts.num_air + defender_counts.num_subs + defender_counts.num_naval;
     let defenseOOLComplexity: number =
       i == 0
         ? 1
@@ -460,9 +449,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
       wave.retreat_lose_air_probability != undefined &&
       wave.retreat_lose_air_probability < 1.0
     ) {
-      throw new Error(
-        'is_naval && retreat_lose_air_probability < 1.0 is not allowed',
-      );
+      throw new Error('is_naval && retreat_lose_air_probability < 1.0 is not allowed');
     }
 
     const internal_wave = {
@@ -478,13 +465,11 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
       rounds: rounds,
       retreat_threshold: wave.retreat_threshold,
       retreat_lose_air_probability: wave.retreat_lose_air_probability ?? 1.0, // default to 1.0 if not provided
-      retreat_expected_ipc_profit_threshold:
-        wave.retreat_expected_ipc_profit_threshold,
+      retreat_expected_ipc_profit_threshold: wave.retreat_expected_ipc_profit_threshold,
       retreat_pwin_threshold: wave.retreat_pwin_threshold,
       pwinMode: wave.pwinMode ?? 'takes', // default to 'takes' if not provided
       retreat_strafe_threshold: wave.retreat_strafe_threshold,
-      use_attackers_from_previous_wave:
-        wave.use_attackers_from_previous_wave ?? false, // default to false if not provided
+      use_attackers_from_previous_wave: wave.use_attackers_from_previous_wave ?? false, // default to false if not provided
     };
 
     wavearr.push(internal_wave);
@@ -530,11 +515,7 @@ function mergeUnitStrings(str1: string, str2: string): string {
     .join(', ');
 }
 
-function addToMap(
-  map: Record<string, CasualtyInfo>,
-  key: string,
-  info: CasualtyInfo,
-): void {
+function addToMap(map: Record<string, CasualtyInfo>, key: string, info: CasualtyInfo): void {
   if (map[key] == undefined) {
     map[key] = { ...info };
   } else {
@@ -547,15 +528,10 @@ function filterMapByThreshold(
   threshold: number,
 ): Record<string, CasualtyInfo> {
   if (threshold <= 0) return map;
-  return Object.fromEntries(
-    Object.entries(map).filter(([, v]) => v.amount >= threshold),
-  );
+  return Object.fromEntries(Object.entries(map).filter(([, v]) => v.amount >= threshold));
 }
 
-function splitAirLand(
-  um: unit_manager,
-  s: string,
-): { air: string; land: string } {
+function splitAirLand(um: unit_manager, s: string): { air: string; land: string } {
   let air = '';
   let land = '';
   for (let i = 0; i < s.length; i++) {
@@ -625,14 +601,8 @@ function buildCasualtiesInfoArr(
     }
 
     profitDist.push(currOutput.profitDistribution);
-    casualtiesInfoArr[ii]['attack'] = filterMapByThreshold(
-      waveatt,
-      reportPruneThreshold,
-    );
-    casualtiesInfoArr[ii]['defense'] = filterMapByThreshold(
-      wavedef,
-      reportPruneThreshold,
-    );
+    casualtiesInfoArr[ii]['attack'] = filterMapByThreshold(waveatt, reportPruneThreshold);
+    casualtiesInfoArr[ii]['defense'] = filterMapByThreshold(wavedef, reportPruneThreshold);
   }
 
   return { casualtiesInfoArr, profitDist };
@@ -689,36 +659,25 @@ function buildCumulativeCasualtiesInfo(
     entry: PendingEntry,
   ): void {
     if (pending.length === 0) {
-      addToMap(
-        map,
-        entry.casualties + ';' + entry.survivors + ';' + entry.retreaters,
-        {
-          casualties: entry.casualties,
-          survivors: entry.survivors,
-          retreaters: entry.retreaters,
-          amount: entry.prob,
-          ipcLoss: entry.ipcLoss,
-        },
-      );
+      addToMap(map, entry.casualties + ';' + entry.survivors + ';' + entry.retreaters, {
+        casualties: entry.casualties,
+        survivors: entry.survivors,
+        retreaters: entry.retreaters,
+        amount: entry.prob,
+        ipcLoss: entry.ipcLoss,
+      });
     } else {
       const tp = totalP(pending);
       for (const p of pending) {
         const combinedCas = mergeUnitStrings(p.casualties, entry.casualties);
-        const combinedRetreat = mergeUnitStrings(
-          p.retreaters,
-          entry.retreaters,
-        );
-        addToMap(
-          map,
-          combinedCas + ';' + entry.survivors + ';' + combinedRetreat,
-          {
-            casualties: combinedCas,
-            survivors: entry.survivors,
-            retreaters: combinedRetreat,
-            amount: (p.prob / tp) * entry.prob,
-            ipcLoss: p.ipcLoss + entry.ipcLoss,
-          },
-        );
+        const combinedRetreat = mergeUnitStrings(p.retreaters, entry.retreaters);
+        addToMap(map, combinedCas + ';' + entry.survivors + ';' + combinedRetreat, {
+          casualties: combinedCas,
+          survivors: entry.survivors,
+          retreaters: combinedRetreat,
+          amount: (p.prob / tp) * entry.prob,
+          ipcLoss: p.ipcLoss + entry.ipcLoss,
+        });
       }
     }
   }
@@ -908,9 +867,7 @@ function buildCumulativeCasualtiesInfo(
           const takesStateProb = captureProb;
           const isDefenderHoldsState =
             !isDefenderKilled || (isDefenderKilled && captureProb < cas.prob);
-          const defenderHoldsStateProb = isDefenderKilled
-            ? cas.prob - takesInc
-            : cas.prob;
+          const defenderHoldsStateProb = isDefenderKilled ? cas.prob - takesInc : cas.prob;
           let isTerminalState;
           let isContinueState;
           let terminalStateProb;
@@ -1107,14 +1064,7 @@ function buildCumulativeCasualtiesInfo(
     function mergePending(arr: PendingEntry[]): PendingEntry[] {
       const map = new Map<string, PendingEntry>();
       for (const p of arr) {
-        const key =
-          p.casualties +
-          '|' +
-          p.survivors +
-          '|' +
-          p.retreaters +
-          '|' +
-          p.ipcLoss;
+        const key = p.casualties + '|' + p.survivors + '|' + p.retreaters + '|' + p.ipcLoss;
         const existing = map.get(key);
         if (existing) {
           existing.prob += p.prob;
@@ -1139,11 +1089,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
   const internal_input = getInternalInput(input);
   const internal_output = multiwave(internal_input);
   if (input.verbose_level > 1) {
-    console.log(
-      'multiwave runtime:',
-      (performance.now() - t0_multi).toFixed(2),
-      'ms',
-    );
+    console.log('multiwave runtime:', (performance.now() - t0_multi).toFixed(2), 'ms');
   }
 
   const rounds = internal_output.output.map((o) => o?.rounds ?? 0);
@@ -1173,11 +1119,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     input.report_prune_threshold,
   );
   if (input.verbose_level > 1) {
-    console.log(
-      'casualties computation runtime:',
-      (performance.now() - t0_cas).toFixed(2),
-      'ms',
-    );
+    console.log('casualties computation runtime:', (performance.now() - t0_cas).toFixed(2), 'ms');
   }
 
   if (input.verbose_level > 1) {
@@ -1215,14 +1157,12 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     const incAtt =
       internal_output.out.attack.incrementalLoss?.[i] ??
       (i > 0
-        ? internal_output.out.attack.ipcLoss[i] -
-          internal_output.out.attack.ipcLoss[i - 1]
+        ? internal_output.out.attack.ipcLoss[i] - internal_output.out.attack.ipcLoss[i - 1]
         : internal_output.out.attack.ipcLoss[i]);
     const incDef =
       internal_output.out.defense.incrementalLoss?.[i] ??
       (i > 0
-        ? internal_output.out.defense.ipcLoss[i] -
-          internal_output.out.defense.ipcLoss[i - 1]
+        ? internal_output.out.defense.ipcLoss[i] - internal_output.out.defense.ipcLoss[i - 1]
         : internal_output.out.defense.ipcLoss[i]);
     if (swapArr[i] === 1) {
       cumAtt += incDef;
@@ -1408,8 +1348,7 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   const internalInput: sbr_input = {
     diceMode: input.diceMode,
     verboseLevel: input.verbose_level,
-    numBombers:
-      input.attack.units['bom'] != undefined ? input.attack.units['bom'] : 0,
+    numBombers: input.attack.units['bom'] != undefined ? input.attack.units['bom'] : 0,
     industrialComplexHitPoints:
       input.defense.units['ic'] != undefined ? input.defense.units['ic'] : 0,
     inProgress: input.in_progress,
@@ -1474,11 +1413,7 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   return output;
 }
 
-export function getIntegersInRange(
-  low: number,
-  high: number,
-  step: number,
-): number[] {
+export function getIntegersInRange(low: number, high: number, step: number): number[] {
   const result: number[] = [];
   for (let i = low; i <= high; i += step) {
     result.push(i);

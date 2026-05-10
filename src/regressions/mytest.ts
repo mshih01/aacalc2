@@ -26,106 +26,16 @@ let do_roundless_global = false;
 let complexity_global = false;
 
 let inputSettings2: Setting[] = [
-  [
-    'no retreat',
-    undefined,
-    100,
-    undefined,
-    false,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // no retreat  (A)
-  [
-    '1 round',
-    undefined,
-    1,
-    undefined,
-    false,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // 1 round (B)
-  [
-    'EV based retreat',
-    0,
-    100,
-    undefined,
-    false,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // EV based retreat (C)
-  [
-    'EV retreat + strafe',
-    0,
-    100,
-    0.05,
-    false,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // EV based retreat + strafe (D)
-  [
-    'strafe only',
-    undefined,
-    100,
-    0.05,
-    false,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // strafe (E)
-  [
-    'DZ + no retreat',
-    undefined,
-    100,
-    undefined,
-    true,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // no retreat  (A)
-  [
-    'DZ + 1 round',
-    undefined,
-    1,
-    undefined,
-    true,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // 1 round (B)
-  [
-    'DZ + EV based retreat',
-    0,
-    100,
-    undefined,
-    true,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // EV based retreat (C)
-  [
-    'DZ + EV retreat + strafe',
-    0,
-    100,
-    0.05,
-    true,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // EV based retreat + strafe (D)
-  [
-    'DZ + strafe only',
-    undefined,
-    100,
-    0.05,
-    true,
-    0,
-    do_roundless_global,
-    complexity_global,
-  ], // strafe (E)
+  ['no retreat', undefined, 100, undefined, false, 0, do_roundless_global, complexity_global], // no retreat  (A)
+  ['1 round', undefined, 1, undefined, false, 0, do_roundless_global, complexity_global], // 1 round (B)
+  ['EV based retreat', 0, 100, undefined, false, 0, do_roundless_global, complexity_global], // EV based retreat (C)
+  ['EV retreat + strafe', 0, 100, 0.05, false, 0, do_roundless_global, complexity_global], // EV based retreat + strafe (D)
+  ['strafe only', undefined, 100, 0.05, false, 0, do_roundless_global, complexity_global], // strafe (E)
+  ['DZ + no retreat', undefined, 100, undefined, true, 0, do_roundless_global, complexity_global], // no retreat  (A)
+  ['DZ + 1 round', undefined, 1, undefined, true, 0, do_roundless_global, complexity_global], // 1 round (B)
+  ['DZ + EV based retreat', 0, 100, undefined, true, 0, do_roundless_global, complexity_global], // EV based retreat (C)
+  ['DZ + EV retreat + strafe', 0, 100, 0.05, true, 0, do_roundless_global, complexity_global], // EV based retreat + strafe (D)
+  ['DZ + strafe only', undefined, 100, 0.05, true, 0, do_roundless_global, complexity_global], // strafe (E)
   [
     'DZ + terrValue + no retreat',
     undefined,
@@ -185,16 +95,7 @@ let inputSettings4: Setting[] = [
   // ['no retreat 0 roundless', 0, 100, undefined, false, 0, false], // no retreat  (A)
   // ['no retreat 0 roundless', 0, 0, undefined, false, 0, true], // no retreat  (A)
   ['no retreat 0 roundless', undefined, 0, undefined, false, 0, true, false], // no retreat  (A)
-  [
-    'no retreat 0 roundlessorig',
-    undefined,
-    0,
-    undefined,
-    false,
-    0,
-    false,
-    false,
-  ], // no retreat  (A)
+  ['no retreat 0 roundlessorig', undefined, 0, undefined, false, 0, false, false], // no retreat  (A)
   ['no retreat 100 rounds', undefined, 100, undefined, false, 0, false, false], // no retreat  (A)
   ['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], // no retreat  (A)
   ['strafe 100 rounds', undefined, 100, 0.05, false, 0, false, false], // no retreat  (A)

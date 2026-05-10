@@ -258,8 +258,7 @@ export class general_problem {
       const numBombard = count_units(att_str, 'B') + count_units(att_str, 'C');
       max_def_hits += numBombard;
     }
-    this.retreat_expected_ipc_profit_threshold =
-      retreat_expected_ipc_profit_threshold;
+    this.retreat_expected_ipc_profit_threshold = retreat_expected_ipc_profit_threshold;
     this.retreat_pwin_threshold = retreat_pwin_threshold;
     this.pwinMode = pwinMode;
     this.retreat_strafe_threshold = retreat_strafe_threshold;
@@ -334,10 +333,8 @@ export class general_problem {
         this.def_data.num_subs > 0 &&
         this.def_data.num_air > 0
       ) {
-        const att =
-          this.att_data.sub_group.unit_str + this.att_data.air_group.unit_str;
-        const def =
-          this.def_data.sub_group.unit_str + this.def_data.air_group.unit_str;
+        const att = this.att_data.sub_group.unit_str + this.att_data.air_group.unit_str;
+        const def = this.def_data.sub_group.unit_str + this.def_data.air_group.unit_str;
         this.nonavalproblem = new general_problem({
           verbose_level: this.verbose_level,
           um,
@@ -361,8 +358,7 @@ export class general_problem {
           retreat_round_zero: this.retreat_round_zero,
           do_roundless_eval: this.do_roundless_eval,
           retreat_lose_air_probability: this.retreat_lose_air_probability,
-          retreat_expected_ipc_profit_threshold:
-            this.retreat_expected_ipc_profit_threshold,
+          retreat_expected_ipc_profit_threshold: this.retreat_expected_ipc_profit_threshold,
           retreat_pwin_threshold: this.retreat_pwin_threshold,
           pwinMode: this.pwinMode,
           retreat_strafe_threshold: this.retreat_strafe_threshold,
@@ -382,20 +378,12 @@ export class general_problem {
               this.defmap.set(key, i);
             }
           }
-          for (
-            let i = 0;
-            i < this.nonavalproblem.att_data.nodeArr.length;
-            i++
-          ) {
+          for (let i = 0; i < this.nonavalproblem.att_data.nodeArr.length; i++) {
             const node = this.nonavalproblem.att_data.nodeArr[i];
             const key: string = node.num_subs + ',' + node.num_air;
             this.attmap2.set(key, i);
           }
-          for (
-            let i = 0;
-            i < this.nonavalproblem.def_data.nodeArr.length;
-            i++
-          ) {
+          for (let i = 0; i < this.nonavalproblem.def_data.nodeArr.length; i++) {
             const node = this.nonavalproblem.def_data.nodeArr[i];
             const key: string = node.num_subs + ',' + node.num_air;
             this.defmap2.set(key, i);
@@ -436,23 +424,13 @@ function is_terminal_state(
     if (!out) {
       const attnode = problem.att_data.nodeArr[N];
       const defnode = problem.def_data.nodeArr[M];
-      console.log(
-        attnode.unit_str,
-        ':',
-        attnode.retreat,
-        defnode.unit_str,
-        'here',
-      );
+      console.log(attnode.unit_str, ':', attnode.retreat, defnode.unit_str, 'here');
     }
   }
   return out;
 }
 
-export function is_retreat_state(
-  problem: general_problem,
-  N: number,
-  M: number,
-): boolean {
+export function is_retreat_state(problem: general_problem, N: number, M: number): boolean {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
   if (problem.getRetreat(N, M)) {
@@ -466,22 +444,15 @@ export function is_retreat_state(
       return true;
     }
   }
-  if (
-    problem.retreat_strafe_threshold != undefined &&
-    attnode.nosub_group != undefined
-  ) {
+  if (problem.retreat_strafe_threshold != undefined && attnode.nosub_group != undefined) {
     const pgt = attnode.nosub_group.pgreater[attnode.N][defnode.N];
     if (pgt > problem.retreat_strafe_threshold) {
       return true;
     }
   }
-  if (
-    problem.retreat_lose_air_probability < 1.0 &&
-    defnode.nosub_group != undefined
-  ) {
+  if (problem.retreat_lose_air_probability < 1.0 && defnode.nosub_group != undefined) {
     if (attnode.firstAirCasualty >= 0) {
-      const pgt =
-        defnode.nosub_group.pgreater[defnode.N][attnode.firstAirCasualty];
+      const pgt = defnode.nosub_group.pgreater[defnode.N][attnode.firstAirCasualty];
       if (pgt > problem.retreat_lose_air_probability) {
         return true;
       }
@@ -549,11 +520,7 @@ function get_terminal_state_prob(
 
 // if attackers and defenders exist.
 // 1.  remove move the remaining non-amphibous attackers to retreat state.
-function retreat_one_naval_state(
-  problem: general_problem,
-  N: number,
-  M: number,
-) {
+function retreat_one_naval_state(problem: general_problem, N: number, M: number) {
   const attnode = problem.att_data.nodeArr[N];
   const defnode = problem.def_data.nodeArr[M];
 
@@ -618,10 +585,8 @@ function do_early_retreat(problem: general_problem, N: number, M: number) {
   const M1 = defnode.num_subs;
   const att_destroyer = hasDestroyer(problem.att_data, attnode);
   const def_destroyer = hasDestroyer(problem.def_data, defnode);
-  const att_submerge =
-    problem.att_data.submerge_sub && N1 > 0 && !def_destroyer;
-  const def_submerge =
-    problem.def_data.submerge_sub && M1 > 0 && !att_destroyer;
+  const att_submerge = problem.att_data.submerge_sub && N1 > 0 && !def_destroyer;
+  const def_submerge = problem.def_data.submerge_sub && M1 > 0 && !att_destroyer;
   if (att_submerge || def_submerge) {
     let n = attnode.index;
     let m = defnode.index;
@@ -680,12 +645,7 @@ function print_retreat_state(problem: general_problem): void {
   if (problem.verbose_level > 2) {
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
-        console.log(
-          `result:  is_retreat_state[%d][%d] = %d`,
-          i,
-          j,
-          problem.getRetreat(i, j),
-        );
+        console.log(`result:  is_retreat_state[%d][%d] = %d`, i, j, problem.getRetreat(i, j));
       }
     }
   }
@@ -772,8 +732,7 @@ export function compute_expected_value(problem: general_problem): void {
           }
         }
         const evdiff = ev_fight - ev_retreat;
-        const is_retreat =
-          evdiff < problem.retreat_expected_ipc_profit_threshold!;
+        const is_retreat = evdiff < problem.retreat_expected_ipc_profit_threshold!;
         const ev = !is_retreat ? ev_fight : ev_retreat;
         if (is_retreat) {
           problem.setRetreat(n, m, true);
@@ -787,10 +746,7 @@ export function compute_expected_value(problem: general_problem): void {
     for (j = M - 1; j >= 0; j--) {
       const attNode = attData.nodeArr[i];
       const defNode = defData.nodeArr[j];
-      if (
-        !problem.is_amphibious &&
-        is_terminal_state(problem, i, j, false, false)
-      ) {
+      if (!problem.is_amphibious && is_terminal_state(problem, i, j, false, false)) {
         problem.accumulate = 0;
         if (problem.is_deadzone && defNode.N == 0) {
           problem.accumulate -= attNode.deadzone_cost;
@@ -804,10 +760,7 @@ export function compute_expected_value(problem: general_problem): void {
       let isVerifyOptimization = false;
       if (do_optimization) {
         if (defNode.N >= factor * attNode.N && defNode.N > 10) {
-          if (
-            attNode.nosub_group != undefined &&
-            defNode.nosub_group != undefined
-          ) {
+          if (attNode.nosub_group != undefined && defNode.nosub_group != undefined) {
             const attPower = attNode.nosub_group.power[attNode.N];
             const defPower = defNode.nosub_group.power[defNode.N];
             if (defPower > factor * attPower) {
@@ -885,10 +838,7 @@ export function compute_prob_wins(problem: general_problem): void {
     const defnode = problem.def_data.nodeArr[m];
     if (is_terminal_state(problem, n, m, false, false)) {
       problem.pwin_acc = 0;
-      if (
-        defnode.N == 0 &&
-        (attnode.hasLand || problem.pwinMode == 'destroys')
-      ) {
+      if (defnode.N == 0 && (attnode.hasLand || problem.pwinMode == 'destroys')) {
         problem.pwin_acc = 1;
       }
       problem.setPwin(n, m, problem.pwin_acc);
@@ -906,8 +856,7 @@ export function compute_prob_wins(problem: general_problem): void {
           pwin_retreat = problem.Pwin_1d[ii];
         }
       }
-      const is_retreat =
-        can_retreat && pwin_fight < problem.retreat_pwin_threshold!;
+      const is_retreat = can_retreat && pwin_fight < problem.retreat_pwin_threshold!;
       const pwin = !is_retreat ? pwin_fight : pwin_retreat;
       if (is_retreat) {
         problem.setRetreat(n, m, true);
@@ -942,10 +891,7 @@ export function compute_prob_wins(problem: general_problem): void {
 }
 
 // roundless evaluation... while analytically computing average rounds.
-function do_roundless_eval(
-  problem: general_problem,
-  init_rounds: number,
-): void {
+function do_roundless_eval(problem: general_problem, init_rounds: number): void {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
   let i, j;
@@ -1134,23 +1080,13 @@ export function solve_general(problem: general_problem) {
       doAA = false;
     }
     if (doAA) {
-      const aaData = buildAAGroup(
-        problem.um,
-        problem.att_data.num_aashot,
-        problem.diceMode,
-      );
-      forEachAAOutcome(
-        aaData,
-        problem.att_data,
-        aaData.tbl_size,
-        0,
-        (prob, n) => {
-          problem.setP(n, 0, problem.prob * prob);
-          if (problem.verbose_level > 2) {
-            console.log(problem.prob * prob, 'prob -- solveAA');
-          }
-        },
-      );
+      const aaData = buildAAGroup(problem.um, problem.att_data.num_aashot, problem.diceMode);
+      forEachAAOutcome(aaData, problem.att_data, aaData.tbl_size, 0, (prob, n) => {
+        problem.setP(n, 0, problem.prob * prob);
+        if (problem.verbose_level > 2) {
+          console.log(problem.prob * prob, 'prob -- solveAA');
+        }
+      });
     }
   } else {
     const mymap: Map<string, number> = new Map();
@@ -1160,11 +1096,7 @@ export function solve_general(problem: general_problem) {
     let aaData: unit_group | undefined;
     let aaTblSize: number | undefined;
     if (problem.att_data.num_aashot > 0) {
-      aaData = buildAAGroup(
-        problem.um,
-        problem.att_data.num_aashot,
-        problem.diceMode,
-      );
+      aaData = buildAAGroup(problem.um, problem.att_data.num_aashot, problem.diceMode);
       aaTblSize = aaData.tbl_size;
     }
     for (let i = 0; i < problem.def_cas.length; i++) {
@@ -1187,15 +1119,9 @@ export function solve_general(problem: general_problem) {
         }
         if (doAA && aaData != undefined && aaTblSize != undefined) {
           const numOutcomes = Math.min(numAA * 3 + 1, aaTblSize);
-          forEachAAOutcome(
-            aaData,
-            problem.att_data,
-            numOutcomes,
-            0,
-            (prob, n) => {
-              problem.setP(n, ii, problem.getP(n, ii) + p * prob);
-            },
-          );
+          forEachAAOutcome(aaData, problem.att_data, numOutcomes, 0, (prob, n) => {
+            problem.setP(n, ii, problem.getP(n, ii) + p * prob);
+          });
         } else {
           if (!isZeroRound) {
             problem.setP(0, ii, problem.getP(0, ii) + problem.def_cas[i].prob);
@@ -1217,8 +1143,7 @@ export function solve_general(problem: general_problem) {
 
   let didBombard = false;
   const numBombard = !problem.is_naval
-    ? count_units(problem.att_data.unit_str, 'B') +
-      count_units(problem.att_data.unit_str, 'C')
+    ? count_units(problem.att_data.unit_str, 'B') + count_units(problem.att_data.unit_str, 'C')
     : 0;
   if (numBombard > 0 || problem.hasRetreatCondition()) {
     do_round_eval(problem, true, numBombard, false, true);
@@ -1233,9 +1158,7 @@ export function solve_general(problem: general_problem) {
       console.log(rounds, 'rounds');
     }
     const needs_early_retreat =
-      problem.isEarlyRetreat() ||
-      problem.is_amphibious ||
-      problem.hasNonCombat();
+      problem.isEarlyRetreat() || problem.is_amphibious || problem.hasNonCombat();
     if (didBombard) {
       if (needs_early_retreat) {
         do_round_eval(problem, true, 0, true, false);
@@ -1352,15 +1275,7 @@ export function solve_general(problem: general_problem) {
 
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
-        solve_one_general_state(
-          problem.nonavalproblem,
-          i,
-          j,
-          false,
-          0,
-          false,
-          false,
-        );
+        solve_one_general_state(problem.nonavalproblem, i, j, false, 0, false, false);
       }
     }
     // map back to parent problem

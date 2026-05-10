@@ -35,8 +35,7 @@ export function createGeneralProblem(
     retreat_round_zero: input.retreat_round_zero,
     do_roundless_eval: input.do_roundless_eval,
     retreat_lose_air_probability: wave.retreat_lose_air_probability,
-    retreat_expected_ipc_profit_threshold:
-      wave.retreat_expected_ipc_profit_threshold,
+    retreat_expected_ipc_profit_threshold: wave.retreat_expected_ipc_profit_threshold,
     retreat_pwin_threshold: wave.retreat_pwin_threshold,
     pwinMode: wave.pwinMode,
     retreat_strafe_threshold: wave.retreat_strafe_threshold,
