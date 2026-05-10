@@ -13,6 +13,18 @@ import { multiwaveMultiEval } from './multieval.js';
 import { type multieval_input } from './multieval.js';
 import { type multieval_output } from './multieval.js';
 
+const _umCache = new Map<string, unit_manager>();
+
+function getUm(verboseLevel: number, skipCompute = false): unit_manager {
+  const key = `${verboseLevel}:${skipCompute}`;
+  let um = _umCache.get(key);
+  if (um == undefined) {
+    um = new unit_manager(verboseLevel, skipCompute);
+    _umCache.set(key, um);
+  }
+  return um;
+}
+
 export type UnitIdentifier =
   | 'aa'
   | 'inf'
@@ -216,7 +228,7 @@ export type UnitStatsMap = Record<UnitIdentifier, UnitStats>;
 
 // Export unit stats lookup table for frontend
 export function getUnitStatsMap(): UnitStatsMap {
-  const um = new unit_manager(0, false);
+  const um = getUm(0, false);
   const stats: Partial<UnitStatsMap> = {};
 
   const unitIds: UnitIdentifier[] = [
@@ -567,7 +579,7 @@ function buildCasualtiesInfoArr(
 } {
   const casualtiesInfoArr: CasualtiesInfo[] = [];
   const profitDist: ProfitDistribution[] = [];
-  const um = new unit_manager(verboseLevel);
+  const um = getUm(verboseLevel);
 
   for (let ii = 0; ii < waveOutputs.length; ii++) {
     casualtiesInfoArr[ii] = { attack: {}, defense: {} };
@@ -635,7 +647,7 @@ function buildCumulativeCasualtiesInfo(
 ): CasualtiesInfo {
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
-  const um = new unit_manager(verboseLevel);
+  const um = getUm(verboseLevel);
   const lastIdx = waveOutputs.length - 1;
 
   interface PendingEntry {
@@ -1277,7 +1289,7 @@ export function multiEvalExternal(input: MultiEvalInput): MultiEvalOutput {
     defenderList.push(def_unit_group_string.unit);
   }
   const multiEvalInput: multieval_input = {
-    ...(internal_input as any),
+    ...internal_input,
     attackerList: attackerList,
     defenderList: defenderList,
   };
@@ -1299,7 +1311,7 @@ export function make_unit_group_string(
   verbose_level: number,
 ): make_unit_group_string_output {
   let unitstr = '';
-  const um = new unit_manager(verbose_level);
+  const um = getUm(verbose_level);
 
   for (const [uid, count] of Object.entries(units)) {
     if (count == 0) {
@@ -1414,7 +1426,7 @@ export function sbrExternal(input: SbrInput): MultiwaveOutput {
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
   const profit: Record<string, CasualtyInfo> = {};
-  const um = new unit_manager(input.verbose_level);
+  const um = getUm(input.verbose_level);
   for (let i = 0; i < internalOutput.att_cas.length; i++) {
     const cas = internalOutput.att_cas[i];
     const casualty: CasualtyInfo = {
@@ -1478,7 +1490,7 @@ export function getIntegersInRange(
 }
 
 export function getArmyCost(army: Army): number {
-  const um = new unit_manager(0);
+  const um = getUm(0);
   let sum = 0;
   for (const [uid, count] of Object.entries(army)) {
     let ch = UnitIdentifier2UnitMap[<UnitIdentifier>uid];
@@ -1494,7 +1506,7 @@ export function getSubArmies(
   startArmy: Army,
   stepArmy: Army,
 ): [Army, number, number, number][] {
-  const um = new unit_manager(0);
+  const um = getUm(0);
   let subArmies: [Army, number, number, number][] = [];
   const data: number[][] = [];
   const uidList: UnitIdentifier[] = [];

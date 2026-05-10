@@ -12,7 +12,8 @@ Axis & Allies 1942 Online probability calculator — a math-based battle odds li
 | `npm run format`        | `prettier --write .`                                                 |
 | `npm run check-format`  | `prettier --check .`                                                 |
 | `npm run check-exports` | `attw --pack . --ignore-rules=cjs-resolves-to-esm`                   |
-| `npm run ci`            | `build && check-format && check-exports && test` — **order matters** |
+| `npm run ci`            | `build && check-format && check-exports && check-imports && test` — **order matters** |
+| `npm run check-imports` | `scripts/check-imports.sh` — finds `.ts` files in `src/` that are never imported anywhere |
 | `npm run copy`          | Regenerates `solveone1.ts`–`solveone4.ts` from `solveone.ts`         |
 
 `npm run ci` **order matters** — `check-exports` requires `dist/` from the build step.
