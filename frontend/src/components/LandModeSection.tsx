@@ -1,5 +1,5 @@
 import React from 'react'
-import type { WaveConfig } from '../App'
+import type { WaveConfig } from '../types.ts'
 import { ROUND_OPTIONS, RETREAT_OPTIONS, WAVE_OPTIONS_BORDER_STYLE, RETREAT_LABEL_STYLE, CHECKBOX_LABEL_STYLE, LAND_OPTIONS_GRID_STYLE } from '../constants'
 
 interface LandModeSectionProps {
@@ -93,7 +93,7 @@ export function LandModeSection({ waveIdx, config, onUpdate }: LandModeSectionPr
                     if (option.id === 'unitCount') {
                       updates.retreatThreshold = 0
                     } else {
-                      (updates[thresholdField] as any) = 0
+                      (updates[thresholdField] as number) = 0
                     }
                     onUpdate(updates)
                   }}

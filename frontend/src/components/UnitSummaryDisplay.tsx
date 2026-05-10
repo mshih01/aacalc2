@@ -1,5 +1,6 @@
 import React from 'react'
-import { calculateUnitSummary, type UnitSummary } from '../constants'
+import { calculateUnitSummary } from '../utils/unitStats.ts'
+import type { UnitSummary } from '../types.ts'
 
 interface UnitSummaryDisplayProps {
   title: string // "Attacker" or "Defender"

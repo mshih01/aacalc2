@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { armyRecommend, type ArmyRecommendInput } from 'aacalc2'
-import type { BattleInput } from '../App'
+import type { BattleInput } from '../types.ts'
 
 interface ArmyRecommendConfig {
   optimizeMode: 'targetWinPercentage' | 'maxProfit'
