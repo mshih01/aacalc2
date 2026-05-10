@@ -6,11 +6,8 @@ import {
 import ReactGA from 'react-ga4'
 import './App.css'
 import { MODES, DEFAULT_OOL_PRESETS } from './constants'
-import { SeaModeSection } from './components/SeaModeSection'
-import { LandModeSection } from './components/LandModeSection'
-import { UnitSummaryDisplay } from './components/UnitSummaryDisplay'
 import { ArmyRecommendSection } from './components/ArmyRecommendSection'
-import { unitIds, DEFAULT_WAVE_CONFIG, MAX_WAVES, type BattleInput, type BattleMode, type UnitId, type HistoryEntry, type WaveConfig } from './types.ts'
+import { unitIds, DEFAULT_WAVE_CONFIG, MAX_WAVES, type BattleInput, type BattleMode, type UnitId, type HistoryEntry, type WaveConfig, type WaveRecords } from './types.ts'
 import { useWaveState } from './hooks/useWaveState.ts'
 import { computeBattle, computeSbrBattle, validateArmySizes } from './engine.ts'
 import { encodeStateToUrl, decodeStateFromUrl, getUnitName, getUnitString, getPercentileColor } from './utils/format.ts'
@@ -36,8 +33,61 @@ const AUTO_EVALUATE_BOUNCE_TIMER = 750 // ms
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
 
-// Component: Detailed Attacker Casualties (per-wave)
-// Component: Profit Distribution Table (per-wave)
+function buildWaveRecords(
+  waveConfigs: Record<number, WaveConfig>,
+  numWaves: number,
+  mode: BattleMode,
+  amphibious: boolean,
+): WaveRecords {
+  const attackOolRecord: Record<number, UnitId[]> = {}
+  const defenseOolRecord: Record<number, UnitId[]> = {}
+  const roundsNum: Record<number, number> = {}
+  const retreatThresholdRecord: Record<number, number> = {}
+  const takesTerritoryRecord: Record<number, number> = {}
+  const aaLastRecord: Record<number, boolean> = {}
+  const attackerSubmergeRecord: Record<number, boolean> = {}
+  const defenderSubmergeRecord: Record<number, boolean> = {}
+  const attackerDestroyerLastRecord: Record<number, boolean> = {}
+  const defenderDestroyerLastRecord: Record<number, boolean> = {}
+  const crashFightersRecord: Record<number, boolean> = {}
+  const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
+  const retreatPwinRecord: Record<number, number | undefined> = {}
+  const retreatStrafeRecord: Record<number, number | undefined> = {}
+  const retreatLoseAirRecord: Record<number, number | undefined> = {}
+  const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
+
+  for (let i = 0; i < numWaves; i++) {
+    const config = waveConfigs[i]
+    attackOolRecord[i] = (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
+    defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
+    roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
+    retreatThresholdRecord[i] = config.retreatThreshold
+    takesTerritoryRecord[i] = config.takesTerritory
+    aaLastRecord[i] = config.aaLast
+    attackerSubmergeRecord[i] = config.attackerSubmerge
+    defenderSubmergeRecord[i] = config.defenderSubmerge
+    attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
+    defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
+    crashFightersRecord[i] = config.crashFighters
+    retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
+    retreatPwinRecord[i] = config.retreatPwinThreshold
+    retreatStrafeRecord[i] = config.retreatStrafeThreshold
+    retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
+    useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
+  }
+
+  return {
+    attackOolRecord, defenseOolRecord, roundsNum,
+    retreatThresholdRecord, takesTerritoryRecord, aaLastRecord,
+    attackerSubmergeRecord, defenderSubmergeRecord,
+    attackerDestroyerLastRecord, defenderDestroyerLastRecord,
+    crashFightersRecord,
+    retreatExpectedIpcProfitRecord, retreatPwinRecord,
+    retreatStrafeRecord, retreatLoseAirRecord,
+    useAttackersFromPreviousWaveRecord,
+  }
+}
+
 function App() {
   const [mode, setMode] = useState<BattleMode>('land')
   const [numWaves, setNumWaves] = useState(1)
@@ -164,32 +214,27 @@ function App() {
     setComplexityWarning(null)
   }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold, instantaneousEvaluationThreshold])
 
-  // Helper function to build multiwave input for complexity calculation
   const buildMultiwaveInputForComplexity = useCallback((
     inputAttack: Record<number, Record<string, number>>,
     inputDefense: Record<number, Record<string, number>>,
-    attackOolRecord: Record<number, UnitId[]>,
-    defenseOolRecord: Record<number, UnitId[]>,
-    roundsNum: Record<number, number>,
-    takesTerritoryRecord: Record<number, number>,
-    aaLastRecord: Record<number, boolean>,
-    attackerSubmergeRecord: Record<number, boolean>,
-    defenderSubmergeRecord: Record<number, boolean>,
-    attackerDestroyerLastRecord: Record<number, boolean>,
-    defenderDestroyerLastRecord: Record<number, boolean>,
-    crashFightersRecord: Record<number, boolean>,
-    retreatThresholdRecord: Record<number, number>,
-    retreatExpectedIpcProfitRecord: Record<number, number | undefined>,
-    retreatPwinRecord: Record<number, number | undefined>,
-    retreatStrafeRecord: Record<number, number | undefined>,
-    retreatLoseAirRecord: Record<number, number | undefined>,
-    useAttackersFromPreviousWaveRecord: Record<number, boolean>
+    records: WaveRecords,
   ): MultiwaveInput => {
+    const {
+      attackOolRecord, defenseOolRecord, roundsNum,
+      takesTerritoryRecord, aaLastRecord,
+      attackerSubmergeRecord, defenderSubmergeRecord,
+      attackerDestroyerLastRecord, defenderDestroyerLastRecord,
+      crashFightersRecord, retreatThresholdRecord,
+      retreatExpectedIpcProfitRecord, retreatPwinRecord,
+      retreatStrafeRecord, retreatLoseAirRecord,
+      useAttackersFromPreviousWaveRecord,
+    } = records
+
     return {
       wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
         const attackOol: UnitId[] = attackOolRecord[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
         const defenseOol: UnitId[] = defenseOolRecord[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
-        const waves = roundsNum[waveIdx] 
+        const waves = roundsNum[waveIdx]
           ? (roundsNum[waveIdx] === 100 ? 100 : Number(roundsNum[waveIdx]))
           : 100
         return {
@@ -247,68 +292,12 @@ function App() {
         return
       }
       
-      // Build per-wave OOL records
-      const attackOolRecord: Record<number, UnitId[]> = {}
-      const defenseOolRecord: Record<number, UnitId[]> = {}
-      const roundsNum: Record<number, number> = {}
-      const retreatThresholdRecord: Record<number, number> = {}
-      const takesTerritoryRecord: Record<number, number> = {}
-      const aaLastRecord: Record<number, boolean> = {}
-      const attackerSubmergeRecord: Record<number, boolean> = {}
-      const defenderSubmergeRecord: Record<number, boolean> = {}
-      const attackerDestroyerLastRecord: Record<number, boolean> = {}
-      const defenderDestroyerLastRecord: Record<number, boolean> = {}
-      const crashFightersRecord: Record<number, boolean> = {}
-      const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
-      const retreatPwinRecord: Record<number, number | undefined> = {}
-      const retreatStrafeRecord: Record<number, number | undefined> = {}
-      const retreatLoseAirRecord: Record<number, number | undefined> = {}
-      const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
-      
-      for (let i = 0; i < numWaves; i++) {
-        const config = waveConfigs[i]
-        attackOolRecord[i] = (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
-        defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
-        roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
-        retreatThresholdRecord[i] = config.retreatThreshold
-        takesTerritoryRecord[i] = config.takesTerritory
-        aaLastRecord[i] = config.aaLast
-        attackerSubmergeRecord[i] = config.attackerSubmerge
-        defenderSubmergeRecord[i] = config.defenderSubmerge
-        attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
-        defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
-        crashFightersRecord[i] = config.crashFighters
-        retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
-        retreatPwinRecord[i] = config.retreatPwinThreshold
-        retreatStrafeRecord[i] = config.retreatStrafeThreshold
-        retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
-        useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
-      }
-      
-      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(
-        attack,
-        defense,
-        attackOolRecord,
-        defenseOolRecord,
-        roundsNum,
-        takesTerritoryRecord,
-        aaLastRecord,
-        attackerSubmergeRecord,
-        defenderSubmergeRecord,
-        attackerDestroyerLastRecord,
-        defenderDestroyerLastRecord,
-        crashFightersRecord,
-        retreatThresholdRecord,
-        retreatExpectedIpcProfitRecord,
-        retreatPwinRecord,
-        retreatStrafeRecord,
-        retreatLoseAirRecord,
-        useAttackersFromPreviousWaveRecord
-      )
-      
+      const records = buildWaveRecords(waveConfigs, numWaves, mode, amphibious)
+
+      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(attack, defense, records)
+
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
-      
-      // If complexity is below instantaneous evaluation threshold, auto-evaluate
+
       if (complexity < instantaneousEvaluationThreshold) {
         // Trigger runBattle by simulating a click
         const evalBtn = document.querySelector('.run-btn') as HTMLButtonElement
@@ -333,61 +322,27 @@ function App() {
         return
       }
       
-      // Build per-wave OOL records
-      const attackOolRecord: Record<number, UnitId[]> = {}
-      const defenseOolRecord: Record<number, UnitId[]> = {}
-      const roundsNum: Record<number, number> = {}
-      const retreatThresholdRecord: Record<number, number> = {}
-      const takesTerritoryRecord: Record<number, number> = {}
-      const aaLastRecord: Record<number, boolean> = {}
-      const attackerSubmergeRecord: Record<number, boolean> = {}
-      const defenderSubmergeRecord: Record<number, boolean> = {}
-      const attackerDestroyerLastRecord: Record<number, boolean> = {}
-      const defenderDestroyerLastRecord: Record<number, boolean> = {}
-      const crashFightersRecord: Record<number, boolean> = {}
+      const records = buildWaveRecords(waveConfigs, numWaves, mode, amphibious)
       const retreatModeRecord: Record<number, string> = {}
-      const retreatExpectedIpcProfitRecord: Record<number, number | undefined> = {}
-      const retreatPwinRecord: Record<number, number | undefined> = {}
-      const retreatStrafeRecord: Record<number, number | undefined> = {}
-      const retreatLoseAirRecord: Record<number, number | undefined> = {}
-      const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
-      
       for (let i = 0; i < numWaves; i++) {
-        const config = waveConfigs[i]
-        attackOolRecord[i] = (amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets)[mode].find((o) => o.id === config.attackOolPreset)?.ool || []
-        defenseOolRecord[i] = defenderOolPresets[mode].find((o) => o.id === config.defenseOolPreset)?.ool || []
-        roundsNum[i] = config.rounds === 'all' ? 100 : parseInt(config.rounds)
-        retreatThresholdRecord[i] = config.retreatThreshold
-        takesTerritoryRecord[i] = config.takesTerritory
-        aaLastRecord[i] = config.aaLast
-        attackerSubmergeRecord[i] = config.attackerSubmerge
-        defenderSubmergeRecord[i] = config.defenderSubmerge
-        attackerDestroyerLastRecord[i] = config.attackerDestroyerLast
-        defenderDestroyerLastRecord[i] = config.defenderDestroyerLast
-        crashFightersRecord[i] = config.crashFighters
-        retreatModeRecord[i] = config.retreatMode || 'unitCount'
-        retreatExpectedIpcProfitRecord[i] = config.retreatExpectedIpcProfitThreshold
-        retreatPwinRecord[i] = config.retreatPwinThreshold
-        retreatStrafeRecord[i] = config.retreatStrafeThreshold
-        retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
-        useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
+        retreatModeRecord[i] = waveConfigs[i].retreatMode || 'unitCount'
       }
-      
+
       const input: BattleInput = {
         attack,
         defense,
-        attackOol: attackOolRecord,
-        defenseOol: defenseOolRecord,
-        rounds: roundsNum,
-        retreatThreshold: retreatThresholdRecord,
-        takesTerritory: takesTerritoryRecord,
-        aaLast: aaLastRecord,
-        attackerSubmerge: attackerSubmergeRecord,
-        defenderSubmerge: defenderSubmergeRecord,
-        attackerDestroyerLast: attackerDestroyerLastRecord,
-        defenderDestroyerLast: defenderDestroyerLastRecord,
-        crashFighters: crashFightersRecord,
-        useAttackersFromPreviousWave: useAttackersFromPreviousWaveRecord,
+        attackOol: records.attackOolRecord,
+        defenseOol: records.defenseOolRecord,
+        rounds: records.roundsNum,
+        retreatThreshold: records.retreatThresholdRecord,
+        takesTerritory: records.takesTerritoryRecord,
+        aaLast: records.aaLastRecord,
+        attackerSubmerge: records.attackerSubmergeRecord,
+        defenderSubmerge: records.defenderSubmergeRecord,
+        attackerDestroyerLast: records.attackerDestroyerLastRecord,
+        defenderDestroyerLast: records.defenderDestroyerLastRecord,
+        crashFighters: records.crashFightersRecord,
+        useAttackersFromPreviousWave: records.useAttackersFromPreviousWaveRecord,
         retreatModes: retreatModeRecord,
         mode,
         diceMode,
@@ -396,10 +351,10 @@ function App() {
         pruneThreshold,
         reportPruneThreshold,
         sortMode,
-        retreatExpectedIpcProfitThresholds: retreatExpectedIpcProfitRecord,
-        retreatPwinThresholds: retreatPwinRecord,
-        retreatStrafeThresholds: retreatStrafeRecord,
-        retreatLoseAirProbabilityThresholds: retreatLoseAirRecord,
+        retreatExpectedIpcProfitThresholds: records.retreatExpectedIpcProfitRecord,
+        retreatPwinThresholds: records.retreatPwinRecord,
+        retreatStrafeThresholds: records.retreatStrafeRecord,
+        retreatLoseAirProbabilityThresholds: records.retreatLoseAirRecord,
         territoryValue,
         isDeadzone,
         numWaves,
@@ -407,28 +362,8 @@ function App() {
         experimentalConvolution,
         retreatZeroRound,
       }
-      
-      // Check complexity before evaluating the battle
-      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(
-        attack,
-        defense,
-        attackOolRecord,
-        defenseOolRecord,
-        roundsNum,
-        takesTerritoryRecord,
-        aaLastRecord,
-        attackerSubmergeRecord,
-        defenderSubmergeRecord,
-        attackerDestroyerLastRecord,
-        defenderDestroyerLastRecord,
-        crashFightersRecord,
-        retreatThresholdRecord,
-        retreatExpectedIpcProfitRecord,
-        retreatPwinRecord,
-        retreatStrafeRecord,
-        retreatLoseAirRecord,
-        useAttackersFromPreviousWaveRecord
-      )
+
+      const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(attack, defense, records)
       
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
       if (complexity > complexityThreshold) {

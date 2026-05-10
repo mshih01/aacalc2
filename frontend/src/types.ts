@@ -94,6 +94,25 @@ export interface UnitSummary {
 
 export interface ProfitDistEntry { prob: number; ipc: number }
 
+export interface WaveRecords {
+  attackOolRecord: Record<number, UnitId[]>
+  defenseOolRecord: Record<number, UnitId[]>
+  roundsNum: Record<number, number>
+  retreatThresholdRecord: Record<number, number>
+  takesTerritoryRecord: Record<number, number>
+  aaLastRecord: Record<number, boolean>
+  attackerSubmergeRecord: Record<number, boolean>
+  defenderSubmergeRecord: Record<number, boolean>
+  attackerDestroyerLastRecord: Record<number, boolean>
+  defenderDestroyerLastRecord: Record<number, boolean>
+  crashFightersRecord: Record<number, boolean>
+  retreatExpectedIpcProfitRecord: Record<number, number | undefined>
+  retreatPwinRecord: Record<number, number | undefined>
+  retreatStrafeRecord: Record<number, number | undefined>
+  retreatLoseAirRecord: Record<number, number | undefined>
+  useAttackersFromPreviousWaveRecord: Record<number, boolean>
+}
+
 export const MAX_WAVES = 4
 
 export const DEFAULT_WAVE_CONFIG: WaveConfig = {

@@ -2,8 +2,7 @@ import type { BattleMode, UnitId, WaveConfig } from '../types.ts'
 import { modeUnitMap, attackerOolPresets, attackerAmphibOolPresets, defenderOolPresets } from '../data/oolPresets.ts'
 import { getUnitName, getUnitString } from '../utils/format.ts'
 import { UnitSummaryDisplay } from './UnitSummaryDisplay'
-import { SeaModeSection } from './SeaModeSection'
-import { LandModeSection } from './LandModeSection'
+import { WaveOptions } from './WaveOptions'
 
 interface WaveCardProps {
   waveIdx: number
@@ -152,19 +151,12 @@ export function WaveCard({
       </div>
 
       {/* Wave Options */}
-      {mode === 'sea' ? (
-        <SeaModeSection
-          waveIdx={waveIdx}
-          config={config}
-          onUpdate={onUpdateConfig}
-        />
-      ) : (
-        <LandModeSection
-          waveIdx={waveIdx}
-          config={config}
-          onUpdate={onUpdateConfig}
-        />
-      )}
+      <WaveOptions
+        waveIdx={waveIdx}
+        config={config}
+        isNaval={mode === 'sea'}
+        onUpdate={onUpdateConfig}
+      />
 
       {waveIdx < numWaves - 1 && (
         <button
