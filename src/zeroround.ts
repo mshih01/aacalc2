@@ -1,7 +1,5 @@
 import { general_problem, is_retreat_state } from './solve.js';
-import { make_unit_group } from './unitgroup.js';
-import { hasNonAAUnit } from './unitgroup.js';
-import { remove_aahits } from './unitgroup.js';
+import { buildAAGroup, forEachAAOutcome, hasNonAAUnit } from './unitgroup.js';
 
 // need to consider the impact of AA's
 export function is_round_zero_retreat_state(
@@ -29,23 +27,19 @@ export function is_round_zero_retreat_state(
       num_aashots = attnode.num_air;
     }
     if (doAA) {
-      let aashots = '';
-      for (let i = 0; i < num_aashots; i++) {
-        aashots = aashots + 'c';
-      }
-      const aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
-
-      const NN = aa_data.tbl_size;
+      const aaData = buildAAGroup(problem.um, num_aashots, problem.diceMode);
       let accumulate = 0.0;
-      for (let i = 0; i < NN; i++) {
-        const prob = aa_data.get_prob_table(NN - 1, i);
-        const n = remove_aahits(problem.att_data, i, N);
-        const attnode2 = problem.att_data.nodeArr[n];
-        const attloss = attnode.cost - attnode2.cost;
-        const defloss = 0;
-        const deltacost = defloss - attloss;
-        accumulate += prob * (deltacost + problem.getE(n, M));
-      }
+      forEachAAOutcome(
+        aaData,
+        problem.att_data,
+        aaData.tbl_size,
+        N,
+        (prob, n) => {
+          const attnode2 = problem.att_data.nodeArr[n];
+          const attloss = attnode.cost - attnode2.cost;
+          accumulate += prob * (-attloss + problem.getE(n, M));
+        },
+      );
       if (accumulate < problem.retreat_expected_ipc_profit_threshold) {
         return true;
       }

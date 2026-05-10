@@ -8,9 +8,10 @@ import {
 } from './solve.js';
 import { createGeneralProblem } from './problem-factory.js';
 import {
+  buildAAGroup,
+  forEachAAOutcome,
   hasNonAAUnit,
-  make_unit_group,
-  remove_aahits,
+  unit_group,
   unit_manager,
 } from './unitgroup.js';
 import { preparse, preparse_token, count_units } from './preparse.js';
@@ -160,15 +161,15 @@ export function solve_multi_eval(problem: general_problem): multi_eval_output {
   }
   const result: [string, number, number, number][] = [];
   {
-    let aa_data;
-    let Naa;
+    let aaData: unit_group | undefined;
+    let aaTblSize: number | undefined;
     if (problem.att_data.num_aashot > 0) {
-      let aashots = '';
-      for (let i = 0; i < problem.att_data.num_aashot; i++) {
-        aashots = aashots + 'c';
-      }
-      aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
-      Naa = aa_data.tbl_size;
+      aaData = buildAAGroup(
+        problem.um,
+        problem.att_data.num_aashot,
+        problem.diceMode,
+      );
+      aaTblSize = aaData.tbl_size;
     }
     const numBombard = !problem.is_naval
       ? count_units(problem.att_data.unit_str, 'B') +
@@ -193,21 +194,21 @@ export function solve_multi_eval(problem: general_problem): multi_eval_output {
           numAA > 0 &&
           problem.att_data.num_aashot > 0 &&
           hasNonAAUnit(problem.um, problem.def_cas[i].remain);
-        if (doAA && Naa != undefined && aa_data != undefined) {
-          const NN = Math.min(numAA * 3 + 1, Naa);
-
-          for (let i = 0; i < NN; i++) {
-            const prob = aa_data.get_prob_table(NN - 1, i);
-            const n = remove_aahits(problem.att_data, i, 0);
-
-            //expected_profit += problem.getE(n, ii) * prob;
-            prob_win += problem.getPwin(n, ii) * prob;
-            if (doBombard) {
-              problem.setP(n, ii, prob);
-            }
-          }
+        if (doAA && aaData != undefined && aaTblSize != undefined) {
+          const numOutcomes = Math.min(numAA * 3 + 1, aaTblSize);
+          forEachAAOutcome(
+            aaData,
+            problem.att_data,
+            numOutcomes,
+            0,
+            (prob, n) => {
+              prob_win += problem.getPwin(n, ii) * prob;
+              if (doBombard) {
+                problem.setP(n, ii, prob);
+              }
+            },
+          );
         } else {
-          //expected_profit += problem.getE(0, ii);
           prob_win += problem.getPwin(0, ii);
           if (doBombard) {
             problem.setP(0, ii, 1.0);

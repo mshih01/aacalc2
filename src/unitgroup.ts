@@ -1899,3 +1899,29 @@ export function make_unit_group(
     );
   }
 }
+
+export function buildAAGroup(
+  um: unit_manager,
+  numShots: number,
+  diceMode: DiceMode,
+): unit_group {
+  let aashots = '';
+  for (let i = 0; i < numShots; i++) {
+    aashots += 'c';
+  }
+  return make_unit_group(um, aashots, 2, diceMode);
+}
+
+export function forEachAAOutcome(
+  aaData: unit_group,
+  attData: general_unit_group,
+  numOutcomes: number,
+  stateIndex: number,
+  fn: (prob: number, nodeIndex: number, shotIndex: number) => void,
+): void {
+  for (let i = 0; i < numOutcomes; i++) {
+    const prob = aaData.get_prob_table(numOutcomes - 1, i);
+    const n = remove_aahits(attData, i, stateIndex);
+    fn(prob, n, i);
+  }
+}

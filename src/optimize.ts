@@ -113,13 +113,17 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         console.log(output);
       }
 
-      let multiEvalResult = output.resultList.map((tuple) => [
-        tuple[0],
-        tuple[1],
-        1 - tuple[2],
-        tuple[3],
-      ]);
-      multiEvalResult.sort((a: any[], b: any[]) => {
+      let multiEvalResult: [string, number, number, number][] =
+        output.resultList.map(
+          (tuple) =>
+            [tuple[0], tuple[1], 1 - tuple[2], tuple[3]] as [
+              string,
+              number,
+              number,
+              number,
+            ],
+        );
+      multiEvalResult.sort((a, b) => {
         const av: number = Number(a[2] < surviveThreshold) ? 1.0 : 0.0;
         const bv: number = Number(b[2] < surviveThreshold) ? 1.0 : 0.0;
         if (av != bv) {
@@ -170,15 +174,20 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         out.push([army, survive, cost, profit]);
       }
       if (optimizeMode == 'targetWinPercentage') {
-        out.sort((a: any[], b: any[]) => {
-          const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
-          const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
-          if (av != bv) {
-            return bv - av;
-          } else {
-            return Number(b[2]) - Number(a[2]);
-          }
-        });
+        out.sort(
+          (
+            a: [Army, number, number, number],
+            b: [Army, number, number, number],
+          ) => {
+            const av: number = Number(a[1] < surviveThreshold) ? 1.0 : 0.0;
+            const bv: number = Number(b[1] < surviveThreshold) ? 1.0 : 0.0;
+            if (av != bv) {
+              return bv - av;
+            } else {
+              return Number(b[2]) - Number(a[2]);
+            }
+          },
+        );
         armyRecommendOutput.recommendations = [
           {
             army: out[0][0],
@@ -187,15 +196,20 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         ];
       } else {
         // maxProfit
-        out.sort((a: any[], b: any[]) => {
-          const av: number = Number(a[3]);
-          const bv: number = Number(b[3]);
-          if (av != bv) {
-            return bv - av;
-          } else {
-            return Number(b[2]) - Number(a[2]);
-          }
-        });
+        out.sort(
+          (
+            a: [Army, number, number, number],
+            b: [Army, number, number, number],
+          ) => {
+            const av: number = Number(a[3]);
+            const bv: number = Number(b[3]);
+            if (av != bv) {
+              return bv - av;
+            } else {
+              return Number(b[2]) - Number(a[2]);
+            }
+          },
+        );
         // numRecommendations
         armyRecommendOutput.recommendations = [];
         for (let i = 0; i < numRecommendations; i++) {
@@ -213,17 +227,22 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
       break;
     }
     case 'fuzzyBinarySearch':
-      armies.sort((a: any[], b: any[]) => {
-        const av: number =
-          attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-        const bv: number =
-          attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-        if (av != bv) {
-          return av - bv;
-        } else {
-          return Number(a[1]) - Number(b[1]);
-        }
-      });
+      armies.sort(
+        (
+          a: [Army, number, number, number],
+          b: [Army, number, number, number],
+        ) => {
+          const av: number =
+            attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+          const bv: number =
+            attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+          if (av != bv) {
+            return av - bv;
+          } else {
+            return Number(a[1]) - Number(b[1]);
+          }
+        },
+      );
       if (input.verbose_level && input.verbose_level > 2) {
         console.log('sorted 1');
         for (let i = 0; i < armies.length; i++) {
@@ -334,19 +353,24 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
         console.log('bestArmy', bestArmy);
         console.log('iterations', iter);
       }
-      armies.sort((a: any[], b: any[]) => {
-        const av: number =
-          attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
-        const bv: number =
-          attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
-        const acost: number = av >= bestPower ? 0 : 1;
-        const bcost: number = bv >= bestPower ? 0 : 1;
-        if (acost != bcost) {
-          return acost - bcost;
-        } else {
-          return Number(a[1]) - Number(b[1]);
-        }
-      });
+      armies.sort(
+        (
+          a: [Army, number, number, number],
+          b: [Army, number, number, number],
+        ) => {
+          const av: number =
+            attDefType == 'attacker' ? Number(a[2]) : Number(a[3]);
+          const bv: number =
+            attDefType == 'attacker' ? Number(b[2]) : Number(b[3]);
+          const acost: number = av >= bestPower ? 0 : 1;
+          const bcost: number = bv >= bestPower ? 0 : 1;
+          if (acost != bcost) {
+            return acost - bcost;
+          } else {
+            return Number(a[1]) - Number(b[1]);
+          }
+        },
+      );
       if (input.verbose_level && input.verbose_level > 2) {
         console.log('sorted 2');
         for (let i = 0; i < armies.length; i++) {

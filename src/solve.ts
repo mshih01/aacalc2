@@ -13,12 +13,15 @@ import { solve_one_general_state_copy3 } from './solveone3.js';
 import { is_round_zero_retreat_state } from './zeroround.js';
 import { count_units } from './preparse.js';
 import {
+  buildAAGroup,
+  forEachAAOutcome,
   general_unit_group,
   hasAmphibious,
   hasDestroyer,
   hasNonAAUnit,
   make_unit_group,
   remove_aahits,
+  unit_group,
   unit_manager,
 } from './unitgroup.js';
 import { type casualty_1d, collect_and_print_results } from './output.js';
@@ -1131,36 +1134,38 @@ export function solve_general(problem: general_problem) {
       doAA = false;
     }
     if (doAA) {
-      let aashots = '';
-      for (let i = 0; i < problem.att_data.num_aashot; i++) {
-        aashots = aashots + 'c';
-      }
-      const aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
-
-      const N = aa_data.tbl_size;
-      for (let i = 0; i < N; i++) {
-        const prob = aa_data.get_prob_table(N - 1, i);
-        const n = remove_aahits(problem.att_data, i, 0);
-        problem.setP(n, 0, problem.prob * prob);
-        if (problem.verbose_level > 2) {
-          console.log(i, n, problem.prob * prob, 'i, n, prob -- solveAA');
-        }
-      }
+      const aaData = buildAAGroup(
+        problem.um,
+        problem.att_data.num_aashot,
+        problem.diceMode,
+      );
+      forEachAAOutcome(
+        aaData,
+        problem.att_data,
+        aaData.tbl_size,
+        0,
+        (prob, n) => {
+          problem.setP(n, 0, problem.prob * prob);
+          if (problem.verbose_level > 2) {
+            console.log(problem.prob * prob, 'prob -- solveAA');
+          }
+        },
+      );
     }
   } else {
     const mymap: Map<string, number> = new Map();
     for (let i = 0; i < M; i++) {
       mymap.set(problem.def_data.nodeArr[i].unit_str, i);
     }
-    let aa_data;
-    let N;
+    let aaData: unit_group | undefined;
+    let aaTblSize: number | undefined;
     if (problem.att_data.num_aashot > 0) {
-      let aashots = '';
-      for (let i = 0; i < problem.att_data.num_aashot; i++) {
-        aashots = aashots + 'c';
-      }
-      aa_data = make_unit_group(problem.um, aashots, 2, problem.diceMode);
-      N = aa_data.tbl_size;
+      aaData = buildAAGroup(
+        problem.um,
+        problem.att_data.num_aashot,
+        problem.diceMode,
+      );
+      aaTblSize = aaData.tbl_size;
     }
     for (let i = 0; i < problem.def_cas.length; i++) {
       const ii = mymap.get(problem.def_cas[i].remain);
@@ -1180,17 +1185,17 @@ export function solve_general(problem: general_problem) {
           doAA = false;
           isZeroRound = true;
         }
-        if (doAA && N != undefined && aa_data != undefined) {
-          const NN = Math.min(numAA * 3 + 1, N);
-
-          for (let i = 0; i < NN; i++) {
-            const prob = aa_data.get_prob_table(NN - 1, i);
-            const n = remove_aahits(problem.att_data, i, 0);
-            problem.setP(n, ii, problem.getP(n, ii) + p * prob);
-            if (problem.verbose_level > 2) {
-              console.log(i, n, problem.prob * prob, 'i, n, prob -- solveAA');
-            }
-          }
+        if (doAA && aaData != undefined && aaTblSize != undefined) {
+          const numOutcomes = Math.min(numAA * 3 + 1, aaTblSize);
+          forEachAAOutcome(
+            aaData,
+            problem.att_data,
+            numOutcomes,
+            0,
+            (prob, n) => {
+              problem.setP(n, ii, problem.getP(n, ii) + p * prob);
+            },
+          );
         } else {
           if (!isZeroRound) {
             problem.setP(0, ii, problem.getP(0, ii) + problem.def_cas[i].prob);
