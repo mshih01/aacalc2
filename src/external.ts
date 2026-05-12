@@ -610,7 +610,6 @@ function buildCasualtiesInfoArr(
 
 function buildCumulativeCasualtiesInfo(
   waveOutputs: aacalc_output[],
-  takesTerritory: number[],
   swapArr: number[],
   verboseLevel: number,
   reportPruneThreshold: number,
@@ -632,25 +631,41 @@ function buildCumulativeCasualtiesInfo(
     return arr.reduce((s, p) => s + p.prob, 0);
   }
 
-  function pushCrossMul(
-    target: PendingEntry[],
-    pending: PendingEntry[],
-    entry: PendingEntry,
-  ): void {
-    if (pending.length === 0) {
-      target.push(entry);
+  function crossMul(arr1: PendingEntry[], arr2: PendingEntry[]): PendingEntry[] {
+    const result: PendingEntry[] = [];
+    if (arr1.length === 0) {
+      return arr2;
+    } else if (arr2.length === 0) {
+      return arr1;
     } else {
-      const tp = totalP(pending);
-      for (const p of pending) {
-        target.push({
-          casualties: mergeUnitStrings(p.casualties, entry.casualties),
-          survivors: entry.survivors,
-          retreaters: mergeUnitStrings(p.retreaters, entry.retreaters),
-          ipcLoss: p.ipcLoss + entry.ipcLoss,
-          prob: (p.prob / tp) * entry.prob,
-        });
+      const tp = totalP(arr1);
+      for (const p1 of arr1) {
+        for (const p2 of arr2) {
+          result.push({
+            casualties: mergeUnitStrings(p1.casualties, p2.casualties),
+            survivors: p2.survivors,
+            retreaters: mergeUnitStrings(p1.retreaters, p2.retreaters),
+            ipcLoss: p1.ipcLoss + p2.ipcLoss,
+            prob: (p1.prob / tp) * p2.prob,
+          });
+        }
       }
     }
+    return result;
+  }
+
+  function mergePending(arr: PendingEntry[]): PendingEntry[] {
+    const map = new Map<string, PendingEntry>();
+    for (const p of arr) {
+      const key = p.casualties + '|' + p.survivors + '|' + p.retreaters + '|' + p.ipcLoss;
+      const existing = map.get(key);
+      if (existing) {
+        existing.prob += p.prob;
+      } else {
+        map.set(key, { ...p });
+      }
+    }
+    return Array.from(map.values());
   }
 
   function mapCrossMul(
@@ -683,8 +698,10 @@ function buildCumulativeCasualtiesInfo(
   }
 
   const incrSwapArr: boolean[] = [];
+  const nextSwapArr: boolean[] = [];
   for (let i = 0; i < swapArr.length; i++) {
     incrSwapArr.push(i > 0 && swapArr[i] !== swapArr[i - 1]);
+    nextSwapArr.push(i < swapArr.length - 1 && swapArr[i] !== swapArr[i + 1]);
   }
 
   let pendingAtt: PendingEntry[] = [];
@@ -715,367 +732,131 @@ function buildCumulativeCasualtiesInfo(
         ),
       );
     }
-    const swapped = swapArr[ii] === 1;
-    const nextSwapped = ii < lastIdx && swapArr[ii + 1] === 1;
+    const swapped = incrSwapArr[ii];
+    const nextSwapped = nextSwapArr[ii];
+    const parity = swapArr[ii] === 1;
+    const isLastWave = ii === lastIdx;
 
-    if (ii < lastIdx) {
-      if (!swapped) {
-        // Non-last wave, not swapped
-        const newContinues: PendingEntry[] = [];
+    const newContinuesAtt: PendingEntry[] = [];
+    const newContinuesDef: PendingEntry[] = [];
 
-        for (let i = 0; i < currOutput.att_cas.length; i++) {
-          const cas = currOutput.att_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          const isCapture = cas.remain.length > 0 && hasLand(um, cas.remain);
-
-          if (isCapture && nextSwapped) {
-            // Swap transition: split land from air
-            const { air: casAir } = splitAirLand(um, cas.casualty);
-            const { air: remainAir } = splitAirLand(um, cas.remain);
-            const { air: retreatAir } = splitAirLand(um, cas.retreat);
-            const airIpc = get_cost_from_str(um, casAir);
-            pushCrossMul(newContinues, pendingAtt, {
-              casualties: get_external_unit_str(um, casAir),
-              survivors: get_external_unit_str(um, remainAir),
-              retreaters: get_external_unit_str(um, retreatAir),
-              ipcLoss: airIpc,
-              prob: cas.prob,
-            });
-          } else if (isCapture && !nextSwapped) {
-            // Standard capture
-            mapCrossMul(att, pendingAtt, {
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: cas.prob,
-            });
-          } else if (!isCapture && nextSwapped) {
-            // Non-capture before swap (terminal): includes both fail and air-only survivors
-            mapCrossMul(att, pendingAtt, {
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: cas.prob,
-            });
-          } else {
-            // Standard continue (push as-is, cascade handles cross-multiplication)
-            newContinues.push({
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: cas.prob,
-            });
-          }
-        }
-
-        // Cascade or replace pendingAtt
-        if (nextSwapped || pendingAtt.length === 0) {
-          pendingAtt = newContinues;
-        } else if (newContinues.length > 0) {
-          const tp = totalP(pendingAtt);
-          const nextPending: PendingEntry[] = [];
-          for (const p of pendingAtt) {
-            for (const np of newContinues) {
-              nextPending.push({
-                casualties: mergeUnitStrings(p.casualties, np.casualties),
-                survivors: np.survivors,
-                retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
-                ipcLoss: p.ipcLoss + np.ipcLoss,
-                prob: (p.prob / tp) * np.prob,
-              });
-            }
-          }
-          pendingAtt = nextPending;
-        }
-
-        // Defender side with correct terminal/continued split
-        const takesInc = currOutput.takesTerritory[0];
-
-        const termScale = 1.0;
-        for (let i = 0; i < currOutput.def_cas.length; i++) {
-          const cas = currOutput.def_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-
-          if (nextSwapped) {
-            if (cas.remain !== '') {
-              const amt = cas.prob * termScale;
-              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
-                casualties: casStr,
-                survivors: remainStr,
-                retreaters: retreatStr,
-                amount: amt,
-                ipcLoss: ipc,
-              });
-            } else {
-              const amt = (cas.prob - takesInc) * termScale;
-              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
-                casualties: casStr,
-                survivors: remainStr,
-                retreaters: retreatStr,
-                amount: amt,
-                ipcLoss: ipc,
-              });
-              if (pendingDef.length === 0) {
-                pendingDef.push({
-                  casualties: casStr,
-                  survivors: '',
-                  retreaters: retreatStr,
-                  prob: 1,
-                  ipcLoss: ipc,
-                });
-              }
-            }
-          } else {
-            if (cas.remain === '') {
-              addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
-                casualties: casStr,
-                survivors: remainStr,
-                retreaters: retreatStr,
-                amount: takesInc,
-                ipcLoss: ipc,
-              });
-            }
-          }
-        }
+    // att_cas
+    for (let i = 0; i < currOutput.att_cas.length; i++) {
+      const cas = currOutput.att_cas[i];
+      const casStr = get_external_unit_str(um, cas.casualty);
+      const remainStr = get_external_unit_str(um, cas.remain);
+      const retreatStr = get_external_unit_str(um, cas.retreat);
+      const ipc = get_cost_from_str(um, cas.casualty);
+      const isCapture = cas.remain.length > 0 && hasLand(um, cas.remain);
+      const isTerminalState = isLastWave || (nextSwapped ? !isCapture : isCapture);
+      if (isTerminalState) {
+        mapCrossMul(parity ? def : att, pendingAtt, {
+          casualties: casStr,
+          survivors: remainStr,
+          retreaters: retreatStr,
+          ipcLoss: ipc,
+          prob: cas.prob,
+        });
       } else {
-        // Non-last wave, swapped
-        const newContinues: PendingEntry[] = [];
-        const newContinuesDef: PendingEntry[] = [];
-
-        for (let i = 0; i < currOutput.def_cas.length; i++) {
-          const cas = currOutput.def_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          // if swap, then the current takes isn't cummulative -- it's the incremental takes compared to previous wave
-          const takesInc = currOutput.takesTerritory[0];
-          const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
-          const isDefenderKilled = cas.remain.length == 0;
-          const captureProb = takesInc;
-          const mutualKillProb = cas.prob - takesInc;
-          const isTakesState = isDefenderKilled;
-          const takesStateProb = captureProb;
-          const isDefenderHoldsState =
-            !isDefenderKilled || (isDefenderKilled && captureProb < cas.prob);
-          const defenderHoldsStateProb = isDefenderKilled ? cas.prob - takesInc : cas.prob;
-          let isTerminalState;
-          let isContinueState;
-          let terminalStateProb;
-          let continueStateProb;
-          if (isNextWaveSwap) {
-            isTerminalState = isDefenderHoldsState;
-            terminalStateProb = defenderHoldsStateProb;
-            isContinueState = isTakesState;
-            continueStateProb = takesStateProb;
-          } else {
-            isTerminalState = isTakesState;
-            isContinueState = isDefenderHoldsState;
-            terminalStateProb = takesStateProb;
-            continueStateProb = defenderHoldsStateProb;
-          }
-          if (isContinueState && continueStateProb > 0) {
-            if (isNextWaveSwap) {
-              newContinues.push({
-                casualties: casStr,
-                survivors: remainStr,
-                retreaters: retreatStr,
-                ipcLoss: ipc,
-                prob: continueStateProb,
-              });
-            } else {
-              // don't need to cross multiply... defender in the next state already preserves
-            }
-          }
-          if (isTerminalState && terminalStateProb > 0) {
-            mapCrossMul(att, pendingAtt, {
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: terminalStateProb,
-            });
-          }
-        }
-
-        const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
-        // Cascade pendingAtt with newContinues
-        if (isNextWaveSwap || pendingAtt.length === 0) {
-          pendingAtt = newContinues;
-        } else if (newContinues.length > 0) {
-          const tp = totalP(pendingAtt);
-          const nextPending: PendingEntry[] = [];
-          for (const p of pendingAtt) {
-            for (const np of newContinues) {
-              nextPending.push({
-                casualties: mergeUnitStrings(p.casualties, np.casualties),
-                survivors: np.survivors,
-                retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
-                ipcLoss: p.ipcLoss + np.ipcLoss,
-                prob: (p.prob / tp) * np.prob,
-              });
-            }
-          }
-          pendingAtt = nextPending;
-        }
-
-        for (let i = 0; i < currOutput.att_cas.length; i++) {
-          const cas = currOutput.att_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          const isCapture = cas.remain.length > 0 && hasLand(um, cas.remain);
-          const isNextWaveSwap = ii < lastIdx && incrSwapArr[ii + 1];
-          let isTerminalState;
-          if (isNextWaveSwap) {
-            isTerminalState = !isCapture;
-          } else {
-            isTerminalState = isCapture;
-          }
-          if (isTerminalState) {
-            mapCrossMul(def, pendingDef, {
-              casualties: casStr,
-              survivors: remainStr,
-              retreaters: retreatStr,
-              ipcLoss: ipc,
-              prob: cas.prob,
-            });
-          } else {
-            if (!isNextWaveSwap) {
-              newContinuesDef.push({
-                casualties: casStr,
-                survivors: remainStr,
-                retreaters: retreatStr,
-                ipcLoss: ipc,
-                prob: cas.prob,
-              });
-            } else {
-              // Swap transition: split land from air
-              const { air: casAir } = splitAirLand(um, cas.casualty);
-              const { air: remainAir } = splitAirLand(um, cas.remain);
-              const { air: retreatAir } = splitAirLand(um, cas.retreat);
-              const airIpc = get_cost_from_str(um, casAir);
-              pushCrossMul(newContinuesDef, pendingDef, {
-                casualties: get_external_unit_str(um, casAir),
-                survivors: get_external_unit_str(um, remainAir),
-                retreaters: get_external_unit_str(um, retreatAir),
-                ipcLoss: airIpc,
-                prob: cas.prob,
-              });
-            }
-          }
-        }
-
-        // Cascade pendingDef with newContinuesDef
-        if (newContinuesDef.length > 0) {
-          const tp = totalP(pendingDef);
-          if (tp > 0) {
-            const nextPendingDef: PendingEntry[] = [];
-            for (const p of pendingDef) {
-              for (const np of newContinuesDef) {
-                nextPendingDef.push({
-                  casualties: mergeUnitStrings(p.casualties, np.casualties),
-                  survivors: np.survivors,
-                  retreaters: mergeUnitStrings(p.retreaters, np.retreaters),
-                  ipcLoss: p.ipcLoss + np.ipcLoss,
-                  prob: (p.prob / tp) * np.prob,
-                });
-              }
-            }
-            pendingDef = nextPendingDef;
-          } else {
-            pendingDef = newContinuesDef;
-          }
-        }
-      }
-    } else {
-      // Last wave
-      if (!swapped) {
-        for (let i = 0; i < currOutput.att_cas.length; i++) {
-          const cas = currOutput.att_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          mapCrossMul(att, pendingAtt, {
-            casualties: casStr,
-            survivors: remainStr,
-            retreaters: retreatStr,
-            ipcLoss: ipc,
+        // continue state
+        let curCas = {
+          casualties: casStr,
+          survivors: remainStr,
+          retreaters: retreatStr,
+          ipcLoss: ipc,
+          prob: cas.prob,
+        };
+        if (nextSwapped) {
+          // Swap transition: split land from air
+          const { air: casAir } = splitAirLand(um, cas.casualty);
+          const { air: remainAir } = splitAirLand(um, cas.remain);
+          const { air: retreatAir } = splitAirLand(um, cas.retreat);
+          const airIpc = get_cost_from_str(um, casAir);
+          curCas = {
+            casualties: get_external_unit_str(um, casAir),
+            survivors: get_external_unit_str(um, remainAir),
+            retreaters: get_external_unit_str(um, retreatAir),
+            ipcLoss: airIpc,
             prob: cas.prob,
-          });
+          };
         }
-        for (let i = 0; i < currOutput.def_cas.length; i++) {
-          const cas = currOutput.def_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          addToMap(def, casStr + ';' + remainStr + ';' + retreatStr, {
-            casualties: casStr,
-            survivors: remainStr,
-            retreaters: retreatStr,
-            amount: cas.prob,
-            ipcLoss: ipc,
-          });
-        }
-      } else {
-        // Last wave swapped: def_cas => att, att_cas => def
-        for (let i = 0; i < currOutput.def_cas.length; i++) {
-          const cas = currOutput.def_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          mapCrossMul(att, pendingAtt, {
-            casualties: casStr,
-            survivors: remainStr,
-            retreaters: retreatStr,
-            ipcLoss: ipc,
-            prob: cas.prob,
-          });
-        }
-        for (let i = 0; i < currOutput.att_cas.length; i++) {
-          const cas = currOutput.att_cas[i];
-          const casStr = get_external_unit_str(um, cas.casualty);
-          const remainStr = get_external_unit_str(um, cas.remain);
-          const retreatStr = get_external_unit_str(um, cas.retreat);
-          const ipc = get_cost_from_str(um, cas.casualty);
-          mapCrossMul(def, pendingDef, {
-            casualties: casStr,
-            survivors: remainStr,
-            retreaters: retreatStr,
-            ipcLoss: ipc,
-            prob: cas.prob,
-          });
-        }
+        newContinuesAtt.push(curCas);
       }
     }
-    function mergePending(arr: PendingEntry[]): PendingEntry[] {
-      const map = new Map<string, PendingEntry>();
-      for (const p of arr) {
-        const key = p.casualties + '|' + p.survivors + '|' + p.retreaters + '|' + p.ipcLoss;
-        const existing = map.get(key);
-        if (existing) {
-          existing.prob += p.prob;
+
+    // def_cas
+    const takesInc = currOutput.takesTerritory[0];
+    for (let i = 0; i < currOutput.def_cas.length; i++) {
+      const cas = currOutput.def_cas[i];
+      const casStr = get_external_unit_str(um, cas.casualty);
+      const remainStr = get_external_unit_str(um, cas.remain);
+      const retreatStr = get_external_unit_str(um, cas.retreat);
+      const ipc = get_cost_from_str(um, cas.casualty);
+      const probTakes = cas.remain == '' ? takesInc : 0;
+      const probHolds = cas.remain == '' ? cas.prob - takesInc : cas.prob;
+      let isTerminalState;
+      let isContinueState;
+      let terminalStateProb;
+      let continueStateProb;
+      if (nextSwapped) {
+        isTerminalState = probHolds > 0;
+        terminalStateProb = probHolds;
+        isContinueState = probTakes > 0;
+        continueStateProb = probTakes;
+      } else {
+        isTerminalState = probTakes > 0;
+        isContinueState = probHolds > 0;
+        terminalStateProb = probTakes;
+        continueStateProb = probHolds;
+      }
+      if (isLastWave) {
+        isTerminalState = true;
+        terminalStateProb = cas.prob;
+        isContinueState = false;
+        continueStateProb = 0;
+      }
+
+      if (isTerminalState && terminalStateProb > 0) {
+        mapCrossMul(parity ? att : def, pendingDef, {
+          casualties: casStr,
+          survivors: remainStr,
+          retreaters: retreatStr,
+          ipcLoss: ipc,
+          prob: terminalStateProb,
+        });
+      }
+      if (isContinueState && continueStateProb > 0) {
+        if (!nextSwapped) {
+          // we don't need to aggregate newContinues.
         } else {
-          map.set(key, { ...p });
+          newContinuesDef.push({
+            casualties: casStr,
+            survivors: remainStr,
+            retreaters: retreatStr,
+            ipcLoss: ipc,
+            prob: continueStateProb,
+          });
         }
       }
-      return Array.from(map.values());
     }
-    pendingAtt = mergePending(pendingAtt);
-    pendingDef = mergePending(pendingDef);
+
+    // newContinuesAtt/Def is based on wave i
+    // pendingAtt/Def is based on wave i.
+
+    // now we need to handle pendingAtt/Def so that it's ready for wave i+1
+
+    // Cascade or replace pendingAtt
+    // newAtt = pendingAtt cross multiplied with newContinuesAtt
+    // newDef = pendingDef cross multiplied with newContinuesDef
+    let newAtt = mergePending(crossMul(pendingAtt, newContinuesAtt));
+    let newDef = mergePending(crossMul(pendingDef, newContinuesDef));
+    if (nextSwapped) {
+      pendingAtt = newDef;
+      pendingDef = newAtt;
+    } else {
+      pendingAtt = newAtt;
+      pendingDef = newDef;
+    }
   }
 
   return {
@@ -1113,7 +894,6 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
 
   const casualtiesInfo = buildCumulativeCasualtiesInfo(
     internal_output.output,
-    internal_output.out.takesTerritory,
     swapArr,
     input.verbose_level,
     input.report_prune_threshold,
