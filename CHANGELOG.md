@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.19
+
+### Patch Changes
+
+- 5315950: multiwave cumulative casualties correctly handle multiple swaps.
+
 ## 2.0.18
 
 ### Patch Changes
