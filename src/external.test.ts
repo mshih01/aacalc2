@@ -390,6 +390,111 @@ test('multiwaveExternal 3-wave swap 0/1/0', () => {
   expect(output).toMatchSnapshot();
 });
 
+test('multiwaveExternal 3-wave swap 0/1/1', () => {
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: {
+            inf: 4,
+            arm: 2,
+            fig: 2,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 4,
+            aa: 1,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 1,
+            fig: 1,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        use_attackers_from_previous_wave: true,
+      },
+      {
+        attack: {
+          units: {
+            inf: 4,
+            art: 1,
+            fig: 1,
+          },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            inf: 0,
+            aa: 0,
+          },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+        use_attackers_from_previous_wave: false,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'ipc_cost',
+  };
+
+  let output = multiwaveExternal(input);
+  expect(output).toMatchSnapshot();
+});
+
 test('sbrExternal', () => {
   const input: SbrInput = {
     verbose_level: 0,
