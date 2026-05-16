@@ -461,7 +461,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
       def_submerge: wave.def_submerge,
       att_dest_last: wave.att_dest_last,
       def_dest_last: wave.def_dest_last,
-      is_crash_fighters: wave.is_crash_fighters,
+      is_crash_fighters: input.is_naval && wave.is_crash_fighters,
       rounds: rounds,
       retreat_threshold: wave.retreat_threshold,
       retreat_lose_air_probability: wave.retreat_lose_air_probability ?? 1.0, // default to 1.0 if not provided
