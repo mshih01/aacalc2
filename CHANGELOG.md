@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.20
+
+### Patch Changes
+
+- df5789e: is_crash_fighters disabled for non-naval
+
 ## 2.0.19
 
 ### Patch Changes
