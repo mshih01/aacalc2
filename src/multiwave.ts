@@ -52,6 +52,8 @@ export interface wave_input {
   retreat_lose_air_probability: number;
   rounds: number;
   use_attackers_from_previous_wave?: boolean;
+  ev_deadzone?: boolean;
+  ev_territory_value?: number;
 }
 
 export function multiwave(input: multiwave_input): multiwave_output {

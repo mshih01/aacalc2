@@ -182,6 +182,7 @@ for (let i = 0; i < 1; i++) {
 inputSettings = [];
 //inputSettings.push([inputSettings4[5], 8]);
 inputSettings.push([inputSettings4[5], 9]);
+inputSettings.push([['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], 9]);
 
 console.log(process.memoryUsage());
 

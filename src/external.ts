@@ -139,6 +139,8 @@ export interface WaveInput {
   // incompatible with is_naval
   use_attackers_from_previous_wave?: boolean; // by default, the surviving defenders from the previous wave fight in the current wave.
   // when this option is true -- the surviving attackers from the previous wave fight in the current wave instead.  this is for simulating capture and hold.
+  ev_deadzone?: boolean; // overrides top-level is_deadzone for retreat EV only
+  ev_territory_value?: number; // overrides top-level territory_value for retreat EV only
 }
 
 export interface MultiwaveInput {
@@ -470,6 +472,8 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
       pwinMode: wave.pwinMode ?? 'takes', // default to 'takes' if not provided
       retreat_strafe_threshold: wave.retreat_strafe_threshold,
       use_attackers_from_previous_wave: wave.use_attackers_from_previous_wave ?? false, // default to false if not provided
+      ev_deadzone: wave.ev_deadzone,
+      ev_territory_value: wave.ev_territory_value,
     };
 
     wavearr.push(internal_wave);

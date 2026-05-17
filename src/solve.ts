@@ -49,6 +49,8 @@ export interface GeneralProblemConfig {
   is_deadzone?: boolean;
   skip_compute?: boolean;
   territory_value?: number;
+  ev_is_deadzone?: boolean;
+  ev_territory_value?: number;
   retreat_round_zero?: boolean;
   do_roundless_eval?: boolean;
   retreat_lose_air_probability: number;
@@ -73,6 +75,8 @@ export class general_problem {
   diceMode: DiceMode = 'standard';
   sortMode: SortMode = 'unit_count';
   is_deadzone: boolean = false; // deadzone attack
+  ev_is_deadzone?: boolean; // per-wave override for retreat EV only
+  ev_territory_value?: number; // per-wave override for retreat EV only
   skip_compute: boolean = false; // skip compute, used for complexity calculations.
   territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero: boolean = true; // allow retreat round 0.   default is true
@@ -237,6 +241,8 @@ export class general_problem {
       diceMode = 'standard' as DiceMode,
       sortMode = 'unit_count' as SortMode,
       is_deadzone = false,
+      ev_is_deadzone,
+      ev_territory_value,
       skip_compute = false,
       territory_value = 0,
       retreat_round_zero = true,
@@ -267,6 +273,8 @@ export class general_problem {
     this.sortMode = sortMode;
     this.skip_compute = skip_compute;
     this.is_deadzone = is_deadzone;
+    this.ev_is_deadzone = ev_is_deadzone;
+    this.ev_territory_value = ev_territory_value;
     this.territory_value = territory_value;
     this.retreat_round_zero = retreat_round_zero;
     this.do_roundless_eval = do_roundless_eval;
@@ -674,7 +682,7 @@ export function compute_expected_value(problem: general_problem): void {
   let do_optimization =
     problem.retreat_expected_ipc_profit_threshold != undefined &&
     problem.retreat_expected_ipc_profit_threshold >= 0 &&
-    problem.territory_value < 10 &&
+    (problem.ev_territory_value ?? problem.territory_value) < 10 &&
     !problem.is_amphibious &&
     !problem.is_naval &&
     defData.nodeArr[0].num_bomber == 0 && // no defending bombers
@@ -710,11 +718,11 @@ export function compute_expected_value(problem: general_problem): void {
     const defnode = problem.def_data.nodeArr[m];
     if (is_terminal_state(problem, n, m, false, false)) {
       problem.accumulate = 0;
-      if (problem.is_deadzone && defnode.N == 0) {
+      if ((problem.ev_is_deadzone ?? problem.is_deadzone) && defnode.N == 0) {
         problem.accumulate -= attnode.deadzone_cost;
       }
       if (defnode.N == 0 && attnode.hasLand) {
-        problem.accumulate += problem.territory_value;
+        problem.accumulate += problem.ev_territory_value ?? problem.territory_value;
       }
       problem.setE(n, m, problem.accumulate);
     } else {
@@ -748,11 +756,11 @@ export function compute_expected_value(problem: general_problem): void {
       const defNode = defData.nodeArr[j];
       if (!problem.is_amphibious && is_terminal_state(problem, i, j, false, false)) {
         problem.accumulate = 0;
-        if (problem.is_deadzone && defNode.N == 0) {
+        if ((problem.ev_is_deadzone ?? problem.is_deadzone) && defNode.N == 0) {
           problem.accumulate -= attNode.deadzone_cost;
         }
         if (defNode.N == 0 && attNode.hasLand) {
-          problem.accumulate += problem.territory_value;
+          problem.accumulate += problem.ev_territory_value ?? problem.territory_value;
         }
         problem.setE(i, j, problem.accumulate);
         continue;

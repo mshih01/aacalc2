@@ -9,7 +9,7 @@ import {
 } from '../index.js';
 
 let out = [];
-let verbose = 3; // 0, 1, 2, 3
+let verbose = 4; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -180,7 +180,8 @@ for (let i = 0; i < 1; i++) {
   */
 }
 inputSettings = [];
-inputSettings.push([inputSettings4[5], 8]);
+//inputSettings.push([inputSettings4[5], 8]);
+inputSettings.push([['strafe only', undefined, 0, 0.1, false, 0, true, complexity_global], 8]);
 
 console.log(process.memoryUsage());
 
@@ -769,43 +770,9 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf: 7,
-            art: 0,
-            arm: 5,
-            fig: 0,
-          },
-          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
-          takes: 0,
-          aaLast: false,
-        },
-        defense: {
-          units: {
-            inf: 0,
-            art: 0,
+            inf: 13,
+            art: 2,
             arm: 3,
-            fig: 0,
-            aa: 1,
-          },
-          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
-          takes: 0,
-          aaLast: true,
-        },
-        att_submerge: false,
-        def_submerge: false,
-        att_dest_last: false,
-        def_dest_last: false,
-        is_crash_fighters: false,
-        rounds: round,
-        retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: retreat, // optional
-        retreat_strafe_threshold: strafe, // optional
-      },
-      {
-        attack: {
-          units: {
-            inf: 7,
-            art: 5,
-            arm: 2,
             fig: 2,
           },
           ool: ['inf', 'art', 'arm', 'fig', 'bom'],
@@ -814,50 +781,15 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 1,
+            inf: 4,
             art: 0,
-            arm: 0,
+            arm: 5,
             fig: 0,
             aa: 1,
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
-          takes: 0,
-          aaLast: true,
-        },
-        att_submerge: false,
-        def_submerge: false,
-        att_dest_last: false,
-        def_dest_last: false,
-        is_crash_fighters: false,
-        rounds: round,
-        retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: retreat, // optional
-        retreat_strafe_threshold: strafe, // optional
-        use_attackers_from_previous_wave: false, // optional, default is false
-      },
-      {
-        attack: {
-          units: {
-            inf: 2,
-            art: 1,
-            arm: 10,
-            fig: 5,
-          },
-          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
           takes: 0,
           aaLast: false,
-        },
-        defense: {
-          units: {
-            inf: 0,
-            art: 0,
-            arm: 0,
-            fig: 0,
-            aa: 1,
-          },
-          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
-          takes: 0,
-          aaLast: true,
         },
         att_submerge: false,
         def_submerge: false,

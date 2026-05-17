@@ -30,6 +30,8 @@ export function createGeneralProblem(
     diceMode: input.diceMode,
     sortMode: input.sortMode,
     is_deadzone: input.is_deadzone,
+    ev_is_deadzone: wave.ev_deadzone,
+    ev_territory_value: wave.ev_territory_value,
     skip_compute: input.report_complexity_only,
     territory_value: input.territory_value,
     retreat_round_zero: input.retreat_round_zero,
