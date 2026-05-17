@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.21
+
+### Patch Changes
+
+- 427b719: add wave by wave override for is_deadzone/territory_value for ev retreat calculation only
+
 ## 2.0.20
 
 ### Patch Changes
