@@ -55,6 +55,8 @@ function buildWaveRecords(
   const retreatStrafeRecord: Record<number, number | undefined> = {}
   const retreatLoseAirRecord: Record<number, number | undefined> = {}
   const useAttackersFromPreviousWaveRecord: Record<number, boolean> = {}
+  const evDeadzoneRecord: Record<number, boolean | undefined> = {}
+  const evTerritoryValueRecord: Record<number, number | undefined> = {}
 
   for (let i = 0; i < numWaves; i++) {
     const config = waveConfigs[i]
@@ -74,6 +76,8 @@ function buildWaveRecords(
     retreatStrafeRecord[i] = config.retreatStrafeThreshold
     retreatLoseAirRecord[i] = config.retreatLoseAirProbabilityThreshold
     useAttackersFromPreviousWaveRecord[i] = config.useAttackersFromPreviousWave
+    evDeadzoneRecord[i] = config.evDeadzone
+    evTerritoryValueRecord[i] = config.evTerritoryValue
   }
 
   return {
@@ -85,6 +89,7 @@ function buildWaveRecords(
     retreatExpectedIpcProfitRecord, retreatPwinRecord,
     retreatStrafeRecord, retreatLoseAirRecord,
     useAttackersFromPreviousWaveRecord,
+    evDeadzoneRecord, evTerritoryValueRecord,
   }
 }
 
@@ -228,6 +233,7 @@ function App() {
       retreatExpectedIpcProfitRecord, retreatPwinRecord,
       retreatStrafeRecord, retreatLoseAirRecord,
       useAttackersFromPreviousWaveRecord,
+      evDeadzoneRecord, evTerritoryValueRecord,
     } = records
 
     return {
@@ -263,6 +269,8 @@ function App() {
           retreat_lose_air_probability: retreatLoseAirRecord[waveIdx],
           pwinMode: 'takes' as const,
           use_attackers_from_previous_wave: useAttackersFromPreviousWaveRecord[waveIdx] ?? false,
+          ev_deadzone: evDeadzoneRecord[waveIdx],
+          ev_territory_value: evTerritoryValueRecord[waveIdx],
         }
       }),
       debug: false,
@@ -361,6 +369,8 @@ function App() {
         amphibious,
         experimentalConvolution,
         retreatZeroRound,
+        evDeadzone: records.evDeadzoneRecord,
+        evTerritoryValue: records.evTerritoryValueRecord,
       }
 
       const multiwaveInputForComplexity = buildMultiwaveInputForComplexity(attack, defense, records)

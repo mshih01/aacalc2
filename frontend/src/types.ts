@@ -56,6 +56,8 @@ export interface BattleInput {
   amphibious?: boolean
   experimentalConvolution?: boolean
   retreatZeroRound?: boolean
+  evDeadzone?: Record<number, boolean | undefined>
+  evTerritoryValue?: Record<number, number | undefined>
 }
 
 export interface HistoryEntry {
@@ -83,6 +85,8 @@ export interface WaveConfig {
   retreatStrafeThreshold?: number
   retreatLoseAirProbabilityThreshold?: number
   useAttackersFromPreviousWave: boolean
+  evDeadzone?: boolean
+  evTerritoryValue?: number
 }
 
 export interface UnitSummary {
@@ -111,6 +115,8 @@ export interface WaveRecords {
   retreatStrafeRecord: Record<number, number | undefined>
   retreatLoseAirRecord: Record<number, number | undefined>
   useAttackersFromPreviousWaveRecord: Record<number, boolean>
+  evDeadzoneRecord: Record<number, boolean | undefined>
+  evTerritoryValueRecord: Record<number, number | undefined>
 }
 
 export const MAX_WAVES = 4

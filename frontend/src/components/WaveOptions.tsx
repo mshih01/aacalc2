@@ -224,6 +224,33 @@ export function WaveOptions({ waveIdx, config, isNaval, onUpdate }: WaveOptionsP
           )}
         </>
       )}
+
+      {/* Per-wave EV overrides — affects retreat decision only, shown when Expected IPC Profit is selected */}
+      {!isNaval && config.retreatMode === 'expectedIpcProfit' && (
+        <div style={{ borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px' }}>
+          <label style={RETREAT_LABEL_STYLE}>EV Overrides (affects retreat decision only):</label>
+          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+            <label style={CHECKBOX_LABEL_STYLE}>
+              <input
+                type="checkbox"
+                checked={config.evDeadzone || false}
+                onChange={(e) => onUpdate({ evDeadzone: e.target.checked })}
+              />
+              EV Deadzone
+            </label>
+            <div className="floating-label-group" style={{ flex: 1 }}>
+              <input
+                type="number"
+                min={0}
+                value={config.evTerritoryValue ?? ''}
+                onChange={(e) => onUpdate({ evTerritoryValue: e.target.value ? Number(e.target.value) : undefined })}
+                style={{ width: '100%' }}
+              />
+              <label>EV Territory Value</label>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -74,6 +74,8 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
             retreat_strafe_threshold: battleInput.retreatStrafeThresholds?.[waveIdx],
             retreat_lose_air_probability: battleInput.retreatLoseAirProbabilityThresholds?.[waveIdx],
             pwinMode: config.pwinMode,
+            ev_deadzone: battleInput.evDeadzone?.[waveIdx],
+            ev_territory_value: battleInput.evTerritoryValue?.[waveIdx],
           },
         ],
         debug: false,

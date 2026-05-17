@@ -42,6 +42,8 @@ export function computeBattle(input: BattleInput): MultiwaveOutput {
       retreat_lose_air_probability: input.retreatLoseAirProbabilityThresholds?.[waveIdx],
       pwinMode: 'takes' as const,
       use_attackers_from_previous_wave: input.useAttackersFromPreviousWave?.[waveIdx] ?? false,
+      ev_deadzone: input.evDeadzone?.[waveIdx],
+      ev_territory_value: input.evTerritoryValue?.[waveIdx],
     }
   })
 
