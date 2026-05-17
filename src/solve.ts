@@ -739,6 +739,13 @@ export function compute_expected_value(problem: general_problem): void {
             ev_retreat = problem.E_1d[ii];
           }
         }
+        if (problem.is_crash_fighters) {
+          let crashNode = defnode.next_crash_fighters ?? defnode;
+          const mm = crashNode.index;
+          if (m != mm) {
+            ev_retreat += problem.def_data.nodeCostArr[m] - problem.def_data.nodeCostArr[mm];
+          }
+        }
         const evdiff = ev_fight - ev_retreat;
         const is_retreat = evdiff < problem.retreat_expected_ipc_profit_threshold!;
         const ev = !is_retreat ? ev_fight : ev_retreat;
