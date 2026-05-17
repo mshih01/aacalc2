@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.22
+
+### Patch Changes
+
+- ed9d0e2: ev retreat consider crash_fighters impact
+
 ## 2.0.21
 
 ### Patch Changes
