@@ -730,7 +730,7 @@ export function compute_expected_value(problem: general_problem): void {
         let ev_fight = problem.accumulate;
         let ev_retreat = 0;
         if (problem.is_amphibious) {
-          let retreatNode = attnode.next_retreat_amphibious ?? attnode;
+          const retreatNode = attnode.next_retreat_amphibious ?? attnode;
           const nn = retreatNode.index;
           if (n == nn) {
             ev_retreat = problem.accumulate - 1e9;
@@ -740,7 +740,7 @@ export function compute_expected_value(problem: general_problem): void {
           }
         }
         if (problem.is_crash_fighters) {
-          let crashNode = defnode.next_crash_fighters ?? defnode;
+          const crashNode = defnode.next_crash_fighters ?? defnode;
           const mm = crashNode.index;
           if (m != mm) {
             ev_retreat += problem.def_data.nodeCostArr[m] - problem.def_data.nodeCostArr[mm];
