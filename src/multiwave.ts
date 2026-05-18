@@ -1,7 +1,7 @@
 import { solve_general, type general_problem } from './solve.js';
 import { createGeneralProblem } from './problem-factory.js';
 import { collect_results, print_general_results, get_general_cost } from './output.js';
-import { get_cost_from_str } from './unitgroup.js';
+import { get_cost_from_str, crash_fighters } from './unitgroup.js';
 import { unit_manager } from './unitgroup.js';
 import { hasLand } from './unitgroup.js';
 
@@ -112,11 +112,19 @@ export function multiwave(input: multiwave_input): multiwave_output {
           );
           const newcasstr = input.is_naval ? preparse_battleship(newcasstr_ool) : newcasstr_ool;
 
+          let cas_remain = newcasstr;
+          let cas_retreat = '';
+          if (input.is_naval) {
+            const { remain, retreat } = crash_fighters(um, newcasstr);
+            cas_remain = remain;
+            cas_retreat = retreat;
+          }
+
           const newcas = isAttacker ? remove_planes(cas.casualty) : cas.casualty;
 
           const newcasualty: casualty_1d = {
-            remain: newcasstr,
-            retreat: '',
+            remain: cas_remain,
+            retreat: cas_retreat,
             casualty: newcas,
             prob: p1,
           };
@@ -127,6 +135,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
             ? ''
             : apply_ool(
                 defend_add_reinforce[defend_add_reinforce.length - 1].remain +
+                  defend_add_reinforce[defend_add_reinforce.length - 1].retreat +
                   defend_add_reinforce[defend_add_reinforce.length - 1].casualty,
                 wave.def_ool,
                 wave.def_aalast,

@@ -716,26 +716,30 @@ export function is_only_aa_remain(um: unit_manager, input_str: string): boolean 
   const num_aa = count_units(input_str, 'c') + count_units(input_str, 'e');
   return num_aa == input_str.length;
 }
-export function crash_fighters(um: unit_manager, input_str: string): string {
+export function crash_fighters(
+  um: unit_manager,
+  input_str: string,
+): { remain: string; retreat: string } {
   const num_acc = count_units(input_str, 'A');
   const max_num_fighters = num_acc * 2;
 
-  const N = input_str.length;
-  let out = '';
+  let remain = '';
+  let retreat = '';
   let num_fighters = 0;
-  for (let i = 0; i < N; i++) {
-    const ch = input_str.charAt(i);
+  for (const ch of input_str) {
     const stat = um.get_stat(ch);
     if (!stat.isAir) {
-      out = out + ch;
+      remain += ch;
     } else {
       num_fighters++;
       if (num_fighters <= max_num_fighters) {
-        out = out + ch;
+        remain += ch;
+      } else {
+        retreat += ch;
       }
     }
   }
-  return out;
+  return { remain, retreat };
 }
 export function retreat_non_amphibious(um: unit_manager, input_str: string): [string, string] {
   const N = input_str.length;
@@ -1061,7 +1065,7 @@ export function compute_remove_hits(
       );
     }
     if (naval_group.is_crash_fighters) {
-      const s2 = crash_fighters(naval_group.um, node.unit_str);
+      const { remain: s2 } = crash_fighters(naval_group.um, node.unit_str);
       node.next_crash_fighters = getOrCreateGraphNode(
         mymap,
         myheap,
