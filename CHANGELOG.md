@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.23
+
+### Patch Changes
+
+- 7ddaaad: multiwave naval battles retreat defending air without landing carrier spot.
+
 ## 2.0.22
 
 ### Patch Changes
