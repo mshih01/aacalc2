@@ -15,11 +15,11 @@ import { type multieval_output } from './multieval.js';
 
 const _umCache = new Map<string, unit_manager>();
 
-function getUm(verboseLevel: number, skipCompute = false): unit_manager {
-  const key = `${verboseLevel}:${skipCompute}`;
+function getUm(verboseLevel: number): unit_manager {
+  const key = `${verboseLevel}`;
   let um = _umCache.get(key);
   if (um == undefined) {
-    um = new unit_manager(verboseLevel, skipCompute);
+    um = new unit_manager(verboseLevel);
     _umCache.set(key, um);
   }
   return um;
@@ -160,7 +160,6 @@ export interface MultiwaveInput {
   // e.g. inf ==> additional IPC cost 2
   // e.g. art ==> additional IPC cost 3
   // e.g. arm ==> additional IPC cost 4.5
-  report_complexity_only?: boolean; // if true, only report complexity and no other results.
   do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
@@ -227,7 +226,7 @@ export type UnitStatsMap = Record<UnitIdentifier, UnitStats>;
 
 // Export unit stats lookup table for frontend
 export function getUnitStatsMap(): UnitStatsMap {
-  const um = getUm(0, false);
+  const um = getUm(0);
   const stats: Partial<UnitStatsMap> = {};
 
   const unitIds: UnitIdentifier[] = [
@@ -389,29 +388,6 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
   return complexityMax;
 }
 
-export function multiwaveComplexity(input: MultiwaveInput): number {
-  const complexityInput: MultiwaveInput = {
-    wave_info: input.wave_info,
-    debug: input.debug,
-    prune_threshold: input.prune_threshold,
-    report_prune_threshold: input.report_prune_threshold,
-    is_naval: input.is_naval,
-    in_progress: input.in_progress,
-    num_runs: input.num_runs,
-    verbose_level: input.verbose_level,
-    diceMode: input.diceMode,
-    sortMode: input.sortMode,
-    is_deadzone: input.is_deadzone,
-    report_complexity_only: input.report_complexity_only,
-    do_roundless_eval: input.do_roundless_eval,
-    territory_value: input.territory_value,
-    retreat_round_zero: input.retreat_round_zero,
-  };
-  complexityInput.report_complexity_only = true; // only report complexity
-  const output = multiwaveExternal(complexityInput);
-  return output.complexity;
-}
-
 export function getInternalInput(input: MultiwaveInput): multiwave_input {
   const wavearr: wave_input[] = [];
   const do_roundless_eval = input.do_roundless_eval ?? true;
@@ -488,7 +464,6 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     is_naval: input.is_naval,
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
-    report_complexity_only: input.report_complexity_only ?? false, // default to false if not provided
     do_roundless_eval: do_roundless_eval,
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     retreat_round_zero: input.retreat_round_zero ?? true, // default to true if not provided

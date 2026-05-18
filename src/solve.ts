@@ -47,7 +47,6 @@ export interface GeneralProblemConfig {
   diceMode?: DiceMode;
   sortMode?: SortMode;
   is_deadzone?: boolean;
-  skip_compute?: boolean;
   territory_value?: number;
   ev_is_deadzone?: boolean;
   ev_territory_value?: number;
@@ -77,7 +76,7 @@ export class general_problem {
   is_deadzone: boolean = false; // deadzone attack
   ev_is_deadzone?: boolean; // per-wave override for retreat EV only
   ev_territory_value?: number; // per-wave override for retreat EV only
-  skip_compute: boolean = false; // skip compute, used for complexity calculations.
+
   territory_value: number = 0; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero: boolean = true; // allow retreat round 0.   default is true
   do_roundless_eval: boolean = false; // do roundless evaluation
@@ -243,7 +242,6 @@ export class general_problem {
       is_deadzone = false,
       ev_is_deadzone,
       ev_territory_value,
-      skip_compute = false,
       territory_value = 0,
       retreat_round_zero = true,
       do_roundless_eval = false,
@@ -271,7 +269,6 @@ export class general_problem {
     this.retreat_lose_air_probability = retreat_lose_air_probability;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
-    this.skip_compute = skip_compute;
     this.is_deadzone = is_deadzone;
     this.ev_is_deadzone = ev_is_deadzone;
     this.ev_territory_value = ev_territory_value;
@@ -361,7 +358,6 @@ export class general_problem {
           diceMode: this.diceMode,
           sortMode: this.sortMode,
           is_deadzone: this.is_deadzone,
-          skip_compute: this.skip_compute,
           territory_value: this.territory_value,
           retreat_round_zero: this.retreat_round_zero,
           do_roundless_eval: this.do_roundless_eval,

@@ -42,7 +42,7 @@ export function multiwaveMultiEval(input: multieval_input): multieval_output {
   let out: multi_eval_output = { result: [] };
 
   for (let i = 0; i < input.wave_info.length; i++) {
-    umarr.push(new unit_manager(input.verbose_level, input.report_complexity_only));
+    umarr.push(new unit_manager(input.verbose_level));
     const um = umarr[i];
     const wave = input.wave_info[i];
 

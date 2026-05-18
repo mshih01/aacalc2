@@ -2,7 +2,6 @@ import {
   type MultiwaveInput,
   type MultiwaveOutput,
   multiwaveExternal,
-  multiwaveComplexity,
   multiwaveComplexityFastV2,
   sbrExternal,
   type SbrInput,
@@ -193,16 +192,8 @@ let precision = 3;
 // console.profile('multiwaveExternal');
 for (let i = 0; i < inputSettings.length; i++) {
   let [setting, fileindex] = inputSettings[i];
-  let [
-    description,
-    retreat,
-    round,
-    strafe,
-    is_deadzone,
-    territory_value,
-    do_roundless_eval,
-    report_complexity_only,
-  ] = setting;
+  let [description, retreat, round, strafe, is_deadzone, territory_value, do_roundless_eval] =
+    setting;
 
   const input2: MultiwaveInput = {
     wave_info: [
@@ -349,7 +340,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -707,7 +698,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+    
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -764,7 +755,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -885,7 +876,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -971,7 +962,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost', // 'unit_count' or 'ipc_loss'
     is_deadzone: is_deadzone, // optional, default is false
-    report_complexity_only: report_complexity_only,
+
     territory_value: territory_value, // optional, default is 0
     do_roundless_eval: do_roundless_eval, // optional, default is false
   };
@@ -1094,7 +1085,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost',
     is_deadzone: is_deadzone,
-    report_complexity_only: report_complexity_only,
+    
     territory_value: territory_value,
     do_roundless_eval: do_roundless_eval,
   };
@@ -1148,7 +1139,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     diceMode: 'standard',
     sortMode: 'ipc_cost',
     is_deadzone: is_deadzone,
-    report_complexity_only: report_complexity_only,
+
     territory_value: 6,
     do_roundless_eval: do_roundless_eval,
     retreat_round_zero: true,
@@ -1169,43 +1160,29 @@ for (let i = 0; i < inputSettings.length; i++) {
 
   let myinput = inputs[fileindex];
 
-  if (myinput.report_complexity_only) {
-    console.log(fileindex);
-    console.log(myinput);
-    console.time(description);
-    let complexity = multiwaveComplexity(myinput);
-    console.log(complexity, 'multiwaveComplexity');
-    console.timeEnd(description);
+  let t0 = performance.now();
+  console.time(description);
+  let output = multiwaveExternal(myinput);
+  let t1 = performance.now() - t0;
+  console.timeEnd(description);
+  console.log(JSON.stringify(myinput, null, 4));
 
-    console.time(description);
-    complexity = multiwaveComplexityFastV2(myinput);
-    console.log(complexity, 'multiwaveComplexityFastV2');
-    console.timeEnd(description);
-  } else {
-    let t0 = performance.now();
-    console.time(description);
-    let output = multiwaveExternal(myinput);
-    let t1 = performance.now() - t0;
-    console.timeEnd(description);
-    console.log(JSON.stringify(myinput, null, 4));
+  attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
+  defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
 
-    attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
-    defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
+  console.log(output, description);
 
-    console.log(output, description);
+  let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
 
-    let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-
-    let o = [
-      profit.toFixed(precision),
-      output.defense.ipcLoss[0].toFixed(precision),
-      output.attack.ipcLoss[0].toFixed(precision),
-      output.takesTerritory[0].toFixed(precision),
-      t1.toFixed(precision),
-      description,
-    ];
-    out.push(o);
-  }
+  let o = [
+    profit.toFixed(precision),
+    output.defense.ipcLoss[0].toFixed(precision),
+    output.attack.ipcLoss[0].toFixed(precision),
+    output.takesTerritory[0].toFixed(precision),
+    t1.toFixed(precision),
+    description,
+  ];
+  out.push(o);
 }
 
 let padding = 10;

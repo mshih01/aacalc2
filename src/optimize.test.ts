@@ -1,7 +1,6 @@
 import {
   type MultiwaveInput,
   multiwaveExternal,
-  multiwaveComplexity,
   multiwaveComplexityFastV2,
   armyRecommend,
   type SolveType,

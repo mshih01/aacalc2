@@ -25,7 +25,6 @@ export interface multiwave_input {
   retreat_round_zero: boolean;
   num_runs: number;
   verbose_level: number;
-  report_complexity_only: boolean;
   experimentalConvolution?: boolean;
 }
 
@@ -66,7 +65,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
   for (let runs = 0; runs < input.num_runs; runs++) {
     for (let i = 0; i < input.wave_info.length; i++) {
-      umarr.push(new unit_manager(input.verbose_level, input.report_complexity_only));
+      umarr.push(new unit_manager(input.verbose_level));
       const um = umarr[i];
       const wave = input.wave_info[i];
 
@@ -74,11 +73,9 @@ export function multiwave(input: multiwave_input): multiwave_output {
       defend_add_reinforce = undefined;
       let defenders_internal;
       if (i > 0) {
-        const defend_dist = input.report_complexity_only
-          ? get_defender_distribution(probArr[i - 1])
-          : wave.use_attackers_from_previous_wave
-            ? output[i - 1].att_cas
-            : output[i - 1].def_cas;
+        const defend_dist = wave.use_attackers_from_previous_wave
+          ? output[i - 1].att_cas
+          : output[i - 1].def_cas;
         const def_token = preparse_token(wave.defender);
         defend_add_reinforce = [];
         for (let j = 0; j < defend_dist.length; j++) {
@@ -180,9 +177,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
           'complexity',
         );
       }
-      if (input.report_complexity_only) {
-        continue;
-      }
       const myprob = probArr[i];
       myprob.set_prune_threshold(
         input.prune_threshold,
@@ -229,32 +223,6 @@ export function multiwave(input: multiwave_input): multiwave_output {
     }
   }
 
-  if (input.report_complexity_only) {
-    const out2: aacalc_output = {
-      attack: {
-        survives: [0],
-        ipcLoss: [0],
-        incrementalLoss: [0],
-      },
-      defense: {
-        survives: [0],
-        ipcLoss: [0],
-        incrementalLoss: [0],
-      },
-      casualtiesInfo: [],
-      att_cas: [],
-      def_cas: [],
-      profitDistribution: {},
-      rounds: -1,
-      takesTerritory: [0],
-    };
-    const out: multiwave_output = {
-      out: out2,
-      output: [out2],
-      complexity: complexity,
-    };
-    return out;
-  }
   const attsurvive: number[] = [];
   const defsurvive: number[] = [];
   const attipc: number[] = [];

@@ -45,8 +45,7 @@ export class unit_manager {
   rev_map3: Map<UnitIdentifier, string>;
   unit_group_manager: unit_group_manager;
   verbose_level: number;
-  skip_compute: boolean = false;
-  constructor(verbose_level: number, skip_compute: boolean = false) {
+  constructor(verbose_level: number) {
     this.unit_stats = new Map();
     this.rev_map = new Map();
     this.rev_map2 = new Map();
@@ -54,7 +53,6 @@ export class unit_manager {
     this.init_units();
     this.unit_group_manager = new unit_group_manager();
     this.verbose_level = verbose_level;
-    this.skip_compute = skip_compute;
   }
   init_units() {
     this.make_unit('', 'e', 'c', 0, 0, 5, 1, false, false, false, false, true, false, false);
@@ -1191,11 +1189,7 @@ export function make_unit_group(
   attdef: number,
   diceMode: DiceMode,
 ): unit_group {
-  if (um.skip_compute) {
-    return um.unit_group_manager.get_or_create_unit_group(um, '', attdef, diceMode);
-  } else {
-    return um.unit_group_manager.get_or_create_unit_group(um, input_str, attdef, diceMode);
-  }
+  return um.unit_group_manager.get_or_create_unit_group(um, input_str, attdef, diceMode);
 }
 
 export function buildAAGroup(um: unit_manager, numShots: number, diceMode: DiceMode): unit_group {

@@ -1,9 +1,4 @@
-import {
-  type MultiwaveInput,
-  multiwaveExternal,
-  multiwaveComplexity,
-  multiwaveComplexityFastV2,
-} from '../index.js';
+import { type MultiwaveInput, multiwaveExternal, multiwaveComplexityFastV2 } from '../index.js';
 
 const verbose = 0;
 
@@ -79,16 +74,8 @@ const precision = 3;
 
 for (let index = 0; index < 5; index++) {
   for (const setting of settings) {
-    const [
-      description,
-      retreat,
-      round,
-      strafe,
-      is_deadzone,
-      territory_value,
-      do_roundless_eval,
-      report_complexity_only,
-    ] = setting;
+    const [description, retreat, round, strafe, is_deadzone, territory_value, do_roundless_eval] =
+      setting;
 
     const input: MultiwaveInput = {
       ...battleInput,
@@ -103,39 +90,26 @@ for (let index = 0; index < 5; index++) {
       is_deadzone,
       territory_value,
       do_roundless_eval,
-      report_complexity_only,
     };
 
-    if (report_complexity_only) {
-      console.time(description);
-      const c1 = multiwaveComplexity(input);
-      console.timeEnd(description);
+    const t0 = performance.now();
+    const output = multiwaveExternal(input);
+    const t1 = performance.now() - t0;
 
-      console.time(description);
-      const c2 = multiwaveComplexityFastV2(input);
-      console.timeEnd(description);
+    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
 
-      console.log(`complexity: ${c1}  fast: ${c2}`);
-    } else {
-      const t0 = performance.now();
-      const output = multiwaveExternal(input);
-      const t1 = performance.now() - t0;
+    console.log(
+      `${description}: profit=${profit.toFixed(precision)}  def_loss=${output.defense.ipcLoss[0].toFixed(precision)}  att_loss=${output.attack.ipcLoss[0].toFixed(precision)}  takes=${output.takesTerritory[0].toFixed(precision)}  runtime=${t1.toFixed(precision)}ms`,
+    );
 
-      const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-
-      console.log(
-        `${description}: profit=${profit.toFixed(precision)}  def_loss=${output.defense.ipcLoss[0].toFixed(precision)}  att_loss=${output.attack.ipcLoss[0].toFixed(precision)}  takes=${output.takesTerritory[0].toFixed(precision)}  runtime=${t1.toFixed(precision)}ms`,
-      );
-
-      results.push([
-        profit.toFixed(precision),
-        output.defense.ipcLoss[0].toFixed(precision),
-        output.attack.ipcLoss[0].toFixed(precision),
-        output.takesTerritory[0].toFixed(precision),
-        t1.toFixed(precision),
-        description,
-      ]);
-    }
+    results.push([
+      profit.toFixed(precision),
+      output.defense.ipcLoss[0].toFixed(precision),
+      output.attack.ipcLoss[0].toFixed(precision),
+      output.takesTerritory[0].toFixed(precision),
+      t1.toFixed(precision),
+      description,
+    ]);
   }
 }
 

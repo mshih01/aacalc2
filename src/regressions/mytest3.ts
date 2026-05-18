@@ -2,7 +2,6 @@ import {
   type MultiwaveInput,
   type MultiwaveOutput,
   multiwaveExternal,
-  multiwaveComplexity,
   multiwaveComplexityFastV2,
   sbrExternal,
   type SbrInput,
@@ -384,7 +383,7 @@ for (let i = 0; i < inputSettings.length; i++) {
     is_deadzone,
     territory_value,
     do_roundless_eval,
-    report_complexity_only,
+    ,
     retreat_lose_air_probability,
   ] = setting;
 
@@ -1123,50 +1122,36 @@ for (let i = 0; i < inputSettings.length; i++) {
 
   let myinput = inputs[fileindex];
 
-  if (myinput.report_complexity_only) {
-    console.log(fileindex);
-    console.log(myinput);
-    console.time(description);
-    let complexity = multiwaveComplexity(myinput);
-    console.log(complexity, 'multiwaveComplexity');
-    console.timeEnd(description);
+  let t0 = performance.now();
+  console.time(description);
 
-    console.time(description);
-    complexity = multiwaveComplexityFastV2(myinput);
-    console.log(complexity, 'multiwaveComplexityFastV2');
-    console.timeEnd(description);
-  } else {
-    let t0 = performance.now();
-    console.time(description);
+  let testName = 'test' + testIndex;
+  let inputName = 'input/' + testName;
+  let outputName = 'output/' + testName;
 
-    let testName = 'test' + testIndex;
-    let inputName = 'input/' + testName;
-    let outputName = 'output/' + testName;
+  const output = multiwaveExternal(myinput);
+  let t1 = performance.now() - t0;
+  console.timeEnd(description);
+  console.log(JSON.stringify(myinput));
 
-    const output = multiwaveExternal(myinput);
-    let t1 = performance.now() - t0;
-    console.timeEnd(description);
-    console.log(JSON.stringify(myinput));
+  testIndex++;
 
-    testIndex++;
+  attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
+  defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
 
-    attackerString = JSON.stringify(myinput.wave_info[0].attack.units);
-    defenderString = JSON.stringify(myinput.wave_info[0].defense.units);
+  console.log(output, description);
 
-    console.log(output, description);
+  let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
 
-    let profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-
-    let o = [
-      profit.toFixed(precision),
-      output.defense.ipcLoss[0].toFixed(precision),
-      output.attack.ipcLoss[0].toFixed(precision),
-      output.takesTerritory[0].toFixed(precision),
-      t1.toFixed(precision),
-      description + ' ' + fileindex.toFixed(0),
-    ];
-    out.push(o);
-  }
+  let o = [
+    profit.toFixed(precision),
+    output.defense.ipcLoss[0].toFixed(precision),
+    output.attack.ipcLoss[0].toFixed(precision),
+    output.takesTerritory[0].toFixed(precision),
+    t1.toFixed(precision),
+    description + ' ' + fileindex.toFixed(0),
+  ];
+  out.push(o);
 }
 
 let padding = 10;
