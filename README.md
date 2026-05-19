@@ -7,19 +7,19 @@
 
 Axis and Allies odds calculator with advanced features.
 - math based probability computation
-	- generally faster than aa1942calc for most battles, and more accurate.
-- basic capabilites
+	- generally faster and more accurate than aa1942calc for most battles.
+- basic capabilities
     - land / sea battles with sub/destroyer/air rules.
     - aa guns, shore bombardments
     - custom order of loss
 - advanced features inspired by popovitsj's aa1942calc.com.
     - multiwave calculation
-    - amphibious assaults with planned retreat (e.g. 1 or 2 rounds battle -- and then retreat non-amphibious units)
+    - amphibious assaults with planned retreat (e.g. fight 1 or 2 rounds, then retreat non-amphibious units)
     - standard - biased - lowluck dice
     - strategic bombing analysis.
 - new features enabled by the math based approach.
-    - retreat if the exepcted profit is too low.
-        - consider the territory is a deadzone
+    - retreat if the expected profit is too low.
+        - treat the territory as a dead zone
         - consider the territory value for the EV analysis.
     - retreat if the probability of winning is too low (takes / kills)
     - retreat if the probability of losing air is too high
@@ -30,12 +30,12 @@ Axis and Allies odds calculator with advanced features.
 				- recommend a subset of the defending army that meets target percentage to defend.
 				- recommend a subset of the attacking army that meets target percentage to win. 
 		- maximum ipc profit.
-			- Given an attacking army, defending army.  set the retreat mode to expected profit mode.  set the territory to is_deadzone
+			- Given an attacking army and defending army, set the retreat mode to expected profit mode and the territory to is_deadzone.
 				- recommend the army that maximizes expected profit.  With EV retreat, and is_deadzone, army smaller than maximum army size may be optimal
 
 ## Future work:
 
-- The current cost reporting and EV based analysis is based IPC cost of units.  
+- The current cost reporting and EV-based analysis is based on IPC cost of units.  
     - This could be generalized to any arbitrary cost function (user input -- or custom preset)
         - For example a cost function that emphasizes unit count. 
         - Or one that mirrors attack power.
@@ -43,7 +43,7 @@ Axis and Allies odds calculator with advanced features.
         - Or a cost function which gives extra weight for losing air 
             - (e.g. a russian/german fighter worth more than others)
 
-- Take and hold analysis... In multiwave -- switch sides in between waves to model takes and hold.
+- Take-and-hold analysis: switch sides between waves in multiwave to model taking and holding a territory.
 
 - Army recommendation.   
     - Multi-territory defense analysis: (For VC win analysis)
@@ -116,7 +116,7 @@ From a very high level -- the calculator is super simple code.
 The original prototype in C was the following two loops:
 
 ```
-// initilal state probability
+// initial state probability
 //P[N][M] = 1.0;
 //P[i][j] = 0.0 for all other i, j;
 
@@ -129,7 +129,7 @@ for (i = N; i > 0; i--) {
 
 // solve one state.
 void solve_one_state(problem, n, m) {
-    if (n == 0 && m == 0) {G
+    if (n == 0 && m == 0) {
         return;
     }
     double P0 = Pa[n][0] * Pd[m][0];
@@ -137,10 +137,10 @@ void solve_one_state(problem, n, m) {
     double prob;
     int i,j;
     int new_i, new_j;
-        /*  i att hits, j def hits /
+        /*  i att hits, j def hits */
     for (i = 0; i <= n;i++) {
         for (j = 0; j <= M; j++) {
-            prob = Pa[n][i] Pd[m][j] * r * p_init;
+            prob = Pa[n][i] * Pd[m][j] * r * p_init;
             new_i = n-j;
             new_j = m-i;
             if (new_i < 0) new_i = 0;
@@ -155,20 +155,20 @@ void solve_one_state(problem, n, m) {
 This simple code will solve any battle of N attackers vs. M defenders with fixed order
 of losses (no special units like subs, AA's, bombardments).
 
-Pa[i][j] is the probability that i attacking units gets j hits.
-Pd[i][j] is the probability that i defending units gets j hits.
+Pa[i][j] is the probability that i attacking units get j hits.
+Pd[i][j] is the probability that i defending units get j hits.
 
 P[i][j] is the probability that we are "currently" in the state i attackers vs. j defenders.
 
-It is initialized to P[N][M] = 1.0... and rest zeros
+It is initialized to P[N][M] = 1.0, and the rest are zero.
 
-At the end of computation, P[i][j] are the final terminal proabilities.
+At the end of computation, P[i][j] are the final terminal probabilities.
 - P[i][0] is the probability of i attackers vs. 0 defenders.
 - P[0][j] is the probability of 0 attackers vs j defenders.
-- all other entries will be zero'd
+- all other entries will be zeroed
 
-When solve_one_state (i, j) is called... every possible parent state which could lead to this state
-has already previously been solved.   So P[i][j] at this point is the total probability that we 
+When solve_one_state(i, j) is called, every possible parent state that could lead to this state
+has already been solved.   So P[i][j] at this point is the total probability that we 
 could reach this state from all parent paths.   After solve_one_state is complete... The value of 
 the state is either 0 or the final probability that we end in this state.
 
@@ -190,13 +190,12 @@ the state is either 0 or the final probability that we end in this state.
         - compute Pwin for all sub-problem states.
         - enhance the roundless evaluation to bookkeep and maintain expected number of rounds.
 
-    - However, javascript performance issues with high frequency callbacks lead me to duplicate this function. (solveone*.ts).   It seems like when a single callback function is used, the node engine is able to inline the callbacks.  But when callback functions are mixed -- there's high overehead (2X or more).
+    - However, JavaScript performance issues with high-frequency callbacks led me to duplicate this function (solveone*.ts). When a single callback is used, V8 is able to inline it. But when callbacks are mixed, there is high overhead (2x or more).
     - The duplication is maintained by a shell script.   It's not ideal... and if anyone knows of a better solution please let me know.
 
 - unitgroup.ts -- compute_remove_hits(), general_unit_graph_node
-    - compute_remove_hits allows random order of losses.  (AA guns, subs/plane/destroyer relations, multiwave)
-        - From an initial set of states (multiple initial states may be possible due to multiwave).
-            - compute all possible casualty next states (as well as any other need to transition to a different state).
+    - compute_remove_hits() handles random order of losses (AA guns, subs/planes/destroyers, multiwave transitions)
+        - From an initial set of states (multiple initial states may be possible due to multiwave), compute all possible casualty next states and any other state transitions.
     - general_unit_graph_node
         - From any state -- reach any casualty state with a single table lookup dereference.
             - e.g.  remove 5 sub hits.   remove 8 plane hits.    remove 10 naval hits.
@@ -213,4 +212,4 @@ the state is either 0 or the final probability that we end in this state.
 
 - multieval.ts -- multi-eval.  solve multiple armies at one time to take advantage of subproblem reuse.
 		It leads to 10X runtime improvement -- but also large memory overhead.  
-		Curerntly abandoned -- approach in optimize.ts is used instead.
+		Currently abandoned -- approach in optimize.ts is used instead.
