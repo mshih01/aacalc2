@@ -4,7 +4,7 @@ interface CasualtyEntry {
   amount: number
   ipcLoss: number
   survivors: string
-  retreaters?: string
+  retreaters: string
   casualties: string
 }
 
@@ -33,9 +33,7 @@ export function DetailedCasualties({ side, waveIndex, casualtiesData, decimalPla
           <th>Confidence %</th>
           <th>Reverse Confidence %</th>
           <th>Surviving</th>
-          {side === 'attack' && (
-            <th>Retreating</th>
-          )}
+          <th>Retreating</th>
           <th>Casualties</th>
           <th>IPC</th>
         </tr>
@@ -69,9 +67,7 @@ export function DetailedCasualties({ side, waveIndex, casualtiesData, decimalPla
               <td>{cumulativeProb.toFixed(decimalPlaces)}%</td>
               <td>{reverseProb.toFixed(decimalPlaces)}%</td>
               <td>{info.survivors}</td>
-              {side === 'attack' && (
-                <td>{info.retreaters}</td>
-              )}
+              <td>{info.retreaters}</td>
               <td>{info.casualties}</td>
               <td style={{ color: '#d32f2f', fontWeight: 500 }}>
                 {info.ipcLoss.toFixed(1)} {percentile && `📊 ${percentile}%`}
