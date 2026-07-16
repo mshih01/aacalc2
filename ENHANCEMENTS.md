@@ -39,7 +39,6 @@ export interface MultiwaveInput {
   // e.g. inf ==> additional IPC cost 2
   // e.g. art ==> additional IPC cost 3
   // e.g. arm ==> additional IPC cost 4.5
-  report_complexity_only?: boolean; // if true, only report complexity and no other results.
   do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.

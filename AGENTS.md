@@ -60,3 +60,17 @@ Internally units are single-character codes (`i`=inf, `a`=art, `f`=fig, `b`=bom,
 ## experimentalConvolution
 
 Checkbox in Advanced Options. When enabled, replaces `profitDistribution` for waves > 0 by convolving the final (defender-cumulative) profit distribution with the initial (defender prior) profit distribution under the independence assumption. Corrects defender side from cumulative to incremental. Only affects multiwave battles with 2+ waves. Flag is `experimentalConvolution` on `MultiwaveInput` / `multiwave_input`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues on `mshih01/aacalc2`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Uses the default canonical labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Multi-context repo — root library + frontend app. See `docs/agents/domain.md`.
