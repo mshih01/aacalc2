@@ -138,7 +138,9 @@ export interface WaveInput {
   retreat_lose_air_probability?: number; // retreat if the probability of losing air exceeds threshold.  default is 1.0
   // incompatible with is_naval
   use_attackers_from_previous_wave?: boolean; // by default, the surviving defenders from the previous wave fight in the current wave.
-  // when this option is true -- the surviving attackers from the previous wave fight in the current wave instead.  this is for simulating capture and hold.
+  // when this option is true -- the surviving attackers from the previous wave fight in the current wave instead.
+  // land: surviving land attackers defend (air return to base).
+  // naval: all surviving attackers defend (crash_fighters still applies for air/carrier mismatch).
   ev_deadzone?: boolean; // overrides top-level is_deadzone for retreat EV only
   ev_territory_value?: number; // overrides top-level territory_value for retreat EV only
 }
@@ -592,6 +594,7 @@ function buildCumulativeCasualtiesInfo(
   swapArr: number[],
   verboseLevel: number,
   reportPruneThreshold: number,
+  isNaval: boolean,
 ): CasualtiesInfo {
   const att: Record<string, CasualtyInfo> = {};
   const def: Record<string, CasualtyInfo> = {};
@@ -745,8 +748,8 @@ function buildCumulativeCasualtiesInfo(
           ipcLoss: ipc,
           prob: cas.prob,
         };
-        if (nextSwapped) {
-          // Swap transition: split land from air
+        if (nextSwapped && !isNaval) {
+          // Swap transition: split land from air (land-only; naval keeps all units)
           const { air: casAir } = splitAirLand(um, cas.casualty);
           const { air: remainAir } = splitAirLand(um, cas.remain);
           const { air: retreatAir } = splitAirLand(um, cas.retreat);
@@ -876,6 +879,7 @@ export function multiwaveExternal(input: MultiwaveInput): MultiwaveOutput {
     swapArr,
     input.verbose_level,
     input.report_prune_threshold,
+    input.is_naval,
   );
   if (input.verbose_level > 1) {
     console.log('casualties computation runtime:', (performance.now() - t0_cas).toFixed(2), 'ms');

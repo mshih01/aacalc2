@@ -606,6 +606,16 @@ export function hasAmphibious(um: unit_manager, input: string): boolean {
   }
   return false;
 }
+export function hasNaval(um: unit_manager, input: string): boolean {
+  for (let i = input.length - 1; i >= 0; i--) {
+    const ch = input.charAt(i);
+    const stat = um.get_stat(ch);
+    if (!stat.isLand && !stat.isAir && !stat.isAA) {
+      return true;
+    }
+  }
+  return false;
+}
 
 export function hasNonAAUnit(um: unit_manager, input: string): boolean {
   for (let i = input.length - 1; i >= 0; i--) {

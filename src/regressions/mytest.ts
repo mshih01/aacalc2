@@ -8,7 +8,7 @@ import {
 } from '../index.js';
 
 let out = [];
-let verbose = 4; // 0, 1, 2, 3
+let verbose = 0; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -181,7 +181,7 @@ for (let i = 0; i < 1; i++) {
 inputSettings = [];
 //inputSettings.push([inputSettings4[5], 8]);
 inputSettings.push([inputSettings4[5], 9]);
-inputSettings.push([['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], 9]);
+//inputSettings.push([['strafe 0 roundless', undefined, 0, 0.05, false, 0, true, false], 9]);
 
 console.log(process.memoryUsage());
 
@@ -708,13 +708,13 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            sub: 60,
-            des: 10,
-            cru: 1,
-            acc: 5,
-            fig: 50,
-            bom: 1,
-            bat: 2,
+            sub: 1,
+            des: 1,
+            cru: 0,
+            acc: 1,
+            fig: 2,
+            bom: 0,
+            bat: 0,
           },
           ool: ['acc', 'sub', 'des', 'fig', 'cru', 'bom', 'bat'],
           takes: 0,
@@ -722,13 +722,13 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            sub: 40,
-            des: 5,
-            cru: 1,
-            acc: 15,
-            fig: 30,
-            bat: 1,
-            tra: 5,
+            sub: 0,
+            des: 1,
+            cru: 0,
+            acc: 0,
+            fig: 0,
+            bat: 0,
+            tra: 0,
           },
           ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
           takes: 0,
@@ -741,8 +741,48 @@ for (let i = 0; i < inputSettings.length; i++) {
         is_crash_fighters: false,
         rounds: round,
         retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: retreat, // optional
+        retreat_expected_ipc_profit_threshold: undefined, // optional
         retreat_strafe_threshold: strafe, // optional
+      },
+      {
+        attack: {
+          units: {
+            sub: 1,
+            des: 1,
+            cru: 0,
+            acc: 1,
+            fig: 2,
+            bom: 0,
+            bat: 0,
+          },
+          ool: ['acc', 'sub', 'des', 'fig', 'cru', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: {
+            sub: 0,
+            des: 0,
+            cru: 0,
+            acc: 0,
+            fig: 0,
+            bat: 0,
+            tra: 0,
+          },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: round,
+        retreat_threshold: 0,
+        retreat_expected_ipc_profit_threshold: undefined, // optional
+        retreat_strafe_threshold: strafe, // optional
+        use_attackers_from_previous_wave: true, // optional, default is false
       },
     ],
     debug: false,
@@ -1095,11 +1135,14 @@ for (let i = 0; i < inputSettings.length; i++) {
       {
         attack: {
           units: {
-            inf_a: 2,
-            art_a: 1,
-            arm_a: 1,
-            fig: 1,
-            bom: 1,
+            inf_a: 0,
+            art_a: 0,
+            arm_a: 0,
+            inf: 20,
+            art: 20,
+            arm: 0,
+            fig: 0,
+            bom: 0,
           },
           ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig', 'bom'],
           takes: 0,
@@ -1107,11 +1150,11 @@ for (let i = 0; i < inputSettings.length; i++) {
         },
         defense: {
           units: {
-            inf: 4,
-            art: 2,
+            inf: 20,
+            art: 20,
             arm: 0,
             fig: 0,
-            aa: 1,
+            aa: 0,
           },
           ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
           takes: 0,
@@ -1122,9 +1165,9 @@ for (let i = 0; i < inputSettings.length; i++) {
         att_dest_last: false,
         def_dest_last: false,
         is_crash_fighters: false,
-        rounds: round,
+        rounds: 100,
         retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: -1,
+        retreat_expected_ipc_profit_threshold: retreat,
         retreat_strafe_threshold: strafe,
         //retreat_lose_air_probability: 0.3,
       },
@@ -1134,13 +1177,13 @@ for (let i = 0; i < inputSettings.length; i++) {
     report_prune_threshold: 1e-12,
     is_naval: false,
     in_progress: false,
-    num_runs: 1,
+    num_runs: 2000,
     verbose_level: verbose,
     diceMode: 'standard',
     sortMode: 'ipc_cost',
     is_deadzone: is_deadzone,
 
-    territory_value: 6,
+    territory_value: 0,
     do_roundless_eval: do_roundless_eval,
     retreat_round_zero: true,
   };

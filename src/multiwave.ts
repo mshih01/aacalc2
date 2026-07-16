@@ -3,7 +3,7 @@ import { createGeneralProblem } from './problem-factory.js';
 import { collect_results, print_general_results, get_general_cost } from './output.js';
 import { get_cost_from_str, crash_fighters } from './unitgroup.js';
 import { unit_manager } from './unitgroup.js';
-import { hasLand } from './unitgroup.js';
+import { hasLand, hasNaval } from './unitgroup.js';
 
 import { preparse_token, preparse_battleship, preparse } from './preparse.js';
 
@@ -56,17 +56,22 @@ export interface wave_input {
 }
 
 export function multiwave(input: multiwave_input): multiwave_output {
-  const umarr: unit_manager[] = [];
-  const probArr: general_problem[] = [];
-  const output: aacalc_output[] = [];
-  const initIpcCost: number[] = [];
+  let umarr: unit_manager[] = [];
+  let probArr: general_problem[] = [];
+  let output: aacalc_output[] = [];
+  let initIpcCost: number[] = [];
 
   let complexity: number = 0;
 
   for (let runs = 0; runs < input.num_runs; runs++) {
+    umarr = [];
+    probArr = [];
+    output = [];
+    initIpcCost = [];
+
     for (let i = 0; i < input.wave_info.length; i++) {
-      umarr.push(new unit_manager(input.verbose_level));
-      const um = umarr[i];
+      const um = new unit_manager(input.verbose_level);
+      umarr.push(um);
       const wave = input.wave_info[i];
 
       let defend_add_reinforce: casualty_1d[] | undefined;
@@ -97,8 +102,14 @@ export function multiwave(input: multiwave_input): multiwave_output {
           } else {
             p1 = cas.prob;
             if (wave.use_attackers_from_previous_wave) {
-              if (!hasLand(um, cas.remain)) {
-                continue;
+              if (input.is_naval) {
+                if (!hasNaval(um, cas.remain)) {
+                  continue;
+                }
+              } else {
+                if (!hasLand(um, cas.remain)) {
+                  continue;
+                }
               }
             }
             //p2 = 0;
@@ -106,7 +117,9 @@ export function multiwave(input: multiwave_input): multiwave_output {
           // retreated subs fight in the second wave.
           const isAttacker = wave.use_attackers_from_previous_wave;
           const newcasstr_ool = apply_ool(
-            (isAttacker ? remove_planes(cas.remain) : cas.remain) + cas.retreat + def_token,
+            (isAttacker && !input.is_naval ? remove_planes(cas.remain) : cas.remain) +
+              cas.retreat +
+              def_token,
             wave.def_ool,
             wave.def_aalast,
           );
@@ -120,7 +133,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
             cas_retreat = retreat;
           }
 
-          const newcas = isAttacker ? remove_planes(cas.casualty) : cas.casualty;
+          const newcas = isAttacker && !input.is_naval ? remove_planes(cas.casualty) : cas.casualty;
 
           const newcasualty: casualty_1d = {
             remain: cas_remain,
@@ -159,17 +172,15 @@ export function multiwave(input: multiwave_input): multiwave_output {
           console.log(sump, 'total prob');
         }
       }
-      probArr.push(
-        createGeneralProblem(
-          input,
-          wave,
-          um,
-          attackers_internal,
-          defenders_internal,
-          defend_add_reinforce,
-        ),
+      const prob = createGeneralProblem(
+        input,
+        wave,
+        um,
+        attackers_internal,
+        defenders_internal,
+        defend_add_reinforce,
       );
-      let prob = probArr[i];
+      probArr.push(prob);
       const init_ipc_cost = defend_add_reinforce
         ? defend_add_reinforce.reduce((acc, cas) => {
             const ipcCost = get_cost_from_str(prob.um, cas.casualty, cas.retreat);
@@ -177,16 +188,16 @@ export function multiwave(input: multiwave_input): multiwave_output {
             return acc;
           }, 0)
         : 0;
-      complexity += probArr[i].get_complexity();
+      complexity += prob.get_complexity();
       if (input.verbose_level > 2) {
         console.log(
           complexity,
-          probArr[i].att_data.nodeArr.length,
-          probArr[i].def_data.nodeArr.length,
+          prob.att_data.nodeArr.length,
+          prob.def_data.nodeArr.length,
           'complexity',
         );
       }
-      const myprob = probArr[i];
+      const myprob = prob;
       myprob.set_prune_threshold(
         input.prune_threshold,
         input.prune_threshold / 10,

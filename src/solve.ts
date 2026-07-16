@@ -86,24 +86,24 @@ export class general_problem {
   verbose_level: number = 0;
 
   // average rounds related variabless
-  ERound_1d: number[] = []; // rounds of state i, j
+  ERound_1d: Float64Array = new Float64Array(0); // rounds of state i, j
   init_rounds: number = 0; // on init state -- incoming rounds.  ERound_1d[i, j] / p_init;
 
-  P_1d: number[] = []; // probability of state i, j
+  P_1d: Float64Array = new Float64Array(0); // probability of state i, j
 
   // retreat state
   is_retreat_state_initialized: boolean = false; // is retreat state initialized
   R_1d: boolean[] = []; // is i, j retreat state
 
   // EV related variables
-  E_1d: number[] = []; // expected value of state i, j
+  E_1d: Float64Array = new Float64Array(0); // expected value of state i, j
   accumulate: number = 0; // accumulated expected value
   base_attcost: number = 0;
   base_defcost: number = 0;
 
   // Pwin related variables
   pwin_acc: number = 0; // accumulated expected value
-  Pwin_1d: number[] = []; // Pwin of state i, j
+  Pwin_1d: Float64Array = new Float64Array(0); // Pwin of state i, j
 
   nonavalproblem: general_problem | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
@@ -663,7 +663,7 @@ function print_retreat_state(problem: general_problem): void {
 export function compute_expected_value(problem: general_problem): void {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
-  const E_1d = (problem.E_1d = new Array(N * M));
+  const E_1d = (problem.E_1d = new Float64Array(N * M));
   const attData = problem.att_data;
   const defData = problem.def_data;
   if (problem.retreat_expected_ipc_profit_threshold == undefined) {
@@ -817,19 +817,14 @@ export function compute_expected_value(problem: general_problem): void {
 
 // compute the Pwin with the win condition as attacker takes territory
 export function compute_prob_wins(problem: general_problem): void {
-  problem.Pwin_1d = [];
   if (problem.retreat_pwin_threshold == undefined) {
     throw new Error('retreat_pwin_threshold is required for compute_prob_wins');
   }
 
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
+  problem.Pwin_1d = new Float64Array(N * M);
   let i, j;
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < M; j++) {
-      problem.setPwin(i, j, 0.0);
-    }
-  }
   const onResult3 = (
     problem: general_problem,
     ii: number,
@@ -912,7 +907,7 @@ function do_roundless_eval(problem: general_problem, init_rounds: number): void 
     console.time('do_roundless_eval');
   }
   //problem.ERound_1d = [];
-  problem.ERound_1d = new Array(N * M);
+  problem.ERound_1d = new Float64Array(N * M);
   // initialize expected rounds for each state
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -1024,16 +1019,8 @@ export function solve_general(problem: general_problem) {
 
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
-  problem.P_1d = new Array(N * M);
-  //problem.R_1d = new Array(N * M);
-  //problem.E_1d = new Array(N * M);
-  //problem.ERound_1d = new Array(N * M);
+  problem.P_1d = new Float64Array(N * M);
   let i, j;
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < M; j++) {
-      problem.setP(i, j, 0.0);
-    }
-  }
   problem.is_retreat_state_initialized = false;
   compute_retreat_state(problem);
 
@@ -1061,15 +1048,9 @@ export function solve_general(problem: general_problem) {
   }
 
   if (problem.nonavalproblem != undefined) {
-    problem.nonavalproblem.P_1d = [];
     const N = problem.nonavalproblem.att_data.nodeArr.length;
     const M = problem.nonavalproblem.def_data.nodeArr.length;
-    let i, j;
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < M; j++) {
-        problem.nonavalproblem.setP(i, j, 0.0);
-      }
-    }
+    problem.nonavalproblem.P_1d = new Float64Array(N * M);
   }
 
   // states which are early retreated due to retreat conditions in the zero round.
@@ -1315,8 +1296,8 @@ export function solve_general(problem: general_problem) {
     if (problem.verbose_level > 2) {
       console.log(sum, 'sum');
     }
-    problem.E_1d = [];
-    problem.ERound_1d = [];
+    problem.E_1d = new Float64Array(0);
+    problem.ERound_1d = new Float64Array(0);
     problem.R_1d = [];
   }
 }

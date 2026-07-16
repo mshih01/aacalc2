@@ -127,13 +127,7 @@ export function solve_multi_eval(problem: general_problem): multi_eval_output {
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
 
-  problem.P_1d = new Array(N * M);
-  let i, j;
-  for (i = 0; i < N; i++) {
-    for (j = 0; j < M; j++) {
-      problem.setP(i, j, 0.0);
-    }
-  }
+  problem.P_1d = new Float64Array(N * M);
 
   problem.is_retreat_state_initialized = false;
   compute_retreat_state(problem);
