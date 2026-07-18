@@ -8,7 +8,7 @@ import {
 } from '../index.js';
 
 let out = [];
-let verbose = 0; // 0, 1, 2, 3
+let verbose = 3; // 0, 1, 2, 3
 
 type Setting = [
   string, // description
@@ -1138,25 +1138,26 @@ for (let i = 0; i < inputSettings.length; i++) {
             inf_a: 0,
             art_a: 0,
             arm_a: 0,
-            inf: 20,
-            art: 20,
-            arm: 0,
+            inf: 99,
+            art: 99,
+            arm: 99,
             fig: 0,
             bom: 0,
           },
-          ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig', 'bom'],
+          //ool: ['inf', 'inf_a', 'art', 'art_a', 'arm', 'arm_a', 'fig', 'bom'],
+          ool: ['arm', 'inf', 'inf_a', 'art', 'art_a', 'arm_a', 'fig', 'bom'],
           takes: 0,
           aaLast: false,
         },
         defense: {
           units: {
-            inf: 20,
-            art: 20,
-            arm: 0,
+            inf: 99,
+            art: 99,
+            arm: 99,
             fig: 0,
             aa: 0,
           },
-          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          ool: ['aa', 'arm', 'inf', 'art', 'bom', 'fig'],
           takes: 0,
           aaLast: false,
         },
@@ -1165,7 +1166,7 @@ for (let i = 0; i < inputSettings.length; i++) {
         att_dest_last: false,
         def_dest_last: false,
         is_crash_fighters: false,
-        rounds: 100,
+        rounds: -1,
         retreat_threshold: 0,
         retreat_expected_ipc_profit_threshold: retreat,
         retreat_strafe_threshold: strafe,
@@ -1173,18 +1174,18 @@ for (let i = 0; i < inputSettings.length; i++) {
       },
     ],
     debug: false,
-    prune_threshold: 1e-12,
-    report_prune_threshold: 1e-12,
+    prune_threshold: 3.5e-8,
+    report_prune_threshold: 3.5e-8,
     is_naval: false,
     in_progress: false,
-    num_runs: 2000,
+    num_runs: 1,
     verbose_level: verbose,
     diceMode: 'standard',
     sortMode: 'ipc_cost',
     is_deadzone: is_deadzone,
 
     territory_value: 0,
-    do_roundless_eval: do_roundless_eval,
+    do_roundless_eval: false,
     retreat_round_zero: true,
   };
 

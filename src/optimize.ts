@@ -37,6 +37,7 @@ export interface ArmyRecommendInput extends MultiwaveInput {
   solveType?: SolveType;
   beamWidth?: number; // number of beams for gridSearch beam search (default 3)
   granularity?: number; // grid divisions per dim for gridSearch (default 3)
+  minArmy?: Army; // minimum army to use (defaults to all zeros)
 }
 
 export interface Recommendation {
@@ -73,11 +74,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   let stepArmy: Army;
   if (attDefType == 'attacker') {
     maxArmy = input.wave_info[0].attack.units;
-    minArmy = initArmy(maxArmy, 0);
+    minArmy = input.minArmy ?? initArmy(maxArmy, 0);
     stepArmy = initArmy(maxArmy, 1);
   } else {
     maxArmy = input.wave_info[0].defense.units;
-    minArmy = initArmy(maxArmy, 0);
+    minArmy = input.minArmy ?? initArmy(maxArmy, 0);
     stepArmy = initArmy(maxArmy, 1);
   }
   const armies = getSubArmies(maxArmy, minArmy, stepArmy);
@@ -116,6 +117,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           input,
           attDefType,
           maxArmy,
+          minArmy,
           surviveThreshold,
           optimizeMode,
           numRecommendations,
@@ -416,12 +418,14 @@ function solveLinearOrGridSearch(
   input: ArmyRecommendInput,
   attDefType: AttDefType,
   maxArmy: Army,
+  minArmy: Army,
   surviveThreshold: number,
   optimizeMode: OptimizeMode,
   numRecommendations: number,
   solveType: SolveType | undefined,
 ): Recommendation[] {
   const maxUnits = maxArmy;
+  const minUnits = minArmy;
 
   const mymap: Map<string, number> = new Map();
   let callCount = 0;
@@ -469,6 +473,10 @@ function solveLinearOrGridSearch(
       if (count > max) {
         overflow += count;
       }
+      let min = minUnits[<UnitIdentifier>uid] ?? 0;
+      if (count < min) {
+        overflow += min - count;
+      }
     }
     if (overflow > 0) {
       return cost + 500 * overflow;
@@ -511,6 +519,10 @@ function solveLinearOrGridSearch(
       if (count > max) {
         overflow += count;
       }
+      let min = minUnits[<UnitIdentifier>uid] ?? 0;
+      if (count < min) {
+        overflow += min - count;
+      }
     }
     if (overflow > 0) {
       return 1000000 * overflow;
@@ -538,6 +550,15 @@ function solveLinearOrGridSearch(
   const numBat: number = maxArmy['bat'] ?? 0;
   const numAA: number = maxArmy['aa'] ?? 0;
 
+  const minInf: number = minArmy['inf'] ?? 0;
+  const minArt: number = minArmy['art'] ?? 0;
+  const minArm: number = minArmy['arm'] ?? 0;
+  const minFig: number = minArmy['fig'] ?? 0;
+  const minBom: number = minArmy['bom'] ?? 0;
+  const minCru: number = minArmy['cru'] ?? 0;
+  const minBat: number = minArmy['bat'] ?? 0;
+  const minAA: number = minArmy['aa'] ?? 0;
+
   const initial: number[] =
     attDefType == 'defender'
       ? [numInf, numArt, numArm, numFig, numBom, numAA]
@@ -545,21 +566,21 @@ function solveLinearOrGridSearch(
   const bounds: [number, number][] =
     attDefType == 'defender'
       ? [
-          [0, numInf],
-          [0, numArt],
-          [0, numArm],
-          [0, numFig],
-          [0, numBom],
-          [0, numAA],
+          [minInf, numInf],
+          [minArt, numArt],
+          [minArm, numArm],
+          [minFig, numFig],
+          [minBom, numBom],
+          [minAA, numAA],
         ]
       : [
-          [0, numInf],
-          [0, numArt],
-          [0, numArm],
-          [0, numFig],
-          [0, numBom],
-          [0, numBat],
-          [0, numCru],
+          [minInf, numInf],
+          [minArt, numArt],
+          [minArm, numArm],
+          [minFig, numFig],
+          [minBom, numBom],
+          [minBat, numBat],
+          [minCru, numCru],
         ];
 
   const objectiveFn = optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
