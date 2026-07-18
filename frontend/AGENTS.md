@@ -100,6 +100,10 @@ App.tsx (state owner)
     └── ProfitDistributionHistogram
 ```
 
+## Known gaps
+
+- **ArmyRecommendSection state not persisted.** The entire `ArmyRecommendSection` state (`config`, `minArmy`, `showMinArmy`, `results`) is component-local `useState` — it is never serialized into URL share (`encodeStateToUrl`), never saved to localStorage history, and never restored from history. If persisting this state is needed later, the fields must be added to `BattleInput` in `types.ts`, included in the `shareInput` construction in `App.tsx` (~line 606), restored in `loadFromHistoryInput` (~line 436), and passed as props to `ArmyRecommendSection`.
+
 ## Key types
 
 All shared types live in `types.ts`:

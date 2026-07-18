@@ -238,7 +238,7 @@ if (true) {
     test('minArmy constraint ' + testName, () => {
       for (const rec of output.recommendations) {
         for (const [uid, minCount] of Object.entries(minArmy)) {
-          expect((rec.army[uid as UnitIdentifier] ?? 0)).toBeGreaterThanOrEqual(minCount);
+          expect(rec.army[uid as UnitIdentifier] ?? 0).toBeGreaterThanOrEqual(minCount);
         }
       }
     });

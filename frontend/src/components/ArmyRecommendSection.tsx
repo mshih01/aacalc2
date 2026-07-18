@@ -34,11 +34,15 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
   const [results, setResults] = useState<Recommendation[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>('')
+  const [showMinArmy, setShowMinArmy] = useState(false)
+  const [minArmy, setMinArmy] = useState<Record<string, number>>({})
 
   // Clear results when config or battleInput changes
   useEffect(() => {
     setResults([])
     setError('')
+    setMinArmy({})
+    setShowMinArmy(false)
   }, [config, battleInput])
 
   const handleRecommend = async () => {
@@ -97,6 +101,7 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
         numRecommendations: config.numRecommendations,
         targetPercentage: config.targetPercentage,
         solveType: config.optimizeMode === 'maxProfit' ? 'gridSearch' : 'fuzzyBinarySearch',
+        minArmy: showMinArmy ? minArmy : undefined,
       } as ArmyRecommendInput
 
       const armyRecommendResult = armyRecommend(armyRecommendInput)
@@ -196,6 +201,61 @@ export function ArmyRecommendSection({ battleInput, waveIdx = 0, onRecommendatio
           <label>PWin Mode</label>
         </div>
       </div>
+
+      {/* Minimum Army Toggle */}
+      <div style={{ marginBottom: '10px' }}>
+        <label style={{ cursor: 'pointer', fontSize: '13px', userSelect: 'none' }}>
+          <input
+            type="checkbox"
+            checked={showMinArmy}
+            onChange={(e) => {
+              setShowMinArmy(e.target.checked)
+              if (!e.target.checked) setMinArmy({})
+            }}
+            style={{ marginRight: '6px' }}
+          />
+          Set Minimum Army
+        </label>
+      </div>
+
+      {showMinArmy && (() => {
+        const maxUnits = config.attDefType === 'attacker'
+          ? (battleInput.attack[waveIdx] || {})
+          : (battleInput.defense[waveIdx] || {})
+        const unitKeys = Object.keys(maxUnits).filter(k => (maxUnits[k] ?? 0) > 0)
+        if (unitKeys.length === 0) return null
+        return (
+          <div style={{ marginBottom: '15px', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#fafafa' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: '#555' }}>
+              Minimum Army ({config.attDefType === 'attacker' ? 'Attacker' : 'Defender'} units)
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '8px' }}>
+              {unitKeys.map((uid) => {
+                const maxVal = maxUnits[uid] ?? 0
+                const minVal = minArmy[uid] ?? 0
+                const clampedVal = Math.min(minVal, maxVal)
+                return (
+                  <div key={uid} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: '#666', marginBottom: '2px' }}>{uid.toUpperCase()}</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={maxVal}
+                      step={1}
+                      value={clampedVal}
+                      onChange={(e) => {
+                        const v = Math.max(0, Math.min(maxVal, Number(e.target.value) || 0))
+                        setMinArmy(prev => ({ ...prev, [uid]: v }))
+                      }}
+                      style={{ width: '100%', textAlign: 'center', padding: '4px', fontSize: '13px' }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Recommend Button */}
       <button
