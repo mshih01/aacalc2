@@ -48,39 +48,39 @@ exports[`Regression test for \${testName} 2`] = `
   "recommendations": [
     {
       "army": {
-        "arm": 5,
-        "art": 5,
+        "arm": 0,
+        "art": 2,
         "bat": 0,
-        "bom": 0,
+        "bom": 3,
         "cru": 0,
-        "fig": 0,
-        "inf": 16,
+        "fig": 3,
+        "inf": 8,
       },
-      "cost": 10.14459399321177,
+      "cost": 12.93361544362746,
     },
     {
       "army": {
-        "arm": 5,
-        "art": 5,
+        "arm": 0,
+        "art": 2,
         "bat": 0,
-        "bom": 0,
+        "bom": 3,
         "cru": 0,
-        "fig": 0,
-        "inf": 15,
+        "fig": 3,
+        "inf": 9,
       },
-      "cost": 10.12578306130016,
+      "cost": 12.67702404677029,
     },
     {
       "army": {
-        "arm": 5,
-        "art": 5,
+        "arm": 0,
+        "art": 3,
         "bat": 0,
-        "bom": 0,
+        "bom": 3,
         "cru": 0,
-        "fig": 0,
-        "inf": 17,
+        "fig": 3,
+        "inf": 8,
       },
-      "cost": 10.09525869390980,
+      "cost": 12.62720243363049,
     },
   ],
 }
@@ -201,13 +201,13 @@ exports[`Regression test for \${testName} 5`] = `
     },
     {
       "army": {
-        "arm": 2,
+        "arm": 1,
         "art": 5,
         "bat": 0,
         "bom": 0,
         "cru": 0,
         "fig": 0,
-        "inf": 7,
+        "inf": 9,
       },
       "cost": 53,
     },
@@ -218,6 +218,18 @@ exports[`Regression test for \${testName} 5`] = `
 exports[`Regression test for \${testName} 6`] = `
 {
   "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
     {
       "army": {
         "arm": 0,
@@ -232,27 +244,15 @@ exports[`Regression test for \${testName} 6`] = `
     },
     {
       "army": {
-        "arm": 0,
+        "arm": 2,
         "art": 5,
         "bat": 0,
         "bom": 0,
         "cru": 0,
         "fig": 0,
-        "inf": 11,
+        "inf": 7,
       },
       "cost": 53,
-    },
-    {
-      "army": {
-        "arm": 0,
-        "art": 3,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 14,
-      },
-      "cost": 54,
     },
   ],
 }
@@ -268,247 +268,6 @@ exports[`Regression test for \${testName} 7`] = `
         "inf": 10,
       },
       "cost": 52,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy100 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 7,
-      },
-      "cost": 11.06704966729742,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 1,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 8,
-      },
-      "cost": 10.89616776492574,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 8,
-      },
-      "cost": 10.84618845152694,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy101 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 7,
-      },
-      "cost": 10.17951582722459,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 1,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 8,
-      },
-      "cost": 9.97377352637707,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bat": 0,
-        "bom": 3,
-        "cru": 0,
-        "fig": 3,
-        "inf": 6,
-      },
-      "cost": 9.74082039498443,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy102 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 4,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 10,
-      },
-      "cost": 52,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 5,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 9,
-      },
-      "cost": 53,
-    },
-    {
-      "army": {
-        "arm": 2,
-        "art": 3,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 10,
-      },
-      "cost": 54,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy103 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 4,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 10,
-      },
-      "cost": 52,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 5,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 9,
-      },
-      "cost": 53,
-    },
-    {
-      "army": {
-        "arm": 2,
-        "art": 5,
-        "bat": 0,
-        "bom": 0,
-        "cru": 0,
-        "fig": 0,
-        "inf": 7,
-      },
-      "cost": 53,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy104 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 4,
-        "inf": 10,
-      },
-      "cost": 52,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy105 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bom": 3,
-        "fig": 3,
-        "inf": 7,
-      },
-      "cost": 11.06704966729742,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 1,
-        "bom": 3,
-        "fig": 3,
-        "inf": 8,
-      },
-      "cost": 10.89616776492574,
-    },
-    {
-      "army": {
-        "arm": 1,
-        "art": 2,
-        "bom": 3,
-        "fig": 3,
-        "inf": 8,
-      },
-      "cost": 10.84618845152694,
-    },
-  ],
-}
-`;
-
-exports[`Regression test for test_minArmy106 1`] = `
-{
-  "recommendations": [
-    {
-      "army": {
-        "arm": 1,
-        "art": 1,
-        "bom": 3,
-        "fig": 2,
-        "inf": 6,
-      },
-      "cost": 84,
     },
   ],
 }

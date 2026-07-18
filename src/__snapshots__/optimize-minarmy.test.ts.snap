@@ -1,0 +1,242 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Regression test for test_minArmy100 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 7,
+      },
+      "cost": 11.06704966729742,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 1,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 10.89616776492574,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 10.84618845152694,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy101 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 7,
+      },
+      "cost": 10.17951582722459,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 1,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 9.97377352637707,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bat": 0,
+        "bom": 3,
+        "cru": 0,
+        "fig": 3,
+        "inf": 6,
+      },
+      "cost": 9.74082039498443,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy102 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 9,
+      },
+      "cost": 53,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 3,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 12,
+      },
+      "cost": 54,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy103 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
+    {
+      "army": {
+        "arm": 2,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 7,
+      },
+      "cost": 53,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 5,
+        "bat": 0,
+        "bom": 0,
+        "cru": 0,
+        "fig": 0,
+        "inf": 9,
+      },
+      "cost": 53,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy104 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 4,
+        "inf": 10,
+      },
+      "cost": 52,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy105 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bom": 3,
+        "fig": 3,
+        "inf": 7,
+      },
+      "cost": 11.06704966729742,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 1,
+        "bom": 3,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 10.89616776492574,
+    },
+    {
+      "army": {
+        "arm": 1,
+        "art": 2,
+        "bom": 3,
+        "fig": 3,
+        "inf": 8,
+      },
+      "cost": 10.84618845152694,
+    },
+  ],
+}
+`;
+
+exports[`Regression test for test_minArmy106 1`] = `
+{
+  "recommendations": [
+    {
+      "army": {
+        "arm": 1,
+        "art": 1,
+        "bom": 3,
+        "fig": 2,
+        "inf": 6,
+      },
+      "cost": 84,
+    },
+  ],
+}
+`;
