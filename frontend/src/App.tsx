@@ -495,6 +495,8 @@ function App() {
         crashFighters: input.crashFighters?.[i] ?? false,
         useAttackersFromPreviousWave: input.useAttackersFromPreviousWave?.[i] ?? false,
         retreatMode: retreatModeValue,
+        evDeadzone: input.evDeadzone?.[i],
+        evTerritoryValue: input.evTerritoryValue?.[i],
         ...thresholdUpdates,
       }
       updateWave(i, waveUpdate)
@@ -665,6 +667,12 @@ function App() {
               ),
               retreatLoseAirProbabilityThresholds: Object.fromEntries(
                 Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.retreatLoseAirProbabilityThreshold])
+              ),
+              evDeadzone: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.evDeadzone])
+              ),
+              evTerritoryValue: Object.fromEntries(
+                Object.entries(waveConfigs).map(([idx, wc]) => [idx, wc.evTerritoryValue])
               ),
               mode,
               territoryValue,
