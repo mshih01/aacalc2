@@ -99,8 +99,8 @@ export function computeSbrBattle(input: BattleInput): MultiwaveOutput {
     verbose_level: 0,
     diceMode: input.diceMode ?? 'standard',
     in_progress: false,
-    pruneThreshold: 1e-12,
-    reportPruneThreshold: 1e-12,
+    pruneThreshold: input.pruneThreshold ?? 1e-12,
+    reportPruneThreshold: input.reportPruneThreshold ?? 1e-12,
   }
   if (input.verboseLevel && input.verboseLevel > 0) {
     console.log('SBR Input:', sbrInput)

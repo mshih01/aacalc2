@@ -11,6 +11,7 @@ import { unitIds, DEFAULT_WAVE_CONFIG, MAX_WAVES, type BattleInput, type BattleM
 import { useWaveState } from './hooks/useWaveState.ts'
 import { computeBattle, computeSbrBattle, validateArmySizes } from './engine.ts'
 import { encodeStateToUrl, decodeStateFromUrl, getUnitName, getUnitString, getPercentileColor } from './utils/format.ts'
+import { computeThreshold } from './utils/threshold.ts'
 import { modeUnitMap, attackerOolPresets, attackerAmphibOolPresets, defenderOolPresets } from './data/oolPresets.ts'
 import { Toast } from './components/ui/Toast.tsx'
 import { CollapsibleSection } from './components/ui/CollapsibleSection.tsx'
@@ -102,8 +103,8 @@ function App() {
   const [isDeadzone, setIsDeadzone] = useState(false)
   const [inProgress, setInProgress] = useState(false)
   const [verboseLevel, setVerboseLevel] = useState(0)
-  const [pruneThreshold, setPruneThreshold] = useState(1e-12)
-  const [reportPruneThreshold, setReportPruneThreshold] = useState(1e-12)
+  const [pruneThreshold, setPruneThreshold] = useState(computeThreshold(2))
+  const [reportPruneThreshold, setReportPruneThreshold] = useState(computeThreshold(2))
   const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost')
   const [complexityThreshold, setComplexityThreshold] = useState(MAX_COMPLEXITY)
   const [instantaneousEvaluationThreshold, setInstantaneousEvaluationThreshold] = useState(INSTANTANEOUS_EVALUATION_THRESHOLD)
@@ -568,8 +569,8 @@ function App() {
           setIsDeadzone(false)
           setInProgress(false)
           setVerboseLevel(0)
-          setPruneThreshold(1e-12)
-          setReportPruneThreshold(1e-12)
+          setPruneThreshold(computeThreshold(2))
+          setReportPruneThreshold(computeThreshold(2))
           setComplexityThreshold(MAX_COMPLEXITY)
           setInstantaneousEvaluationThreshold(INSTANTANEOUS_EVALUATION_THRESHOLD)
           setSortMode('ipc_cost')
@@ -809,7 +810,12 @@ function App() {
                   min={0}
                   max={10}
                   value={decimalPlaces}
-                  onChange={(e) => setDecimalPlaces(Math.max(0, Math.min(10, Number(e.target.value) || 2)))}
+                  onChange={(e) => {
+                    const newVal = Math.max(0, Math.min(10, Number(e.target.value) || 2))
+                    setDecimalPlaces(newVal)
+                    setPruneThreshold(computeThreshold(newVal))
+                    setReportPruneThreshold(computeThreshold(newVal))
+                  }}
                   className={decimalPlaces !== 2 ? 'has-value' : ''}
                   style={{ width: '100%' }}
                 />
