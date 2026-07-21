@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.24
+
+### Patch Changes
+
+- a023e4f: multiwave ev retreat consider future waves
+
 ## 2.0.23
 
 ### Patch Changes
