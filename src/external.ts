@@ -166,6 +166,7 @@ export interface MultiwaveInput {
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
   experimentalConvolution?: boolean; // experimental: fix defender cumulative profit via convolution
+  ev_future_wave?: boolean; // experimental: future-wave-aware EV retreat in multiwave
 }
 
 export interface MultiEvalInput extends MultiwaveInput {
@@ -473,6 +474,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     sortMode: input.sortMode == undefined ? 'ipc_cost' : input.sortMode,
     num_runs: input.num_runs,
     experimentalConvolution: input.experimentalConvolution,
+    ev_future_wave: input.ev_future_wave,
   };
 
   return internal_input;

@@ -1,4 +1,9 @@
-import { solve_general, type general_problem } from './solve.js';
+import {
+  solve_general,
+  compute_expected_value,
+  compute_retreat_state,
+  type general_problem,
+} from './solve.js';
 import { createGeneralProblem } from './problem-factory.js';
 import { collect_results, print_general_results, get_general_cost } from './output.js';
 import { get_cost_from_str, crash_fighters } from './unitgroup.js';
@@ -26,6 +31,7 @@ export interface multiwave_input {
   num_runs: number;
   verbose_level: number;
   experimentalConvolution?: boolean;
+  ev_future_wave?: boolean;
 }
 
 export interface multiwave_output {
@@ -55,7 +61,194 @@ export interface wave_input {
   ev_territory_value?: number;
 }
 
+// Convert internal unit codes to ch2 (display) encoding — matches what output.att_cas/.def_cas
+// uses before survivors are fed into the next wave's pipeline.
+function toCh2(um: unit_manager, s: string): string {
+  let out = '';
+  for (let i = 0; i < s.length; i++) {
+    out += um.get_stat(s.charAt(i)).ch2;
+  }
+  return out;
+}
+
+// Process a survivor state from wave i into the remain string for wave i+1's defender
+function processSurvivorIntoRemain(
+  um: unit_manager,
+  survivorRemain: string,
+  survivorRetreat: string,
+  nextWave: wave_input,
+  isNaval: boolean,
+  isSwap: boolean,
+): string {
+  const remainCh2 = toCh2(um, survivorRemain);
+  const retreatCh2 = toCh2(um, survivorRetreat);
+  const survivors = (isSwap && !isNaval ? remove_planes(remainCh2) : remainCh2) + retreatCh2;
+  const defToken = preparse_token(nextWave.defender);
+  const oolProcessed = apply_ool(survivors + defToken, nextWave.def_ool, nextWave.def_aalast);
+  const battleshipProcessed = isNaval ? preparse_battleship(oolProcessed) : oolProcessed;
+  if (isNaval) {
+    const { remain } = crash_fighters(um, battleshipProcessed);
+    return remain;
+  }
+  return battleshipProcessed;
+}
+
+// Build the defender string for wave i from max survivors of wave i-1 + wave i reinforcements
+function buildWaveDefenderString(
+  input: multiwave_input,
+  prevDefenderStr: string | undefined,
+  prevAttackerStr: string | undefined,
+  wave: wave_input,
+  isSwap: boolean,
+): string {
+  if (prevDefenderStr == undefined) {
+    // First wave: defender is purely from initial config
+    const defToken = preparse_token(wave.defender);
+    const defOol = apply_ool(defToken, wave.def_ool, wave.def_aalast);
+    return preparse(input.is_naval, defOol, 1, input.in_progress);
+  }
+  const rawSurvivors = isSwap ? prevAttackerStr! : prevDefenderStr;
+  const um = new unit_manager(input.verbose_level);
+  const survivorsCh2 = toCh2(um, rawSurvivors);
+
+  const defToken = preparse_token(wave.defender);
+  const combined = survivorsCh2 + defToken;
+  const oolProcessed = apply_ool(combined, wave.def_ool, wave.def_aalast);
+  const bProcessed = input.is_naval ? preparse_battleship(oolProcessed) : oolProcessed;
+
+  let cas_remain = bProcessed;
+  let cas_retreat = '';
+  if (input.is_naval) {
+    const { remain, retreat } = crash_fighters(um, bProcessed);
+    cas_remain = remain;
+    cas_retreat = retreat;
+  }
+  const defender = apply_ool(cas_remain + cas_retreat, wave.def_ool, wave.def_aalast);
+  return preparse(input.is_naval, defender, 1);
+}
+
+function buildWaveAttackerString(input: multiwave_input, wave: wave_input): string {
+  return preparse(input.is_naval, wave.attacker, 0);
+}
+
+// Pre-compute future EV maps for all waves (backward pass)
+function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | undefined)[] {
+  const N = input.wave_info.length;
+  const maps: (Map<number, number> | undefined)[] = new Array(N);
+  maps[N - 1] = undefined;
+
+  // Build template problems for each wave using max-survivor defender composition.
+  // For i>0, seed def_cas with all possible defender/attacker survivor states from
+  // the previous wave so the node graph contains exact matches for the mapping.
+  const templates: general_problem[] = [];
+  let prevDef: string | undefined;
+  let prevAtt: string | undefined;
+  for (let i = 0; i < N; i++) {
+    const wave = input.wave_info[i];
+    const isSwap = wave.use_attackers_from_previous_wave ?? false;
+    const defStr = buildWaveDefenderString(input, prevDef, prevAtt, wave, isSwap);
+    const attStr = buildWaveAttackerString(input, wave);
+    const um = new unit_manager(input.verbose_level);
+
+    let defCas: casualty_1d[] | undefined;
+    if (i > 0 && templates[i - 1] != undefined) {
+      const prevProb = templates[i - 1];
+      const prevIsSwap = wave.use_attackers_from_previous_wave ?? false;
+      const prevNodeArr = prevIsSwap ? prevProb.att_data.nodeArr : prevProb.def_data.nodeArr;
+      defCas = [];
+      for (let j = 0; j < prevNodeArr.length; j++) {
+        const remain = processSurvivorIntoRemain(
+          um,
+          prevNodeArr[j].unit_str,
+          prevNodeArr[j].retreat,
+          wave,
+          input.is_naval,
+          prevIsSwap,
+        );
+        defCas.push({ remain, retreat: '', casualty: '', prob: 0.001 });
+      }
+    }
+
+    templates.push(createGeneralProblem(input, wave, um, attStr, defStr, defCas));
+    prevDef = defStr;
+    prevAtt = attStr;
+  }
+
+  // Backward pass: wave i's future EV = E(0, matchedState) on wave i+1's problem
+  for (let i = N - 2; i >= 0; i--) {
+    const nextWave = input.wave_info[i + 1];
+    const prevProb = templates[i];
+    const um = new unit_manager(input.verbose_level);
+
+    // Use the template for wave i+1 as the reference problem
+    const refProb = templates[i + 1];
+
+    // Set futureEVMap on ref (already computed from previous iteration)
+    if (i + 1 < N - 1 && maps[i + 1] == undefined) {
+      throw new Error(`Future EV map for wave ${i + 1} is undefined`);
+    }
+    if (i + 1 < N - 1 && maps[i + 1] != undefined) {
+      const nextNextSwap = input.wave_info[i + 2]?.use_attackers_from_previous_wave ?? false;
+      if (nextNextSwap) {
+        refProb.futureAttackerEVMap = maps[i + 1];
+      } else {
+        refProb.futureEVMap = maps[i + 1];
+      }
+    }
+
+    // Ensure the EV threshold is set
+    if (nextWave.retreat_expected_ipc_profit_threshold != undefined) {
+      refProb.retreat_expected_ipc_profit_threshold =
+        nextWave.retreat_expected_ipc_profit_threshold;
+    } else {
+      refProb.retreat_expected_ipc_profit_threshold = -1e9;
+    }
+
+    compute_retreat_state(refProb);
+    compute_expected_value(refProb);
+    // need to handle AA guns and bombardment in the future EV computation, so we need to set the correct flags
+
+    // Build mapping from prev wave's states to EV
+    const isSwap = nextWave.use_attackers_from_previous_wave ?? false;
+    const nodeArr = isSwap ? prevProb.att_data.nodeArr : prevProb.def_data.nodeArr;
+
+    const refDefMap = new Map<string, number>();
+    for (let k = 0; k < refProb.def_data.nodeArr.length; k++) {
+      refDefMap.set(refProb.def_data.nodeArr[k].unit_str, k);
+    }
+
+    const futureMap = new Map<number, number>();
+    for (let j = 0; j < nodeArr.length; j++) {
+      if (nodeArr[j].N == 0) {
+        // Eliminated state — no survivors to carry over, future EV is 0
+        futureMap.set(j, 0);
+        continue;
+      }
+      const remain = processSurvivorIntoRemain(
+        um,
+        nodeArr[j].unit_str,
+        nodeArr[j].retreat,
+        nextWave,
+        input.is_naval,
+        isSwap,
+      );
+      const ii = refDefMap.get(remain);
+      if (ii == undefined) {
+        throw new Error(`Survivor state ${remain} not found in next wave's defender map`);
+      }
+      futureMap.set(j, ii != undefined ? (isSwap ? -1 : +1) * refProb.getE(0, ii) : 0);
+    }
+    maps[i] = futureMap;
+  }
+
+  return maps;
+}
+
 export function multiwave(input: multiwave_input): multiwave_output {
+  // Pre-compute future EV maps for multiwave retreat
+  const futureEVMaps =
+    input.ev_future_wave && input.wave_info.length > 1 ? computeFutureEVMaps(input) : undefined;
+
   let umarr: unit_manager[] = [];
   let probArr: general_problem[] = [];
   let output: aacalc_output[] = [];
@@ -180,6 +373,18 @@ export function multiwave(input: multiwave_input): multiwave_output {
         defenders_internal,
         defend_add_reinforce,
       );
+      if (
+        futureEVMaps != undefined &&
+        i < input.wave_info.length - 1 &&
+        futureEVMaps[i] != undefined
+      ) {
+        const nextIsSwap = input.wave_info[i + 1]?.use_attackers_from_previous_wave ?? false;
+        if (nextIsSwap) {
+          prob.futureAttackerEVMap = futureEVMaps[i];
+        } else {
+          prob.futureEVMap = futureEVMaps[i];
+        }
+      }
       probArr.push(prob);
       const init_ipc_cost = defend_add_reinforce
         ? defend_add_reinforce.reduce((acc, cas) => {

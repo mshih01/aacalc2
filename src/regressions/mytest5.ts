@@ -1206,8 +1206,8 @@ for (let i = 0; i < inputSettings.length; i++) {
         is_crash_fighters: false,
         rounds: -1,
         retreat_threshold: 0,
-        retreat_expected_ipc_profit_threshold: 0,
-        retreat_strafe_threshold: strafe,
+        retreat_expected_ipc_profit_threshold: undefined,
+        retreat_strafe_threshold: 0.7,
         ev_deadzone: true,
         //retreat_lose_air_probability: 0.3,
         use_attackers_from_previous_wave: true, // optional, default is false

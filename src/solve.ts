@@ -57,6 +57,8 @@ export interface GeneralProblemConfig {
   retreat_pwin_threshold?: number;
   pwinMode?: PwinMode;
   retreat_strafe_threshold?: number;
+  futureEVMap?: Map<number, number>;
+  futureAttackerEVMap?: Map<number, number>;
 }
 
 export class general_problem {
@@ -116,6 +118,8 @@ export class general_problem {
   pwinMode?: PwinMode; // 'takes' or 'destroys'
   retreat_strafe_threshold?: number;
   retreat_lose_air_probability: number;
+  futureEVMap?: Map<number, number>;
+  futureAttackerEVMap?: Map<number, number>;
   attmap: Map<string, number>;
   defmap: Map<string, number>;
   attmap2: Map<string, number>;
@@ -250,6 +254,8 @@ export class general_problem {
       retreat_pwin_threshold,
       pwinMode,
       retreat_strafe_threshold,
+      futureEVMap,
+      futureAttackerEVMap,
     } = config;
     this.um = um;
     this.verbose_level = verbose_level;
@@ -267,6 +273,8 @@ export class general_problem {
     this.pwinMode = pwinMode;
     this.retreat_strafe_threshold = retreat_strafe_threshold;
     this.retreat_lose_air_probability = retreat_lose_air_probability;
+    this.futureEVMap = futureEVMap;
+    this.futureAttackerEVMap = futureAttackerEVMap;
     this.diceMode = diceMode;
     this.sortMode = sortMode;
     this.is_deadzone = is_deadzone;
@@ -725,6 +733,12 @@ export function compute_expected_value(problem: general_problem): void {
       {
         let ev_fight = problem.accumulate;
         let ev_retreat = 0;
+        if (problem.futureEVMap != undefined) {
+          ev_retreat = problem.futureEVMap.get(m) ?? 0;
+        } else if (problem.futureAttackerEVMap != undefined) {
+          // not needed.   If we retreat the next wave doesn't fight.
+          //ev_retreat = problem.futureAttackerEVMap.get(n) ?? 0;
+        }
         if (problem.is_amphibious) {
           const retreatNode = attnode.next_retreat_amphibious ?? attnode;
           const nn = retreatNode.index;
@@ -764,6 +778,24 @@ export function compute_expected_value(problem: general_problem): void {
         }
         if (defNode.N == 0 && attNode.hasLand) {
           problem.accumulate += problem.ev_territory_value ?? problem.territory_value;
+        }
+        if (problem.accumulate == 0) {
+          if (problem.futureEVMap != undefined) {
+            const futureEV = problem.futureEVMap.get(j) ?? 0;
+            problem.accumulate += futureEV;
+          } else if (problem.futureAttackerEVMap != undefined) {
+            const futureAttackerEV = problem.futureAttackerEVMap.get(i) ?? 0;
+            problem.accumulate += futureAttackerEV;
+          }
+        }
+        // For retreat-terminal states where both sides survive, add future wave EV
+        if (attNode.N > 0 && defNode.N > 0) {
+          if (problem.futureEVMap != undefined) {
+            problem.accumulate += problem.futureEVMap.get(j) ?? 0;
+          } else if (problem.futureAttackerEVMap != undefined) {
+            // with swap -- if we retreat -- the next wave doesn't fight.  So we don't add the future attacker EV.
+            //problem.accumulate += problem.futureAttackerEVMap.get(i) ?? 0;
+          }
         }
         problem.setE(i, j, problem.accumulate);
         continue;
