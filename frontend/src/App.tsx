@@ -219,7 +219,7 @@ function App() {
   useEffect(() => {
     setResult(null)
     setComplexityWarning(null)
-  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold, instantaneousEvaluationThreshold])
+  }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold, instantaneousEvaluationThreshold, experimentalConvolution, evFutureWave, retreatZeroRound])
 
   const buildMultiwaveInputForComplexity = useCallback((
     inputAttack: Record<number, Record<string, number>>,
@@ -423,7 +423,7 @@ function App() {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold, retreatZeroRound])
+  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold, retreatZeroRound, evFutureWave, experimentalConvolution])
 
   const loadFromHistory = (entry: HistoryEntry) => {
     // Set flag to prevent auto-saving when we run the battle
@@ -509,6 +509,9 @@ function App() {
     setDiceMode(input.diceMode || 'standard')
     setTerritoryValue(input.territoryValue || 0)
     setIsDeadzone(input.isDeadzone ?? false)
+    setExperimentalConvolution(input.experimentalConvolution ?? false)
+    setEvFutureWave(input.evFutureWave ?? false)
+    setRetreatZeroRound(input.retreatZeroRound ?? false)
     setInProgress(input.inProgress ?? false)
     setVerboseLevel(input.verboseLevel || 0)
     setPruneThreshold(input.pruneThreshold || 1e-12)
@@ -682,6 +685,9 @@ function App() {
               isDeadzone,
               numWaves,
               amphibious,
+              experimentalConvolution,
+              evFutureWave,
+              retreatZeroRound,
             }
             const shareUrl = encodeStateToUrl(shareInput)
             navigator.clipboard.writeText(shareUrl).then(() => {
