@@ -55,6 +55,7 @@ export interface BattleInput {
   numWaves?: number
   amphibious?: boolean
   experimentalConvolution?: boolean
+  evFutureWave?: boolean
   retreatZeroRound?: boolean
   evDeadzone?: Record<number, boolean | undefined>
   evTerritoryValue?: Record<number, number | undefined>

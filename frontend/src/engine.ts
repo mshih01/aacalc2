@@ -63,6 +63,7 @@ export function computeBattle(input: BattleInput): MultiwaveOutput {
     retreat_round_zero: input.retreatZeroRound ?? false,
     do_roundless_eval: true,
     experimentalConvolution: input.experimentalConvolution,
+    ev_future_wave: input.evFutureWave,
   }
 
   if (input.verboseLevel && input.verboseLevel > 0) {

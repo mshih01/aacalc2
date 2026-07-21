@@ -112,6 +112,7 @@ function App() {
   const [ipcLossDecimalPlaces, setIpcLossDecimalPlaces] = useState(2)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [experimentalConvolution, setExperimentalConvolution] = useState(false)
+  const [evFutureWave, setEvFutureWave] = useState(false)
   const [retreatZeroRound, setRetreatZeroRound] = useState(false)
   const [histogramZooms, setHistogramZooms] = useState<Record<number, number>>(() => {
     const initial: Record<number, number> = {}
@@ -318,7 +319,7 @@ function App() {
 
     // Clear the timeout if inputs change again before it fires
     return () => clearTimeout(timer)
-  }, [attack, defense, waveConfigs, mode, numWaves, instantaneousEvaluationThreshold, buildMultiwaveInputForComplexity])
+  }, [attack, defense, waveConfigs, mode, numWaves, instantaneousEvaluationThreshold, buildMultiwaveInputForComplexity, experimentalConvolution, evFutureWave])
 
   const runBattle = useCallback(() => {
     setError(null)
@@ -369,6 +370,7 @@ function App() {
         numWaves,
         amphibious,
         experimentalConvolution,
+        evFutureWave,
         retreatZeroRound,
         evDeadzone: records.evDeadzoneRecord,
         evTerritoryValue: records.evTerritoryValueRecord,
@@ -841,6 +843,16 @@ function App() {
                     onChange={(e) => setExperimentalConvolution(e.target.checked)}
                   />
                   Experimental: fix defender profit via convolution
+                </label>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={evFutureWave}
+                    onChange={(e) => setEvFutureWave(e.target.checked)}
+                  />
+                  Experimental: future-wave-aware EV retreat
                 </label>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
