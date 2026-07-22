@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.25
+
+### Patch Changes
+
+- c5ebe02: future wave ev consider aa guns
+
 ## 2.0.24
 
 ### Patch Changes
