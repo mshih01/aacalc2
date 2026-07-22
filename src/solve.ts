@@ -779,14 +779,12 @@ export function compute_expected_value(problem: general_problem): void {
         if (defNode.N == 0 && attNode.hasLand) {
           problem.accumulate += problem.ev_territory_value ?? problem.territory_value;
         }
-        if (problem.accumulate == 0) {
-          if (problem.futureEVMap != undefined) {
-            const futureEV = problem.futureEVMap.get(j) ?? 0;
-            problem.accumulate += futureEV;
-          } else if (problem.futureAttackerEVMap != undefined) {
-            const futureAttackerEV = problem.futureAttackerEVMap.get(i) ?? 0;
-            problem.accumulate += futureAttackerEV;
-          }
+        if (problem.futureEVMap != undefined) {
+          const futureEV = problem.futureEVMap.get(j) ?? 0;
+          problem.accumulate += futureEV;
+        } else if (problem.futureAttackerEVMap != undefined) {
+          const futureAttackerEV = problem.futureAttackerEVMap.get(i) ?? 0;
+          problem.accumulate += futureAttackerEV;
         }
         // For retreat-terminal states where both sides survive, add future wave EV
         if (attNode.N > 0 && defNode.N > 0) {

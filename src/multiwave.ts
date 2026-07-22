@@ -6,9 +6,16 @@ import {
 } from './solve.js';
 import { createGeneralProblem } from './problem-factory.js';
 import { collect_results, print_general_results, get_general_cost } from './output.js';
-import { get_cost_from_str, crash_fighters } from './unitgroup.js';
-import { unit_manager } from './unitgroup.js';
-import { hasLand, hasNaval } from './unitgroup.js';
+import {
+  buildAAGroup,
+  crash_fighters,
+  forEachAAOutcome,
+  get_cost_from_str,
+  hasLand,
+  hasNaval,
+  hasNonAAUnit,
+  unit_manager,
+} from './unitgroup.js';
 
 import { preparse_token, preparse_battleship, preparse } from './preparse.js';
 
@@ -131,6 +138,38 @@ function buildWaveAttackerString(input: multiwave_input, wave: wave_input): stri
   return preparse(input.is_naval, wave.attacker, 0);
 }
 
+// Compute the expected value for a future wave state, accounting for AA gun effects.
+// The standard compute_expected_value only computes fight EV after AA has resolved.
+// This helper computes EV including AA losses, similar to is_round_zero_retreat_state.
+function computeFutureWaveEV(problem: general_problem, defStateIndex: number): number {
+  const attNode = problem.att_data.nodeArr[0];
+  const defNode = problem.def_data.nodeArr[defStateIndex];
+
+  const doAA =
+    !problem.is_naval &&
+    defNode.num_aa > 0 &&
+    attNode.num_air > 0 &&
+    hasNonAAUnit(problem.um, defNode.unit_str);
+
+  if (!doAA) {
+    return problem.getE(0, defStateIndex);
+  }
+
+  let num_aashots = defNode.num_aa * 3;
+  if (num_aashots > attNode.num_air) {
+    num_aashots = attNode.num_air;
+  }
+
+  const aaData = buildAAGroup(problem.um, num_aashots, problem.diceMode);
+  let ev = 0;
+  forEachAAOutcome(aaData, problem.att_data, aaData.tbl_size, 0, (prob, n) => {
+    const attnode2 = problem.att_data.nodeArr[n];
+    const attloss = attNode.cost - attnode2.cost;
+    ev += prob * (-attloss + problem.getE(n, defStateIndex));
+  });
+  return ev;
+}
+
 // Pre-compute future EV maps for all waves (backward pass)
 function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | undefined)[] {
   const N = input.wave_info.length;
@@ -206,8 +245,6 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
 
     compute_retreat_state(refProb);
     compute_expected_value(refProb);
-    // need to handle AA guns and bombardment in the future EV computation, so we need to set the correct flags
-
     // Build mapping from prev wave's states to EV
     const isSwap = nextWave.use_attackers_from_previous_wave ?? false;
     const nodeArr = isSwap ? prevProb.att_data.nodeArr : prevProb.def_data.nodeArr;
@@ -236,7 +273,8 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
       if (ii == undefined) {
         throw new Error(`Survivor state ${remain} not found in next wave's defender map`);
       }
-      futureMap.set(j, ii != undefined ? (isSwap ? -1 : +1) * refProb.getE(0, ii) : 0);
+      const ev = computeFutureWaveEV(refProb, ii);
+      futureMap.set(j, (isSwap ? -1 : +1) * ev);
     }
     maps[i] = futureMap;
   }
