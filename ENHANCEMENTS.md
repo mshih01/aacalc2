@@ -11,6 +11,40 @@ Enhancement list:
 
 ### retreat conditions
 
+### future-wave-aware EV retreat
+
+```
+MultiwaveInput.ev_future_wave  -- optional, default false.
+  When enabled in a multiwave battle (2+ waves), the engine pre-computes
+  the expected IPC outcome of all future waves for each possible survivor
+  state of the current wave. This "future EV map" is then incorporated
+  into the retreat decision for retreat_expected_ipc_profit_threshold.
+
+  Without this flag, the EV retreat threshold only considers the expected
+  IPC outcome of the current wave in isolation. With it enabled, preserving
+  more survivors in the current wave may be preferred even at a lower
+  immediate EV if it improves prospects in later waves.
+
+  Algorithm:
+  1. A backward pass (waves N-2 down to 0) builds a futureEVMap for each
+     wave i. For every defender (or attacker, when
+     use_attackers_from_previous_wave is set) survivor state in wave i,
+     the map stores the EV of wave i+1 starting from that survivor
+     composition.
+  2. The map is computed using template general_problem instances seeded
+     with all possible survivor compositions from the previous wave, so
+     the node graph contains exact matches for the mapping.
+  3. During compute_retreat_state, the future EV is added to terminal
+     state values (both elimination and non-terminal retreat states).
+     The retreat decision becomes:
+       retreat if (fightEV + futureEV - retreatEV) < threshold
+  4. AA losses are accounted for in the future EV computation via
+     computeFutureWaveEV, which applies AA fire before evaluating the
+     fight EV of the next wave.
+
+  Frontend label: "Experimental: future-wave-aware EV retreat"
+```
+
 ### ipc profit distribution
 
 ### army recommendation
