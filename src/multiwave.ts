@@ -358,7 +358,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
           let cas_remain = newcasstr;
           let cas_retreat = '';
-          if (input.is_naval) {
+          if (false && input.is_naval) {
             const { remain, retreat } = crash_fighters(um, newcasstr);
             cas_remain = remain;
             cas_retreat = retreat;
