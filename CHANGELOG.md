@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.0.26
+
+### Patch Changes
+
+- 638595f: rollback fighter/carrier multiwave defender
+
 ## 2.0.25
 
 ### Patch Changes
