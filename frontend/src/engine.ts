@@ -64,6 +64,9 @@ export function computeBattle(input: BattleInput): MultiwaveOutput {
     do_roundless_eval: true,
     experimentalConvolution: input.experimentalConvolution,
     ev_future_wave: input.evFutureWave,
+    // This UI models naval multiwave carrier landing capacity (wave 2+ air beyond
+    // 2 fighters/carrier retreats). The engine default is false.
+    multiwave_enforce_naval_fighters_carriers: true,
   }
 
   if (input.verboseLevel && input.verboseLevel > 0) {
