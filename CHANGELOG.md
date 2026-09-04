@@ -1,5 +1,15 @@
 # aacalc2
 
+## 2.1.0
+
+### Minor Changes
+
+- 67cc336: Add optional `multiwave_enforce_naval_fighters_carriers` input option (default false). When enabled on naval multiwave battles, air units on the wave-2+ defending side that exceed aircraft-carrier landing capacity (2 fighters per carrier) are treated as retreaters instead of continuing to fight.
+
+### Patch Changes
+
+- 5d89b2b: add interface to control multiwave fighter/carrier
+
 ## 2.0.26
 
 ### Patch Changes
