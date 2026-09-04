@@ -548,6 +548,251 @@ test('multiwaveExternal per-wave ev_deadzone', () => {
   expect(output).toMatchSnapshot();
 });
 
+test('multiwave_external_fighters_carriers: default off', () => {
+  const input: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: { des: 2 },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { acc: 1, fig: 2, cru: 1 },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+      {
+        attack: {
+          units: { des: 5 },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { fig: 2 },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'unit_count',
+    retreat_round_zero: true,
+  };
+
+  // wave 2 defender = wave1 survivors (1 ACC, 2 Fig, 1 Cru) + 2 reinforcement
+  // Fig = 4 air vs 2/carrier capacity.  With the option unset (default off) the
+  // extra air keeps fighting on wave 2 (rolled-back behavior).
+  const output = multiwaveExternal(input);
+
+  // Flag false and flag undefined must behave identically (default off).
+  expect(output).toEqual(
+    multiwaveExternal({ ...input, multiwave_enforce_naval_fighters_carriers: false }),
+  );
+
+  expect(output).toMatchSnapshot();
+});
+
+test('multiwave_external_fighters_carriers: on retreats excess wave-2 air', () => {
+  const base: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: { des: 2 },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { acc: 1, fig: 2, cru: 1 },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+      {
+        attack: {
+          units: { des: 5 },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { fig: 2 },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'unit_count',
+    retreat_round_zero: true,
+  };
+
+  const off = multiwaveExternal(base);
+  const on = multiwaveExternal({
+    ...base,
+    multiwave_enforce_naval_fighters_carriers: true,
+  });
+
+  // With the option on, the 2 extra reinforcement fighters (4 air vs 2/carrier
+  // capacity) cannot fight on wave 2, so the defender survives wave 2 less often.
+  expect(on.defense.survives[1]).toBeLessThan(off.defense.survives[1]);
+
+  expect(on).toMatchSnapshot();
+});
+
+test('multiwave_external_fighters_carriers: no effect off naval or single-wave', () => {
+  // single-wave naval battle: the transition loop that applies the option never runs.
+  const singleWave: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: { des: 5 },
+          ool: ['sub', 'des', 'cru', 'acc', 'fig', 'bom', 'bat'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { acc: 1, fig: 2, cru: 1 },
+          ool: ['sub', 'des', 'acc', 'cru', 'fig', 'bat', 'tra'],
+          takes: 0,
+          aaLast: false,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: true,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'unit_count',
+    retreat_round_zero: true,
+  };
+  expect(multiwaveExternal(singleWave)).toEqual(
+    multiwaveExternal({ ...singleWave, multiwave_enforce_naval_fighters_carriers: true }),
+  );
+
+  // land multiwave battle: the option is gated on is_naval.
+  const landInput: MultiwaveInput = {
+    wave_info: [
+      {
+        attack: {
+          units: { inf: 6, arm: 2, fig: 2 },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { inf: 5, art: 2, arm: 1, aa: 1 },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+      {
+        attack: {
+          units: { inf: 6, arm: 2 },
+          ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+          takes: 0,
+          aaLast: false,
+        },
+        defense: {
+          units: { inf: 3 },
+          ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+          takes: 0,
+          aaLast: true,
+        },
+        att_submerge: false,
+        def_submerge: false,
+        att_dest_last: false,
+        def_dest_last: false,
+        is_crash_fighters: false,
+        rounds: 100,
+        retreat_threshold: 0,
+      },
+    ],
+    debug: false,
+    prune_threshold: 1e-12,
+    report_prune_threshold: 1e-12,
+    is_naval: false,
+    in_progress: false,
+    num_runs: 1,
+    verbose_level: 0,
+    diceMode: 'standard',
+    sortMode: 'unit_count',
+    retreat_round_zero: true,
+  };
+  expect(multiwaveExternal(landInput)).toEqual(
+    multiwaveExternal({ ...landInput, multiwave_enforce_naval_fighters_carriers: true }),
+  );
+});
+
 test('sbrExternal', () => {
   const input: SbrInput = {
     verbose_level: 0,

@@ -1,5 +1,937 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`multiwave_external_fighters_carriers: default off 1`] = `
+{
+  "attack": {
+    "cumulativeIpcLoss": [
+      15.99161233048100,
+      54.60774224863702,
+    ],
+    "incrementalLoss": [
+      15.99161233048100,
+      38.61612991815601,
+    ],
+    "ipcLoss": [
+      15.99161233048100,
+      54.60774224863702,
+    ],
+    "survives": [
+      0.00091355330861,
+      0.09143212889409,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Des;4 Des;": {
+        "amount": 0.00000065021364,
+        "casualties": "1 Des",
+        "ipcLoss": 8,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "1 Des;5 Des;": {
+        "amount": 0.00000047665817,
+        "casualties": "1 Des",
+        "ipcLoss": 8,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+      "2 Des;3 Des;": {
+        "amount": 0.00000221213552,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "2 Des;4 Des;": {
+        "amount": 0.00000375290814,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "2 Des;5 Des;": {
+        "amount": 0.00061160211096,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+      "3 Des;2 Des;": {
+        "amount": 0.00000429650652,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "3 Des;3 Des;": {
+        "amount": 0.00001276802096,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "3 Des;4 Des;": {
+        "amount": 0.00481537230194,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "4 Des;1 Des;": {
+        "amount": 0.00000509324667,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "4 Des;2 Des;": {
+        "amount": 0.00002479860969,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "4 Des;3 Des;": {
+        "amount": 0.01638270165862,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "5 Des;1 Des;": {
+        "amount": 0.00002939724070,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "5 Des;2 Des;": {
+        "amount": 0.03181920090687,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "5 Des;;": {
+        "amount": 0.00012257069506,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "",
+      },
+      "6 Des;1 Des;": {
+        "amount": 0.03771972379183,
+        "casualties": "6 Des",
+        "ipcLoss": 48,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "6 Des;;": {
+        "amount": 0.00070745448969,
+        "casualties": "6 Des",
+        "ipcLoss": 48,
+        "retreaters": "",
+        "survivors": "",
+      },
+      "7 Des;;": {
+        "amount": 0.90773784592116,
+        "casualties": "7 Des",
+        "ipcLoss": 56,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";5 Des;": {
+        "amount": 0.00000008258386,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+    },
+    "defense": {
+      "1 ACC;4 Fig, 1 Cru;": {
+        "amount": 0.12330982728942,
+        "casualties": "1 ACC",
+        "ipcLoss": 14,
+        "retreaters": "",
+        "survivors": "4 Fig, 1 Cru",
+      },
+      "1 Cru, 1 ACC;4 Fig;": {
+        "amount": 0.22262103157706,
+        "casualties": "1 Cru, 1 ACC",
+        "ipcLoss": 26,
+        "retreaters": "",
+        "survivors": "4 Fig",
+      },
+      "1 Fig, 1 Cru, 1 ACC;3 Fig;": {
+        "amount": 0.24108355416327,
+        "casualties": "1 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 36,
+        "retreaters": "",
+        "survivors": "3 Fig",
+      },
+      "2 Fig, 1 Cru, 1 ACC;2 Fig;": {
+        "amount": 0.17629149141347,
+        "casualties": "2 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 46,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "3 Fig, 1 Cru, 1 ACC;1 Fig;": {
+        "amount": 0.09250295649673,
+        "casualties": "3 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 56,
+        "retreaters": "",
+        "survivors": "1 Fig",
+      },
+      "4 Fig, 1 Cru, 1 ACC;;": {
+        "amount": 0.11320158439712,
+        "casualties": "4 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 66,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";4 Fig, 1 Cru, 1 ACC;": {
+        "amount": 0.03098955466294,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "4 Fig, 1 Cru, 1 ACC",
+      },
+    },
+  },
+  "casualtiesInfoArr": [
+    {
+      "attack": {
+        "1 Des;1 Des;;0": {
+          "amount": 0.00077864792734,
+          "casualties": "1 Des",
+          "ipcLoss": 8,
+          "retreaters": "",
+          "survivors": "1 Des",
+        },
+        "2 Des;;;0": {
+          "amount": 0.99908644669139,
+          "casualties": "2 Des",
+          "ipcLoss": 16,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";2 Des;;0": {
+          "amount": 0.00013490538127,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "2 Des",
+        },
+      },
+      "defense": {
+        "1 ACC;2 Fig, 1 Cru;": {
+          "amount": 0.44080944213352,
+          "casualties": "1 ACC",
+          "ipcLoss": 14,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru",
+        },
+        "1 Cru, 1 ACC;2 Fig;": {
+          "amount": 0.14085287732764,
+          "casualties": "1 Cru, 1 ACC",
+          "ipcLoss": 26,
+          "retreaters": "",
+          "survivors": "2 Fig",
+        },
+        "1 Fig, 1 Cru, 1 ACC;1 Fig;": {
+          "amount": 0.01272020746868,
+          "casualties": "1 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 36,
+          "retreaters": "",
+          "survivors": "1 Fig",
+        },
+        "2 Fig, 1 Cru, 1 ACC;;": {
+          "amount": 0.00193122763824,
+          "casualties": "2 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 46,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";2 Fig, 1 Cru, 1 ACC;": {
+          "amount": 0.40368624543192,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru, 1 ACC",
+        },
+      },
+    },
+    {
+      "attack": {
+        "1 Des;4 Des;;1": {
+          "amount": 0.00481977542372,
+          "casualties": "1 Des",
+          "ipcLoss": 8,
+          "retreaters": "",
+          "survivors": "4 Des",
+        },
+        "2 Des;3 Des;;1": {
+          "amount": 0.01639768181510,
+          "casualties": "2 Des",
+          "ipcLoss": 16,
+          "retreaters": "",
+          "survivors": "3 Des",
+        },
+        "3 Des;2 Des;;1": {
+          "amount": 0.03184829602308,
+          "casualties": "3 Des",
+          "ipcLoss": 24,
+          "retreaters": "",
+          "survivors": "2 Des",
+        },
+        "4 Des;1 Des;;1": {
+          "amount": 0.03775421427920,
+          "casualties": "4 Des",
+          "ipcLoss": 32,
+          "retreaters": "",
+          "survivors": "1 Des",
+        },
+        "5 Des;;;1": {
+          "amount": 0.90856787110591,
+          "casualties": "5 Des",
+          "ipcLoss": 40,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";5 Des;;1": {
+          "amount": 0.00061216135299,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "5 Des",
+        },
+      },
+      "defense": {
+        "1 ACC;4 Fig, 1 Cru;": {
+          "amount": 0.12330982728942,
+          "casualties": "1 ACC",
+          "ipcLoss": 14,
+          "retreaters": "",
+          "survivors": "4 Fig, 1 Cru",
+        },
+        "1 Cru, 1 ACC;4 Fig;": {
+          "amount": 0.22262103157706,
+          "casualties": "1 Cru, 1 ACC",
+          "ipcLoss": 26,
+          "retreaters": "",
+          "survivors": "4 Fig",
+        },
+        "1 Fig, 1 Cru, 1 ACC;3 Fig;": {
+          "amount": 0.24108355416327,
+          "casualties": "1 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 36,
+          "retreaters": "",
+          "survivors": "3 Fig",
+        },
+        "2 Fig, 1 Cru, 1 ACC;2 Fig;": {
+          "amount": 0.17629149141347,
+          "casualties": "2 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 46,
+          "retreaters": "",
+          "survivors": "2 Fig",
+        },
+        "3 Fig, 1 Cru, 1 ACC;1 Fig;": {
+          "amount": 0.09250295649673,
+          "casualties": "3 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 56,
+          "retreaters": "",
+          "survivors": "1 Fig",
+        },
+        "4 Fig, 1 Cru, 1 ACC;;": {
+          "amount": 0.11320158439712,
+          "casualties": "4 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 66,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";4 Fig, 1 Cru, 1 ACC;": {
+          "amount": 0.03098955466294,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "4 Fig, 1 Cru, 1 ACC",
+        },
+      },
+    },
+  ],
+  "complexity": 57,
+  "defense": {
+    "cumulativeIpcLoss": [
+      10.38027094061946,
+      36.95437109197933,
+    ],
+    "incrementalLoss": [
+      10.38027094061946,
+      26.57410015135986,
+    ],
+    "ipcLoss": [
+      10.38027094061946,
+      36.95437109197933,
+    ],
+    "survives": [
+      0.99806877236176,
+      0.88679841560289,
+    ],
+  },
+  "profitDistribution": [
+    {
+      "-16": {
+        "ipc": -16,
+        "prob": 0.40368624543192,
+      },
+      "-2": {
+        "ipc": -2,
+        "prob": 0.44080944213352,
+      },
+      "10": {
+        "ipc": 10,
+        "prob": 0.14085287732764,
+      },
+      "20": {
+        "ipc": 20,
+        "prob": 0.01272020746868,
+      },
+      "30": {
+        "ipc": 30,
+        "prob": 0.00101767432963,
+      },
+      "38": {
+        "ipc": 38,
+        "prob": 0.00077864792734,
+      },
+      "46": {
+        "ipc": 46,
+        "prob": 0.00013490538127,
+      },
+    },
+    {
+      "-14": {
+        "ipc": -14,
+        "prob": 0.22262103157706,
+      },
+      "-26": {
+        "ipc": -26,
+        "prob": 0.12330982728942,
+      },
+      "-4": {
+        "ipc": -4,
+        "prob": 0.24108355416327,
+      },
+      "-40": {
+        "ipc": -40,
+        "prob": 0.03098955466294,
+      },
+      "16": {
+        "ipc": 16,
+        "prob": 0.09250295649673,
+      },
+      "26": {
+        "ipc": 26,
+        "prob": 0.02176945550302,
+      },
+      "34": {
+        "ipc": 34,
+        "prob": 0.03775421427920,
+      },
+      "42": {
+        "ipc": 42,
+        "prob": 0.03184829602308,
+      },
+      "50": {
+        "ipc": 50,
+        "prob": 0.01639768181510,
+      },
+      "58": {
+        "ipc": 58,
+        "prob": 0.00481977542372,
+      },
+      "6": {
+        "ipc": 6,
+        "prob": 0.17629149141347,
+      },
+      "66": {
+        "ipc": 66,
+        "prob": 0.00061216135299,
+      },
+    },
+  ],
+  "rounds": [
+    1.26618827670354,
+    2.14763552879073,
+  ],
+  "takesTerritory": [
+    0,
+    0,
+  ],
+  "waves": 2,
+}
+`;
+
+exports[`multiwave_external_fighters_carriers: on retreats excess wave-2 air 1`] = `
+{
+  "attack": {
+    "cumulativeIpcLoss": [
+      15.99161233048100,
+      31.52044443382982,
+    ],
+    "incrementalLoss": [
+      15.99161233048100,
+      15.52883210334882,
+    ],
+    "ipcLoss": [
+      15.99161233048100,
+      31.52044443382982,
+    ],
+    "survives": [
+      0.00091355330861,
+      0.75196871423538,
+    ],
+  },
+  "casualtiesInfo": {
+    "attack": {
+      "1 Des;4 Des;": {
+        "amount": 0.00003129164408,
+        "casualties": "1 Des",
+        "ipcLoss": 8,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "1 Des;5 Des;": {
+        "amount": 0.00028206618423,
+        "casualties": "1 Des",
+        "ipcLoss": 8,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+      "2 Des;3 Des;": {
+        "amount": 0.00000709526895,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "2 Des;4 Des;": {
+        "amount": 0.00018060935433,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "2 Des;5 Des;": {
+        "amount": 0.36192031319827,
+        "casualties": "2 Des",
+        "ipcLoss": 16,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+      "3 Des;2 Des;": {
+        "amount": 0.00000767286170,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "3 Des;3 Des;": {
+        "amount": 0.00004095252844,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "3 Des;4 Des;": {
+        "amount": 0.23174062592218,
+        "casualties": "3 Des",
+        "ipcLoss": 24,
+        "retreaters": "",
+        "survivors": "4 Des",
+      },
+      "4 Des;1 Des;": {
+        "amount": 0.00000651520850,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "4 Des;2 Des;": {
+        "amount": 0.00004428628274,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "4 Des;3 Des;": {
+        "amount": 0.05254636233593,
+        "casualties": "4 Des",
+        "ipcLoss": 32,
+        "retreaters": "",
+        "survivors": "3 Des",
+      },
+      "5 Des;1 Des;": {
+        "amount": 0.00003760453102,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "5 Des;2 Des;": {
+        "amount": 0.05682391657173,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "2 Des",
+      },
+      "5 Des;;": {
+        "amount": 0.00003346075517,
+        "casualties": "5 Des",
+        "ipcLoss": 40,
+        "retreaters": "",
+        "survivors": "",
+      },
+      "6 Des;1 Des;": {
+        "amount": 0.04825053270040,
+        "casualties": "6 Des",
+        "ipcLoss": 48,
+        "retreaters": "",
+        "survivors": "1 Des",
+      },
+      "6 Des;;": {
+        "amount": 0.00019312904658,
+        "casualties": "6 Des",
+        "ipcLoss": 48,
+        "retreaters": "",
+        "survivors": "",
+      },
+      "7 Des;;": {
+        "amount": 0.24780469596288,
+        "casualties": "7 Des",
+        "ipcLoss": 56,
+        "retreaters": "",
+        "survivors": "",
+      },
+      ";5 Des;": {
+        "amount": 0.00004886964286,
+        "casualties": "",
+        "ipcLoss": 0,
+        "retreaters": "",
+        "survivors": "5 Des",
+      },
+    },
+    "defense": {
+      "2 Fig, 1 ACC;2 Fig, 1 Cru;": {
+        "amount": 0.05266234609255,
+        "casualties": "2 Fig, 1 ACC",
+        "ipcLoss": 34,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Cru",
+      },
+      "2 Fig, 1 Cru, 1 ACC;2 Fig;": {
+        "amount": 0.08419634527364,
+        "casualties": "2 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 46,
+        "retreaters": "",
+        "survivors": "2 Fig",
+      },
+      "2 Fig;2 Fig, 1 Cru, 1 ACC;": {
+        "amount": 0.01442073103972,
+        "casualties": "2 Fig",
+        "ipcLoss": 20,
+        "retreaters": "",
+        "survivors": "2 Fig, 1 Cru, 1 ACC",
+      },
+      "3 Fig, 1 Cru, 1 ACC;1 Fig;": {
+        "amount": 0.07466170609956,
+        "casualties": "3 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 56,
+        "retreaters": "",
+        "survivors": "1 Fig",
+      },
+      "4 Fig, 1 ACC;1 Cru;": {
+        "amount": 0.00008459530414,
+        "casualties": "4 Fig, 1 ACC",
+        "ipcLoss": 54,
+        "retreaters": "",
+        "survivors": "1 Cru",
+      },
+      "4 Fig, 1 Cru, 1 ACC;;": {
+        "amount": 0.77397427619040,
+        "casualties": "4 Fig, 1 Cru, 1 ACC",
+        "ipcLoss": 66,
+        "retreaters": "",
+        "survivors": "",
+      },
+    },
+  },
+  "casualtiesInfoArr": [
+    {
+      "attack": {
+        "1 Des;1 Des;;0": {
+          "amount": 0.00077864792734,
+          "casualties": "1 Des",
+          "ipcLoss": 8,
+          "retreaters": "",
+          "survivors": "1 Des",
+        },
+        "2 Des;;;0": {
+          "amount": 0.99908644669139,
+          "casualties": "2 Des",
+          "ipcLoss": 16,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";2 Des;;0": {
+          "amount": 0.00013490538127,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "2 Des",
+        },
+      },
+      "defense": {
+        "1 ACC;2 Fig, 1 Cru;": {
+          "amount": 0.44080944213352,
+          "casualties": "1 ACC",
+          "ipcLoss": 14,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru",
+        },
+        "1 Cru, 1 ACC;2 Fig;": {
+          "amount": 0.14085287732764,
+          "casualties": "1 Cru, 1 ACC",
+          "ipcLoss": 26,
+          "retreaters": "",
+          "survivors": "2 Fig",
+        },
+        "1 Fig, 1 Cru, 1 ACC;1 Fig;": {
+          "amount": 0.01272020746868,
+          "casualties": "1 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 36,
+          "retreaters": "",
+          "survivors": "1 Fig",
+        },
+        "2 Fig, 1 Cru, 1 ACC;;": {
+          "amount": 0.00193122763824,
+          "casualties": "2 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 46,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";2 Fig, 1 Cru, 1 ACC;": {
+          "amount": 0.40368624543192,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru, 1 ACC",
+        },
+      },
+    },
+    {
+      "attack": {
+        "1 Des;4 Des;;1": {
+          "amount": 0.23195252692059,
+          "casualties": "1 Des",
+          "ipcLoss": 8,
+          "retreaters": "",
+          "survivors": "4 Des",
+        },
+        "2 Des;3 Des;;1": {
+          "amount": 0.05259441013332,
+          "casualties": "2 Des",
+          "ipcLoss": 16,
+          "retreaters": "",
+          "survivors": "3 Des",
+        },
+        "3 Des;2 Des;;1": {
+          "amount": 0.05687587571618,
+          "casualties": "3 Des",
+          "ipcLoss": 24,
+          "retreaters": "",
+          "survivors": "2 Des",
+        },
+        "4 Des;1 Des;;1": {
+          "amount": 0.04829465243993,
+          "casualties": "4 Des",
+          "ipcLoss": 32,
+          "retreaters": "",
+          "survivors": "1 Des",
+        },
+        "5 Des;;;1": {
+          "amount": 0.24803128576462,
+          "casualties": "5 Des",
+          "ipcLoss": 40,
+          "retreaters": "",
+          "survivors": "",
+        },
+        ";5 Des;;1": {
+          "amount": 0.36225124902536,
+          "casualties": "",
+          "ipcLoss": 0,
+          "retreaters": "",
+          "survivors": "5 Des",
+        },
+      },
+      "defense": {
+        "2 Fig, 1 ACC;2 Fig, 1 Cru;": {
+          "amount": 0.05266234609255,
+          "casualties": "2 Fig, 1 ACC",
+          "ipcLoss": 34,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru",
+        },
+        "2 Fig, 1 Cru, 1 ACC;2 Fig;": {
+          "amount": 0.08419634527364,
+          "casualties": "2 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 46,
+          "retreaters": "",
+          "survivors": "2 Fig",
+        },
+        "2 Fig;2 Fig, 1 Cru, 1 ACC;": {
+          "amount": 0.01442073103972,
+          "casualties": "2 Fig",
+          "ipcLoss": 20,
+          "retreaters": "",
+          "survivors": "2 Fig, 1 Cru, 1 ACC",
+        },
+        "3 Fig, 1 Cru, 1 ACC;1 Fig;": {
+          "amount": 0.07466170609956,
+          "casualties": "3 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 56,
+          "retreaters": "",
+          "survivors": "1 Fig",
+        },
+        "4 Fig, 1 ACC;1 Cru;": {
+          "amount": 0.00008459530414,
+          "casualties": "4 Fig, 1 ACC",
+          "ipcLoss": 54,
+          "retreaters": "",
+          "survivors": "1 Cru",
+        },
+        "4 Fig, 1 Cru, 1 ACC;;": {
+          "amount": 0.77397427619040,
+          "casualties": "4 Fig, 1 Cru, 1 ACC",
+          "ipcLoss": 66,
+          "retreaters": "",
+          "survivors": "",
+        },
+      },
+    },
+  ],
+  "complexity": 75,
+  "defense": {
+    "cumulativeIpcLoss": [
+      10.38027094061946,
+      29.45944372318340,
+    ],
+    "incrementalLoss": [
+      10.38027094061946,
+      19.07917278256394,
+    ],
+    "ipcLoss": [
+      10.38027094061946,
+      61.21989218709354,
+    ],
+    "survives": [
+      0.99806877236176,
+      0.22602572380960,
+    ],
+  },
+  "profitDistribution": [
+    {
+      "-16": {
+        "ipc": -16,
+        "prob": 0.40368624543192,
+      },
+      "-2": {
+        "ipc": -2,
+        "prob": 0.44080944213352,
+      },
+      "10": {
+        "ipc": 10,
+        "prob": 0.14085287732764,
+      },
+      "20": {
+        "ipc": 20,
+        "prob": 0.01272020746868,
+      },
+      "30": {
+        "ipc": 30,
+        "prob": 0.00101767432963,
+      },
+      "38": {
+        "ipc": 38,
+        "prob": 0.00077864792734,
+      },
+      "46": {
+        "ipc": 46,
+        "prob": 0.00013490538127,
+      },
+    },
+    {
+      "-20": {
+        "ipc": -20,
+        "prob": 0.01442073103972,
+      },
+      "-6": {
+        "ipc": -6,
+        "prob": 0.05266234609255,
+      },
+      "14": {
+        "ipc": 14,
+        "prob": 0.00008459530414,
+      },
+      "16": {
+        "ipc": 16,
+        "prob": 0.07466170609956,
+      },
+      "26": {
+        "ipc": 26,
+        "prob": 0.02200556195502,
+      },
+      "34": {
+        "ipc": 34,
+        "prob": 0.04829465243993,
+      },
+      "42": {
+        "ipc": 42,
+        "prob": 0.05687587571618,
+      },
+      "50": {
+        "ipc": 50,
+        "prob": 0.05259441013332,
+      },
+      "58": {
+        "ipc": 58,
+        "prob": 0.23195252692059,
+      },
+      "6": {
+        "ipc": 6,
+        "prob": 0.08419634527364,
+      },
+      "66": {
+        "ipc": 66,
+        "prob": 0.36225124902536,
+      },
+    },
+  ],
+  "rounds": [
+    1.26618827670354,
+    1.59368172522922,
+  ],
+  "takesTerritory": [
+    0,
+    0,
+  ],
+  "waves": 2,
+}
+`;
+
 exports[`multiwaveExternal 1`] = `
 {
   "attack": {

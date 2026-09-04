@@ -299,3 +299,26 @@ export function multiwaveTooComplex(input: MultiwaveInput): boolean {
     	for the exhaustive search -- a smaller limit is needed.  Without testing, maybe 
 		something like 1000
 
+
+### naval fighters/carrier landing capacity in multiwave (wave 2+)
+
+```
+MultiwaveInput.multiwave_enforce_naval_fighters_carriers  -- optional, default false.
+
+In a naval multiwave battle (2+ waves), the defenders of wave 2+ are the
+survivors of the previous wave plus that wave's reinforcements.  When this
+option is enabled, air units on that defending side that exceed the aircraft
+carrier landing capacity (2 fighters per carrier) are treated as retreaters:
+they leave the battle instead of continuing to fight in the wave.
+
+  * default false -- all surviving air continues to fight on wave 2+ (no
+    carrier capacity check).  This matches the engine behavior after the
+    fighter/carrier multiwave rollback.
+  * true -- only applies to naval multiwave battles on wave 2+ (inert for
+    land battles, SBR, and single-wave battles).  The capacity is computed
+    from the carriers present among the combined survivors + reinforcements.
+    If no carriers remain, all defending air is treated as retreating.
+
+This option is distinct from the per-wave `is_crash_fighters` control, which
+models air units being destroyed (crashed) during combat.
+```

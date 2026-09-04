@@ -39,6 +39,10 @@ export interface multiwave_input {
   verbose_level: number;
   experimentalConvolution?: boolean;
   ev_future_wave?: boolean;
+  // Naval multiwave only: on wave 2+, defender air units beyond carrier landing
+  // capacity (2 fighters per carrier) are treated as retreaters instead of
+  // fighting on. Default false.
+  multiwave_enforce_naval_fighters_carriers?: boolean;
 }
 
 export interface multiwave_output {
@@ -358,7 +362,7 @@ export function multiwave(input: multiwave_input): multiwave_output {
 
           let cas_remain = newcasstr;
           let cas_retreat = '';
-          if (false && input.is_naval) {
+          if (input.multiwave_enforce_naval_fighters_carriers && input.is_naval) {
             const { remain, retreat } = crash_fighters(um, newcasstr);
             cas_remain = remain;
             cas_retreat = retreat;

@@ -167,6 +167,10 @@ export interface MultiwaveInput {
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
   experimentalConvolution?: boolean; // experimental: fix defender cumulative profit via convolution
   ev_future_wave?: boolean; // experimental: future-wave-aware EV retreat in multiwave
+  // Naval multiwave only: on wave 2+, defender air units beyond carrier landing
+  // capacity (2 fighters per carrier) are treated as retreaters instead of
+  // fighting on. Default false.
+  multiwave_enforce_naval_fighters_carriers?: boolean;
 }
 
 export interface MultiEvalInput extends MultiwaveInput {
@@ -475,6 +479,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     num_runs: input.num_runs,
     experimentalConvolution: input.experimentalConvolution,
     ev_future_wave: input.ev_future_wave,
+    multiwave_enforce_naval_fighters_carriers: input.multiwave_enforce_naval_fighters_carriers,
   };
 
   return internal_input;
