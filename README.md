@@ -33,6 +33,9 @@ Axis and Allies odds calculator with advanced features.
 			- Given an attacking army and defending army, set the retreat mode to expected profit mode and the territory to is_deadzone.
 				- recommend the army that maximizes expected profit.  With EV retreat, and is_deadzone, army smaller than maximum army size may be optimal
 
+- Take-and-hold analysis: switch sides between waves in multiwave to model taking and holding a territory.
+- ev_future_wave -- if ev_retreat is enabled in a multiwave battle -- the retreat condition can optimized overall global profit -- instead of current-wave profit.
+
 ## Future work:
 
 - The current cost reporting and EV-based analysis is based on IPC cost of units.  
@@ -42,8 +45,6 @@ Axis and Allies odds calculator with advanced features.
         - Or one that mirrors attack strength.
         - Or a cost function which gives extra weight for losing air 
             - (e.g. a russian/german fighter worth more than others)
-
-- Take-and-hold analysis: switch sides between waves in multiwave to model taking and holding a territory.
 
 - Army recommendation.   
     - Multi-territory defense analysis: (For VC win analysis)

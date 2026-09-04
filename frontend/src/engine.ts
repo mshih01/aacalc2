@@ -114,7 +114,13 @@ export function computeSbrBattle(input: BattleInput): MultiwaveOutput {
     console.log('SBR Output:', output)
   }
   console.log(`Runtime: ${runtime}ms`)
-  return output
+
+  // sbrExternal reports its casualty distribution in `casualtiesInfo` and
+  // leaves `casualtiesInfoArr` empty, but the results UI renders detailed
+  // casualties from `casualtiesInfoArr[wave]` for each of the `waves` in the
+  // output. SBR is a single-wave battle, so expose the distribution as
+  // wave 0 to make the detailed casualty tables appear.
+  return { ...output, casualtiesInfoArr: [output.casualtiesInfo] }
 }
 
 export function validateArmySizes(
