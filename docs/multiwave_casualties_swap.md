@@ -26,7 +26,7 @@ otherwise
 the state needs to be bookkeeped -- so that it can be combined with the next wave results.
 
 attacker side:  
- prior wave attacker bookkeep is cross multiplied with current state.
+prior wave attacker bookkeep is cross multiplied with current state.
 
 defender side:
 prior wave defender is ignored -- directly use current stae.

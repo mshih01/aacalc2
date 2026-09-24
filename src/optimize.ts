@@ -19,11 +19,7 @@ import { type PwinMode } from './solve.js';
 export type AttDefType = 'attacker' | 'defender';
 
 export type SolveType =
-  | 'multiEval'
-  | 'exhaust'
-  | 'linearSearch'
-  | 'gridSearch'
-  | 'fuzzyBinarySearch';
+  'multiEval' | 'exhaust' | 'linearSearch' | 'gridSearch' | 'fuzzyBinarySearch';
 
 // maxProfit only works with SolveTyep exhaust
 export type OptimizeMode = 'targetWinPercentage' | 'maxProfit';
