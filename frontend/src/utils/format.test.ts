@@ -1,5 +1,36 @@
 import { describe, it, expect } from 'vitest'
-import { getUnitString, getUnitName } from './format.ts'
+import { getOolString, getUnitChar, getUnitString, getUnitName } from './format.ts'
+
+describe('getUnitChar', () => {
+  it('maps a unit id to its single character', () => {
+    expect(getUnitChar('inf')).toBe('i')
+    expect(getUnitChar('arm')).toBe('t')
+    expect(getUnitChar('inf_a')).toBe('j')
+  })
+
+  it('passes unknown ids through unchanged', () => {
+    expect(getUnitChar('wat')).toBe('wat')
+  })
+})
+
+describe('getOolString', () => {
+  it('renders one character per unit, in order', () => {
+    expect(getOolString(['inf', 'art', 'arm', 'fig', 'bom'])).toBe('iatfb')
+  })
+
+  it('keeps the given order rather than a canonical unit order', () => {
+    expect(getOolString(['bom', 'inf', 'art'])).toBe('bia')
+  })
+
+  it('keeps duplicates', () => {
+    expect(getOolString(['inf', 'inf_a', 'art', 'art_a'])).toBe('ijag')
+    expect(getOolString(['sub', 'sub'])).toBe('SS')
+  })
+
+  it('returns an empty string for an empty order of loss', () => {
+    expect(getOolString([])).toBe('')
+  })
+})
 
 describe('getUnitString', () => {
   it('converts a single unit', () => {

@@ -6,7 +6,13 @@ import {
 } from 'aacalc2'
 import type { BattleInput, UnitId } from './types.ts'
 
-export function computeBattle(input: BattleInput): MultiwaveOutput {
+/**
+ * Map a frontend BattleInput onto the library's MultiwaveInput.
+ *
+ * Exported so complexity estimation (and batch evaluation) can use exactly the
+ * same mapping the engine runs with.
+ */
+export function buildMultiwaveInput(input: BattleInput): MultiwaveInput {
   const numWaves = input.numWaves ?? 1
 
   const wave_info = Array.from({ length: numWaves }, (_, waveIdx) => {
@@ -47,7 +53,7 @@ export function computeBattle(input: BattleInput): MultiwaveOutput {
     }
   })
 
-  const multiwaveInput: MultiwaveInput = {
+  return {
     wave_info,
     debug: false,
     prune_threshold: input.pruneThreshold ?? 1e-12,
@@ -68,6 +74,10 @@ export function computeBattle(input: BattleInput): MultiwaveOutput {
     // 2 fighters/carrier retreats). The engine default is false.
     multiwave_enforce_naval_fighters_carriers: true,
   }
+}
+
+export function computeBattle(input: BattleInput): MultiwaveOutput {
+  const multiwaveInput = buildMultiwaveInput(input)
 
   if (input.verboseLevel && input.verboseLevel > 0) {
     console.log('MultiwaveInput:', multiwaveInput)

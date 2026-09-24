@@ -27,7 +27,9 @@ src/
 ├── hooks/
 │   └── useWaveState.ts      # Custom hook for per-wave config state
 ├── utils/
-│   ├── format.ts            # getUnitName, getUnitString, encodeStateToUrl/decodeStateFromUrl, compact URL encoding
+│   ├── format.ts            # getUnitName, getUnitString, getUnitChar/getOolString (one char per OOL unit), encodeStateToUrl/decodeStateFromUrl, compact URL encoding
+│   ├── history.ts           # Grouped history model: normalize/group/upsert/rename/remove
+│   ├── batchEval.ts         # Per-group batch evaluation + text table formatting
 │   └── unitStats.ts         # UNIT_STATS, calculateUnitSummary
 ├── data/
 │   └── oolPresets.ts        # OOL preset definitions for all modes
@@ -35,7 +37,8 @@ src/
     ├── WaveCard.tsx          # Per-wave attacker/defender unit input card
     ├── WaveOptions.tsx       # Per-wave options (rounds, retreat, sea/land controls)
     ├── DetailedCasualties.tsx # Casualty breakdown table (attack & defense merged)
-    ├── HistoryPanel.tsx      # Saved battle history sidebar
+    ├── InputSummary.tsx      # Collapsed battle-input summary; click anywhere to edit
+    ├── HistoryPanel.tsx      # Grouped saved history sidebar + per-group batch evaluation
     ├── SBRModeSection.tsx    # SBR mode unit inputs
     ├── ArmyRecommendSection.tsx # Army recommendation UI
     ├── UnitSummaryDisplay.tsx # IPC/HP/Power summary line
@@ -99,6 +102,25 @@ App.tsx (state owner)
     ├── ProfitDistributionTable
     └── ProfitDistributionHistogram
 ```
+
+## Grouped history & batch evaluation
+
+History entries are keyed by the pair `group / name` (`HistoryEntry` has no `id`). The model lives in `utils/history.ts`:
+
+- `normalizeHistory` migrates legacy `{ id, name, … }` entries from `localStorage.battleHistory` into `DEFAULT_GROUP` (`"Default"`) and drops malformed ones.
+- `groupHistory` buckets entries by group, groups in first-appearance (most recently touched) order.
+- `upsertHistoryEntry` replaces the same `group`+`name` and caps each group at 50 entries.
+- `renameHistoryGroup` retags a group; renaming onto an existing group merges, and on a name collision the renamed entry wins.
+- `removeHistoryEntry` / `removeHistoryGroup`.
+
+**Only an explicit "Evaluate Battle" click writes history.** The button calls `runBattle({ saveToHistory: true })`; auto-evaluation (the debounced complexity check) and history loads call `runBattle()` without the flag, so they evaluate without creating or overwriting saved entries. Collapsed groups persist in `localStorage.historyGroupsCollapsed`.
+
+**"Evaluate all settings"** (button on each group header) re-runs every saved entry in that group against the *current* armies using `utils/batchEval.ts`:
+
+- Fixed from the current UI state: `attack`, `defense`, `mode`, `numWaves`. Every other setting (OOL, rounds, retreat mode/thresholds, sea flags, EV overrides, dice mode, …) comes from the saved entry.
+- Entries saved in a different mode are `skipped` with a note, as are non-SBR battles above the complexity threshold; engine errors become `error` rows and the loop continues.
+- `runBatch` yields between entries so progress renders; `Cancel` stops after the current entry and keeps partial rows.
+- `formatBatchTable` renders the copy-pasteable text table (`profit defLoss attLoss defSurv attSurv takes rounds runtime description`, all left-aligned, 3 decimals). Metrics come from the final wave index, matching the "All Waves Summary".
 
 ## Known gaps
 

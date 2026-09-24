@@ -62,7 +62,7 @@ export interface BattleInput {
 }
 
 export interface HistoryEntry {
-  id: string
+  group: string
   name: string
   timestamp: number
   input: BattleInput

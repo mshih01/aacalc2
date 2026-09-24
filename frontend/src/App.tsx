@@ -11,6 +11,16 @@ import { unitIds, DEFAULT_WAVE_CONFIG, MAX_WAVES, type BattleInput, type BattleM
 import { useWaveState } from './hooks/useWaveState.ts'
 import { computeBattle, computeSbrBattle, validateArmySizes } from './engine.ts'
 import { encodeStateToUrl, decodeStateFromUrl, getUnitName, getUnitString, getPercentileColor } from './utils/format.ts'
+import {
+  DEFAULT_GROUP,
+  groupHistory,
+  normalizeHistory,
+  removeHistoryEntry,
+  removeHistoryGroup,
+  renameHistoryGroup,
+  upsertHistoryEntry,
+} from './utils/history.ts'
+import { formatBatchTable, runBatch, type BatchRow } from './utils/batchEval.ts'
 import { computeThreshold } from './utils/threshold.ts'
 import { modeUnitMap, attackerOolPresets, attackerAmphibOolPresets, defenderOolPresets } from './data/oolPresets.ts'
 import { Toast } from './components/ui/Toast.tsx'
@@ -24,15 +34,36 @@ import { ProfitDistributionTable } from './components/charts/ProfitDistributionT
 import { ProfitDistributionHistogram } from './components/charts/ProfitDistributionHistogram.tsx'
 import { WaveCard } from './components/WaveCard.tsx'
 import { SBRModeSection } from './components/SBRModeSection.tsx'
+import { InputSummary } from './components/InputSummary.tsx'
 
 // Configuration Constants
 const MAX_COMPLEXITY = 200000
 const INSTANTANEOUS_EVALUATION_THRESHOLD = 10000
 const AUTO_EVALUATE_BOUNCE_TIMER = 750 // ms
 
+const COLLAPSED_GROUPS_STORAGE_KEY = 'historyGroupsCollapsed'
+
+interface BatchSnapshot {
+  group: string
+  rows: BatchRow[]
+  attackString: string
+  defenseString: string
+  cancelled: boolean
+}
+
 
 // Initialize Google Analytics
 ReactGA.initialize('G-XFRR47N18Q')
+
+// Compact "3i2a | 1t" description of the per-wave units of one side.
+function describeArmies(
+  side: Record<number, Record<string, number>>,
+  numWaves: number,
+): string {
+  return Array.from({ length: numWaves }, (_, i) => getUnitString(side[i] || {}) || 'none').join(
+    ' | ',
+  )
+}
 
 function buildWaveRecords(
   waveConfigs: Record<number, WaveConfig>,
@@ -145,13 +176,30 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [complexityWarning, setComplexityWarning] = useState<{ complexity: number; threshold: number } | null>(null)
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [historyGroup, setHistoryGroup] = useState(DEFAULT_GROUP)
   const [historyName, setHistoryName] = useState('')
   const [showHistory, setShowHistory] = useState(false)
+  const [inputCollapsed, setInputCollapsed] = useState(false)
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    const stored = localStorage.getItem(COLLAPSED_GROUPS_STORAGE_KEY)
+    if (!stored) return {}
+    try {
+      const parsed = JSON.parse(stored)
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, boolean>) : {}
+    } catch {
+      return {}
+    }
+  })
+  const [batch, setBatch] = useState<BatchSnapshot | null>(null)
+  const [batchRunningGroup, setBatchRunningGroup] = useState<string | null>(null)
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null)
   
   // Refs to track when we need to run battle after loading history
   const shouldRunBattleRef = useRef(false)
-  const loadedEntryNameRef = useRef<string | null>(null)
+  const loadedEntryRef = useRef<{ group: string; name: string } | null>(null)
   const isLoadingFromHistoryRef = useRef(false)
+  const runBattleRef = useRef<() => void>(() => {})
+  const batchCancelRef = useRef(false)
   // Helper function to set zoom for specific wave
   const setHistogramZoom = (waveIdx: number, zoom: number) => {
     setHistogramZooms(prev => ({ ...prev, [waveIdx]: zoom }))
@@ -162,7 +210,7 @@ function App() {
     const stored = localStorage.getItem('battleHistory')
     if (stored) {
       try {
-        setHistory(JSON.parse(stored))
+        setHistory(normalizeHistory(JSON.parse(stored)))
       } catch (e) {
         console.warn('Failed to load history from localStorage:', e)
       }
@@ -181,6 +229,11 @@ function App() {
   useEffect(() => {
     localStorage.setItem('battleHistory', JSON.stringify(history))
   }, [history])
+
+  // Remember which groups are collapsed across Hide/Show and reloads
+  useEffect(() => {
+    localStorage.setItem(COLLAPSED_GROUPS_STORAGE_KEY, JSON.stringify(collapsedGroups))
+  }, [collapsedGroups])
 
   // Ensure units & presets stay in mode when switching modes
   useEffect(() => {
@@ -219,6 +272,7 @@ function App() {
   useEffect(() => {
     setResult(null)
     setComplexityWarning(null)
+    setInputCollapsed(false)
   }, [attack, defense, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, complexityThreshold, instantaneousEvaluationThreshold, experimentalConvolution, evFutureWave, retreatZeroRound])
 
   const buildMultiwaveInputForComplexity = useCallback((
@@ -309,11 +363,8 @@ function App() {
       const complexity = multiwaveComplexityFastV2(multiwaveInputForComplexity)
 
       if (complexity < instantaneousEvaluationThreshold) {
-        // Trigger runBattle by simulating a click
-        const evalBtn = document.querySelector('.run-btn') as HTMLButtonElement
-        if (evalBtn) {
-          evalBtn.click()
-        }
+        // Trigger runBattle via ref so auto-evaluation doesn't collapse the input summary
+        runBattleRef.current()
       }
     }, AUTO_EVALUATE_BOUNCE_TIMER) // debounce delay
 
@@ -321,7 +372,9 @@ function App() {
     return () => clearTimeout(timer)
   }, [attack, defense, waveConfigs, mode, numWaves, instantaneousEvaluationThreshold, buildMultiwaveInputForComplexity, experimentalConvolution, evFutureWave])
 
-  const runBattle = useCallback(() => {
+  // `saveToHistory` is only set by the explicit "Evaluate Battle" button, so
+  // auto-evaluation never writes (or overwrites) a history entry.
+  const runBattle = useCallback((options?: { saveToHistory?: boolean }) => {
     setError(null)
     setComplexityWarning(null)
     try {
@@ -395,35 +448,30 @@ function App() {
         label: `${mode}-${numWaves}wave${diceMode !== 'standard' ? `-${diceMode}` : ''}`,
       })
 
-      // Save to history if a name is provided AND we're not loading from history
-      if (historyName.trim() && !isLoadingFromHistoryRef.current) {
+      // Save to history only on an explicit Evaluate Battle click
+      if (options?.saveToHistory && historyName.trim() && !isLoadingFromHistoryRef.current) {
         const trimmedName = historyName.trim()
+        const group = historyGroup.trim() || DEFAULT_GROUP
         const entry: HistoryEntry = {
-          id: trimmedName,
+          group,
           name: trimmedName,
           timestamp: Date.now(),
           input,
         }
-        // Update existing entry with same name, or add new one
-        setHistory((prev) => {
-          const existingIndex = prev.findIndex((e) => e.id === trimmedName)
-          if (existingIndex >= 0) {
-            // Update existing entry and move to top
-            const updated = [...prev]
-            updated.splice(existingIndex, 1)
-            return [entry, ...updated]
-          } else {
-            // Add new entry, keep last 50
-            return [entry, ...prev.slice(0, 49)]
-          }
-        })
+        // Replace the same group/name entry (and move it to the top), or add it.
+        setHistory((prev) => upsertHistoryEntry(prev, entry))
         // Don't clear the name field - user can make more changes and save
       }
     } catch (err) {
       setError((err as Error).message ?? 'unknown error')
       setResult(null)
     }
-  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyName, complexityThreshold, retreatZeroRound, evFutureWave, experimentalConvolution])
+  }, [attack, defense, mode, waveConfigs, diceMode, inProgress, verboseLevel, pruneThreshold, reportPruneThreshold, sortMode, territoryValue, isDeadzone, numWaves, historyGroup, historyName, complexityThreshold, retreatZeroRound, evFutureWave, experimentalConvolution])
+
+  // Keep ref in sync so auto-evaluate can call the latest runBattle without churn
+  useEffect(() => {
+    runBattleRef.current = runBattle
+  }, [runBattle])
 
   const loadFromHistory = (entry: HistoryEntry) => {
     // Set flag to prevent auto-saving when we run the battle
@@ -431,7 +479,7 @@ function App() {
     
     const { input } = entry
     loadFromHistoryInput(input)
-    loadedEntryNameRef.current = entry.name
+    loadedEntryRef.current = { group: entry.group, name: entry.name }
     shouldRunBattleRef.current = true
   }
 
@@ -532,15 +580,111 @@ function App() {
       // Reset the loading flag after runBattle completes
       isLoadingFromHistoryRef.current = false
     }
-    // Populate the "Save As" field with the loaded entry name
-    if (loadedEntryNameRef.current) {
-      setHistoryName(loadedEntryNameRef.current)
-      loadedEntryNameRef.current = null
+    // Populate the "Save As" fields with the loaded entry key
+    if (loadedEntryRef.current) {
+      setHistoryGroup(loadedEntryRef.current.group)
+      setHistoryName(loadedEntryRef.current.name)
+      loadedEntryRef.current = null
     }
   }, [runBattle])
 
-  const deleteFromHistory = (id: string) => {
-    setHistory((prev) => prev.filter((e) => e.id !== id))
+  const deleteFromHistory = (group: string, name: string) => {
+    setHistory((prev) => removeHistoryEntry(prev, group, name))
+  }
+
+  const handleRemoveGroup = (group: string) => {
+    setHistory((prev) => removeHistoryGroup(prev, group))
+    setCollapsedGroups((prev) => {
+      if (!(group in prev)) return prev
+      const next = { ...prev }
+      delete next[group]
+      return next
+    })
+  }
+
+  const handleRenameGroup = (from: string, to: string) => {
+    const target = to.trim()
+    if (!target || target === from) return
+
+    setHistory((prev) => renameHistoryGroup(prev, from, target))
+    // Keep the collapsed state and the Save As group field pointed at the new name.
+    setCollapsedGroups((prev) => {
+      if (!(from in prev)) return prev
+      const next = { ...prev }
+      if (!(target in next)) next[target] = next[from]
+      delete next[from]
+      return next
+    })
+    setHistoryGroup((prev) => (prev === from ? target : prev))
+    setBatch((prev) => (prev && prev.group === from ? { ...prev, group: target } : prev))
+  }
+
+  const handleToggleGroup = (group: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }))
+  }
+
+  const handleSetAllCollapsed = (collapsed: boolean) => {
+    const next: Record<string, boolean> = {}
+    for (const { group } of groupHistory(history)) {
+      next[group] = collapsed
+    }
+    setCollapsedGroups(next)
+  }
+
+  const handleEvaluateGroup = async (group: string) => {
+    if (batchRunningGroup !== null) return
+
+    const entries = groupHistory(history).find((g) => g.group === group)?.entries ?? []
+    if (entries.length === 0) return
+
+    const validation = validateArmySizes(attack, defense, numWaves)
+    if (!validation.valid) {
+      setError(validation.error || 'Invalid army configuration')
+      setToast({ message: '✗ Set the current armies before evaluating a group' })
+      return
+    }
+
+    batchCancelRef.current = false
+    setError(null)
+    setBatchRunningGroup(group)
+    setBatchProgress({ done: 0, total: entries.length })
+
+    try {
+      const rows = await runBatch(
+        entries,
+        { attack, defense, mode, numWaves },
+        {
+          complexityThreshold,
+          shouldCancel: () => batchCancelRef.current,
+          onProgress: (done, total) => setBatchProgress({ done, total }),
+        },
+      )
+
+      setBatch({
+        group,
+        rows,
+        attackString: describeArmies(attack, numWaves),
+        defenseString: describeArmies(defense, numWaves),
+        cancelled: batchCancelRef.current,
+      })
+      setToast({
+        message: `✓ Evaluated ${rows.length} ${
+          rows.length === 1 ? 'setting' : 'settings'
+        } in "${group}"`,
+      })
+      ReactGA.event({
+        category: 'battle',
+        action: 'batch_evaluate',
+        label: group,
+      })
+    } finally {
+      setBatchRunningGroup(null)
+      setBatchProgress(null)
+    }
+  }
+
+  const handleCancelBatch = () => {
+    batchCancelRef.current = true
   }
 
   return (
@@ -583,6 +727,7 @@ function App() {
           setIpcLossDecimalPlaces(2)
           setResult(null)
           setError('')
+          setInputCollapsed(false)
         }}
         onResetUnits={() => {
           const initial: Record<number, Record<string, number>> = {}
@@ -591,12 +736,32 @@ function App() {
           }
           setAttack(initial)
           setDefense({ ...initial })
+          setInputCollapsed(false)
         }}
       />
 
       <div style={{ marginBottom: '15px', display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
         <div className="floating-label-group" style={{ flex: 1 }}>
           <input
+            id="history-group-input"
+            type="text"
+            list="history-groups"
+            value={historyGroup}
+            onChange={(e) => setHistoryGroup(e.target.value)}
+            placeholder=" "
+            maxLength={50}
+            className={historyGroup ? 'has-value' : ''}
+          />
+          <label htmlFor="history-group-input">Group</label>
+          <datalist id="history-groups">
+            {groupHistory(history).map(({ group }) => (
+              <option key={group} value={group} />
+            ))}
+          </datalist>
+        </div>
+        <div className="floating-label-group" style={{ flex: 1 }}>
+          <input
+            id="history-name-input"
             type="text"
             value={historyName}
             onChange={(e) => setHistoryName(e.target.value)}
@@ -604,7 +769,7 @@ function App() {
             maxLength={50}
             className={historyName ? 'has-value' : ''}
           />
-          <label>Save As</label>
+          <label htmlFor="history-name-input">Save As</label>
         </div>
         <button
           onClick={() => {
@@ -941,7 +1106,21 @@ function App() {
         </section>
       )}
 
-      {mode !== 'sbr' ? (
+      {inputCollapsed ? (
+        <InputSummary
+          mode={mode}
+          numWaves={numWaves}
+          diceMode={diceMode}
+          amphibious={amphibious}
+          territoryValue={territoryValue}
+          isDeadzone={isDeadzone}
+          inProgress={inProgress}
+          attack={attack}
+          defense={defense}
+          waveConfigs={waveConfigs}
+          onExpand={() => setInputCollapsed(false)}
+        />
+      ) : mode !== 'sbr' ? (
         <section className="waves-section">
           {Array.from({ length: numWaves }, (_, waveIdx) => (
             <WaveCard
@@ -1069,7 +1248,7 @@ function App() {
       />
           </CollapsibleSection>
 
-      <button className="run-btn" onClick={runBattle}>
+      <button className="run-btn" onClick={() => { setInputCollapsed(true); runBattle({ saveToHistory: true }) }}>
         Evaluate Battle
       </button>
 
@@ -1102,6 +1281,52 @@ function App() {
             Consider increasing the <strong>Complexity Threshold</strong> in Advanced Options if you wish to evaluate this battle anyway.
           </p>
         </div>
+      )}
+
+      {batch && (
+        <CollapsibleSection
+          title={`Batch Results — ${batch.group} (${batch.rows.length})`}
+          headerColor="#0f766e"
+          defaultOpen={true}
+        >
+          {/* #root centers text globally; the batch block must read left-aligned. */}
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ marginBottom: '8px', fontSize: '13px', color: '#555' }}>
+              Armies (fixed): Att {batch.attackString || 'none'} vs Def{' '}
+              {batch.defenseString || 'none'}
+              {batch.cancelled ? ' · cancelled early' : ''}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                justifyContent: 'flex-start',
+                marginBottom: '8px',
+              }}
+            >
+              {batchRunningGroup !== null && (
+                <button className="btn btn-red" onClick={handleCancelBatch}>
+                  Cancel
+                </button>
+              )}
+              <button
+                className="btn btn-light"
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(formatBatchTable(batch.rows))
+                    .then(() => setToast({ message: '✓ Batch results copied to clipboard!' }))
+                    .catch(() => setToast({ message: '✗ Failed to copy results' }))
+                }}
+              >
+                Copy
+              </button>
+              <button className="btn btn-gray" onClick={() => setBatch(null)}>
+                Close
+              </button>
+            </div>
+            <pre className="batch-output">{formatBatchTable(batch.rows)}</pre>
+          </div>
+        </CollapsibleSection>
       )}
 
       {result && (
@@ -1287,9 +1512,18 @@ function App() {
       {showHistory && (
         <HistoryPanel 
           history={history}
+          collapsedGroups={collapsedGroups}
+          onToggleGroup={handleToggleGroup}
+          onSetAllCollapsed={handleSetAllCollapsed}
           onLoad={loadFromHistory}
           onDelete={deleteFromHistory}
+          onRenameGroup={handleRenameGroup}
+          onRemoveGroup={handleRemoveGroup}
+          onEvaluateGroup={handleEvaluateGroup}
+          onCancelBatch={handleCancelBatch}
           onClearAll={() => setHistory([])}
+          runningGroup={batchRunningGroup}
+          progress={batchProgress}
         />
       )}
 

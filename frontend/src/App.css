@@ -105,6 +105,21 @@ input[type='number'] {
   overflow-x: auto;
 }
 
+.batch-output {
+  margin: 0;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: pre;
+  /* #root sets text-align: center; preformatted tables must stay left-aligned. */
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .error {
   color: #b91c1c;
   margin-top: 10px;
@@ -537,4 +552,95 @@ input[type='number'] {
     flex-direction: column;
     gap: 15px;
   }
+}
+
+/* ===== Input Summary (collapsed input view) ===== */
+.summary-card {
+  cursor: pointer;
+}
+
+.summary-card:focus-visible {
+  outline: 2px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+.summary-hint {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.summary-global {
+  font-size: 13px;
+  color: #555;
+  font-weight: 500;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-wave {
+  min-width: 70px;
+}
+
+.summary-wave-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-side {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  min-width: 200px;
+}
+
+.summary-side-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summary-attacker {
+  color: #2e7d32;
+}
+
+.summary-defender {
+  color: #e65100;
+}
+
+.summary-meta {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  color: #666;
+  /* Own line: keeps the OOL/rounds/retreat text from being squeezed into a
+     narrow column next to the army descriptions. */
+  flex: 1 1 100%;
+}
+
+.summary-meta > span {
+  white-space: nowrap;
 }

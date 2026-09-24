@@ -199,34 +199,44 @@ export function getUnitName(unit: string): string {
   return unitNameMap[unit] || unit.toUpperCase()
 }
 
-export function getUnitString(units: Record<string, number>): string {
-  const unitMap: Record<string, string> = {
-    inf: 'i',
-    art: 'a',
-    arm: 't',
-    fig: 'f',
-    bom: 'b',
-    aa: 'c',
-    sub: 'S',
-    tra: 'T',
-    des: 'D',
-    cru: 'C',
-    acc: 'A',
-    bat: 'B',
-    dbat: 'F',
-    ic: 'p',
-    inf_a: 'j',
-    art_a: 'g',
-    arm_a: 'u',
-  };
+const UNIT_CHAR_MAP: Record<string, string> = {
+  inf: 'i',
+  art: 'a',
+  arm: 't',
+  fig: 'f',
+  bom: 'b',
+  aa: 'c',
+  sub: 'S',
+  tra: 'T',
+  des: 'D',
+  cru: 'C',
+  acc: 'A',
+  bat: 'B',
+  dbat: 'F',
+  ic: 'p',
+  inf_a: 'j',
+  art_a: 'g',
+  arm_a: 'u',
+}
 
+/** Single-character code for one unit id (unknown ids pass through unchanged). */
+export function getUnitChar(unit: string): string {
+  return UNIT_CHAR_MAP[unit] ?? unit
+}
+
+/** Order of loss as one character per unit, in order: ['inf','art'] → 'ia'. */
+export function getOolString(ool: readonly string[]): string {
+  return ool.map(getUnitChar).join('')
+}
+
+export function getUnitString(units: Record<string, number>): string {
   const unitOrder = ['inf', 'art', 'arm', 'fig', 'bom', 'aa', 'sub', 'tra', 'des', 'cru', 'acc', 'bat', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'];
   let result = '';
 
   for (const unitId of unitOrder) {
     if (unitId in units && units[unitId] > 0) {
       const count = units[unitId];
-      const unitChar = unitMap[unitId];
+      const unitChar = UNIT_CHAR_MAP[unitId];
       if (unitChar) {
         if (count === 1) {
           result += unitChar;
