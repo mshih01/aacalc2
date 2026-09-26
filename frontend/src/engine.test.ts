@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { buildMultiwaveInput, computeSbrBattle, validateArmySizes } from './engine.ts'
-import type { BattleInput } from './types.ts'
+import {
+  buildMultiwaveInput,
+  computeBattle,
+  computeSbrBattle,
+  validateArmySizes,
+  withDbatInOol,
+} from './engine.ts'
+import type { BattleInput, UnitId } from './types.ts'
 
 function sbrInput(): BattleInput {
   return {
@@ -130,6 +136,98 @@ describe('buildMultiwaveInput', () => {
     expect(result.wave_info).toHaveLength(1)
     expect(result.is_naval).toBe(false)
     expect(result.num_runs).toBe(1)
+  })
+
+  it('inserts dbat next to bat in the OOL when a damaged battleship is present', () => {
+    const result = buildMultiwaveInput({
+      attack: { 0: { des: 1, bat: 1, dbat: 1 } },
+      defense: { 0: { bat: 1, dbat: 1 } },
+      attackOol: { 0: ['des', 'cru', 'bat'] },
+      defenseOol: { 0: ['sub', 'des', 'acc', 'cru', 'fig', 'bat'] },
+      mode: 'sea',
+      inProgress: true,
+      numWaves: 1,
+      retreatModes: {},
+    })
+
+    expect(result.wave_info[0].attack.ool).toEqual(['des', 'cru', 'bat', 'dbat'])
+    expect(result.wave_info[0].defense.ool).toEqual([
+      'sub',
+      'des',
+      'acc',
+      'cru',
+      'fig',
+      'bat',
+      'dbat',
+    ])
+  })
+
+  it('leaves the OOL untouched when no damaged battleship is present', () => {
+    const result = buildMultiwaveInput({
+      attack: { 0: { bat: 1 } },
+      defense: { 0: { bat: 1 } },
+      attackOol: { 0: ['des', 'bat'] },
+      defenseOol: { 0: ['des', 'bat'] },
+      mode: 'sea',
+      numWaves: 1,
+      retreatModes: {},
+    })
+
+    expect(result.wave_info[0].attack.ool).toEqual(['des', 'bat'])
+    expect(result.wave_info[0].defense.ool).toEqual(['des', 'bat'])
+  })
+})
+
+describe('withDbatInOol', () => {
+  it('inserts dbat directly after bat', () => {
+    expect(withDbatInOol(['des', 'bat', 'cru'], { dbat: 1 })).toEqual([
+      'des',
+      'bat',
+      'dbat',
+      'cru',
+    ])
+  })
+
+  it('appends dbat when bat is not in the OOL', () => {
+    expect(withDbatInOol(['des', 'cru'], { dbat: 2 })).toEqual([
+      'des',
+      'cru',
+      'dbat',
+    ])
+  })
+
+  it('does not duplicate an existing dbat', () => {
+    const ool: UnitId[] = ['des', 'bat', 'dbat']
+    expect(withDbatInOol(ool, { dbat: 1 })).toBe(ool)
+  })
+
+  it('returns the original OOL when the army has no damaged battleship', () => {
+    const ool: UnitId[] = ['des', 'bat']
+    expect(withDbatInOol(ool, { bat: 1 })).toBe(ool)
+    expect(withDbatInOol(ool, undefined)).toBe(ool)
+  })
+})
+
+describe('computeBattle with damaged battleships', () => {
+  it('counts a damaged battleship as a potential casualty when the OOL omits dbat', () => {
+    const output = computeBattle({
+      attack: { 0: { cru: 2, des: 1 } },
+      defense: { 0: { bat: 1, dbat: 1 } },
+      attackOol: { 0: ['des', 'cru', 'bat'] },
+      defenseOol: { 0: ['sub', 'des', 'acc', 'cru', 'fig', 'bat'] },
+      mode: 'sea',
+      inProgress: true,
+      numWaves: 1,
+      retreatModes: {},
+    })
+
+    // Both battleships can be lost (20 IPC each) only if the damaged
+    // battleship is part of the order of loss; before the fix the dbat was
+    // filtered out and the maximum loss was a single battleship.
+    const losses = Object.values(output.casualtiesInfoArr[0].defense).map(
+      (casualty) => casualty.ipcLoss,
+    )
+    expect(Math.max(...losses)).toBe(40)
   })
 })
 

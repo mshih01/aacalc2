@@ -9,7 +9,7 @@ import { MODES, DEFAULT_OOL_PRESETS } from './constants'
 import { ArmyRecommendSection } from './components/ArmyRecommendSection'
 import { unitIds, DEFAULT_WAVE_CONFIG, MAX_WAVES, type BattleInput, type BattleMode, type UnitId, type HistoryEntry, type WaveConfig, type WaveRecords } from './types.ts'
 import { useWaveState } from './hooks/useWaveState.ts'
-import { computeBattle, computeSbrBattle, validateArmySizes } from './engine.ts'
+import { computeBattle, computeSbrBattle, validateArmySizes, withDbatInOol } from './engine.ts'
 import { encodeStateToUrl, decodeStateFromUrl, getUnitName, getUnitString, getPercentileColor } from './utils/format.ts'
 import {
   DEFAULT_GROUP,
@@ -294,8 +294,14 @@ function App() {
 
     return {
       wave_info: Array.from({ length: numWaves }, (_, waveIdx) => {
-        const attackOol: UnitId[] = attackOolRecord[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
-        const defenseOol: UnitId[] = defenseOolRecord[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
+        const attackOol: UnitId[] = withDbatInOol(
+          attackOolRecord[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom'],
+          inputAttack[waveIdx],
+        )
+        const defenseOol: UnitId[] = withDbatInOol(
+          defenseOolRecord[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom'],
+          inputDefense[waveIdx],
+        )
         const waves = roundsNum[waveIdx]
           ? (roundsNum[waveIdx] === 100 ? 100 : Number(roundsNum[waveIdx]))
           : 100

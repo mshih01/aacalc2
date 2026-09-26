@@ -7,6 +7,31 @@ import {
 import type { BattleInput, UnitId } from './types.ts'
 
 /**
+ * Damaged battleships (`dbat`) are a separate unit code from battleships
+ * (`bat`), but the sea OOL presets only list `bat`. The engine builds its
+ * order-of-loss string by filtering the army through the OOL, so a damaged
+ * battleship present in the army would be silently dropped unless its code
+ * appears in the OOL. Insert `dbat` directly after `bat` (the slot it shares)
+ * when it is present but missing from the OOL.
+ */
+export function withDbatInOol(
+  ool: UnitId[],
+  units: Record<string, number> | undefined,
+): UnitId[] {
+  if (!units?.dbat || ool.includes('dbat')) {
+    return ool
+  }
+  const next = [...ool]
+  const batIdx = next.indexOf('bat')
+  if (batIdx === -1) {
+    next.push('dbat')
+  } else {
+    next.splice(batIdx + 1, 0, 'dbat')
+  }
+  return next
+}
+
+/**
  * Map a frontend BattleInput onto the library's MultiwaveInput.
  *
  * Exported so complexity estimation (and batch evaluation) can use exactly the
@@ -16,8 +41,14 @@ export function buildMultiwaveInput(input: BattleInput): MultiwaveInput {
   const numWaves = input.numWaves ?? 1
 
   const wave_info = Array.from({ length: numWaves }, (_, waveIdx) => {
-    const attackOol: UnitId[] = input.attackOol?.[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom']
-    const defenseOol: UnitId[] = input.defenseOol?.[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom']
+    const attackOol: UnitId[] = withDbatInOol(
+      input.attackOol?.[waveIdx] || ['inf', 'art', 'arm', 'fig', 'bom'],
+      input.attack[waveIdx],
+    )
+    const defenseOol: UnitId[] = withDbatInOol(
+      input.defenseOol?.[waveIdx] || ['aa', 'inf', 'art', 'arm', 'fig', 'bom'],
+      input.defense[waveIdx],
+    )
     const roundsNum = input.rounds?.[waveIdx]
       ? (input.rounds[waveIdx] === 'all' ? 100 : Number(input.rounds[waveIdx]))
       : 100
