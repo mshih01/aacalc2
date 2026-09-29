@@ -114,7 +114,7 @@ export const Unit2ExternalNameMap = new Map<string, string>([
 ]);
 
 export interface UnitGroup {
-  units: Army;
+  units: Army; // counts may be negative on a wave's defense: those units leave the battle
   ool: UnitIdentifier[]; // units as above
   takes: number; // number of land unto take as attacker
   aaLast: boolean; // aa last as defender
@@ -122,6 +122,12 @@ export interface UnitGroup {
 
 export interface WaveInput {
   attack: UnitGroup;
+  // `defense.units` may contain negative counts from wave 2 on.  A negative
+  // count names units that leave the battle before the wave: they are removed
+  // from the same-type survivors carried over from the previous wave -- its
+  // defenders, or its attackers when use_attackers_from_previous_wave is set.
+  // Counts larger than the survivors actually present leave zero of that unit.
+  // Negative counts are ignored on wave 1.
   defense: UnitGroup;
   att_submerge: boolean;
   def_submerge: boolean;
@@ -440,6 +446,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     const internal_wave = {
       attacker: att_unit_group_string.unit,
       defender: def_unit_group_string.unit,
+      negative_defender: def_unit_group_string.negative,
       def_ool: def_unit_group_string.ool,
       def_aalast: wave.defense.aaLast,
       att_submerge: wave.att_submerge,
@@ -1010,6 +1017,9 @@ export function multiEvalExternal(input: MultiEvalInput): MultiEvalOutput {
 interface make_unit_group_string_output {
   unit: string;
   ool: string;
+  // Magnitudes of the negative counts in `units`, as a separate unit-code
+  // string.  These units leave the battle (waves 2+ defense).
+  negative: string;
 }
 
 export function make_unit_group_string(
@@ -1021,18 +1031,26 @@ export function make_unit_group_string(
   verbose_level: number,
 ): make_unit_group_string_output {
   let unitstr = '';
+  let negstr = '';
   const um = getUm(verbose_level);
 
   for (const [uid, count] of Object.entries(units)) {
-    if (count == 0) {
+    if (count == undefined || count == 0) {
       continue;
     }
     const ch = UnitIdentifier2UnitMap[<UnitIdentifier>uid];
     if (ch == undefined) {
       throw new Error('make unit group string failed');
     }
-    for (let i = 0; i < count; i++) {
-      unitstr += ch;
+    // Fractional counts are floored: `i < count` would otherwise round up
+    // (e.g. 1.5 -> two units).
+    const n = Math.floor(Math.abs(count));
+    for (let i = 0; i < n; i++) {
+      if (count > 0) {
+        unitstr += ch;
+      } else {
+        negstr += ch;
+      }
     }
   }
 
@@ -1088,7 +1106,7 @@ export function make_unit_group_string(
       }
     }
   }
-  return { unit: out, ool: oolstr };
+  return { unit: out, ool: oolstr, negative: negstr };
 }
 
 export function get_external_unit_str(um: unit_manager, input: string): string {

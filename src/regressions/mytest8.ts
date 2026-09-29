@@ -1,0 +1,147 @@
+import {
+  type MultiwaveInput,
+  type MultiwaveOutput,
+  multiwaveExternal,
+  sbrExternal,
+  type SbrInput,
+} from '../index.js';
+
+const off: MultiwaveInput = {
+  wave_info: [
+    {
+      attack: {
+        units: { inf: 4, arm: 4, fig: 4, cru: 2 },
+        ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+        takes: 0,
+        aaLast: false,
+      },
+      defense: {
+        units: { inf: 14, art: 6, fig: 5, bom: 1, aa: 2 },
+        ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+        takes: 0,
+        aaLast: false,
+      },
+      att_submerge: false,
+      def_submerge: false,
+      att_dest_last: false,
+      def_dest_last: false,
+      is_crash_fighters: false,
+      rounds: 100,
+      retreat_threshold: 0,
+      pwinMode: 'takes',
+      use_attackers_from_previous_wave: false,
+    },
+    {
+      attack: {
+        units: { inf: 9, art: 5, fig: 6, bom: 1, cru: 2, bat: 1 },
+        ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+        takes: 0,
+        aaLast: false,
+      },
+      defense: {
+        units: { fig: 0 },
+        ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+        takes: 0,
+        aaLast: false,
+      },
+      att_submerge: false,
+      def_submerge: false,
+      att_dest_last: false,
+      def_dest_last: false,
+      is_crash_fighters: false,
+      rounds: 100,
+      retreat_threshold: 0,
+      pwinMode: 'takes',
+      use_attackers_from_previous_wave: false,
+    },
+  ],
+  debug: false,
+  prune_threshold: 1e-10,
+  report_prune_threshold: 1e-10,
+  is_naval: false,
+  in_progress: false,
+  num_runs: 1,
+  verbose_level: 3,
+  diceMode: 'standard',
+  sortMode: 'ipc_cost',
+  territory_value: 0,
+  is_deadzone: false,
+  retreat_round_zero: false,
+  do_roundless_eval: true,
+  experimentalConvolution: false,
+  ev_future_wave: false,
+  multiwave_enforce_naval_fighters_carriers: true,
+};
+const on: MultiwaveInput = {
+  wave_info: [
+    {
+      attack: {
+        units: { inf: 4, arm: 4, fig: 4, cru: 2 },
+        ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+        takes: 0,
+        aaLast: false,
+      },
+      defense: {
+        units: { inf: 14, art: 6, fig: 5, bom: 1, aa: 2 },
+        ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+        takes: 0,
+        aaLast: false,
+      },
+      att_submerge: false,
+      def_submerge: false,
+      att_dest_last: false,
+      def_dest_last: false,
+      is_crash_fighters: false,
+      rounds: 100,
+      retreat_threshold: 0,
+      pwinMode: 'takes',
+      use_attackers_from_previous_wave: false,
+    },
+    {
+      attack: {
+        units: { inf: 9, art: 5, fig: 6, bom: 1, cru: 2, bat: 1 },
+        ool: ['inf', 'art', 'arm', 'fig', 'bom'],
+        takes: 0,
+        aaLast: false,
+      },
+      defense: {
+        units: { fig: -2 },
+        ool: ['aa', 'inf', 'art', 'arm', 'bom', 'fig'],
+        takes: 0,
+        aaLast: false,
+      },
+      att_submerge: false,
+      def_submerge: false,
+      att_dest_last: false,
+      def_dest_last: false,
+      is_crash_fighters: false,
+      rounds: 100,
+      retreat_threshold: 0,
+      pwinMode: 'takes',
+      use_attackers_from_previous_wave: false,
+    },
+  ],
+  debug: false,
+  prune_threshold: 1e-10,
+  report_prune_threshold: 1e-10,
+  is_naval: false,
+  in_progress: false,
+  num_runs: 1,
+  verbose_level: 3,
+  diceMode: 'standard',
+  sortMode: 'ipc_cost',
+  territory_value: 0,
+  is_deadzone: false,
+  retreat_round_zero: false,
+  do_roundless_eval: true,
+  experimentalConvolution: false,
+  ev_future_wave: false,
+  multiwave_enforce_naval_fighters_carriers: true,
+};
+
+const off1 = multiwaveExternal(off);
+console.log(off, 'offinput');
+console.log(off1, 'off');
+const on1 = multiwaveExternal(on);
+console.log(on, 'oninput');
+console.log(on1, 'on');

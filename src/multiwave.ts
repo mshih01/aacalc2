@@ -53,6 +53,12 @@ export interface multiwave_output {
 export interface wave_input {
   attacker: string;
   defender: string;
+  // Wave 2+: units that leave the battle before this wave.  They are removed
+  // from the same-type survivors carried over from the previous wave -- the
+  // previous wave's defenders, or its attackers when
+  // use_attackers_from_previous_wave is set.  Counts larger than the survivors
+  // actually present leave zero of that unit.  Ignored on wave 1.
+  negative_defender?: string;
   def_ool: string;
   def_aalast: boolean;
   att_submerge: boolean;
@@ -82,7 +88,86 @@ function toCh2(um: unit_manager, s: string): string {
   return out;
 }
 
-// Process a survivor state from wave i into the remain string for wave i+1's defender
+function count_chars(s: string): Map<string, number> {
+  const m: Map<string, number> = new Map();
+  for (const ch of s) {
+    m.set(ch, (m.get(ch) ?? 0) + 1);
+  }
+  return m;
+}
+
+// Keep the first `keep.get(ch)` occurrences of each unit character in `s`.
+function keep_first(s: string, keep: Map<string, number>): string {
+  const used: Map<string, number> = new Map();
+  let out = '';
+  for (const ch of s) {
+    const k = keep.get(ch) ?? 0;
+    const u = used.get(ch) ?? 0;
+    if (u < k) {
+      out += ch;
+      used.set(ch, u + 1);
+    }
+  }
+  return out;
+}
+
+function counts_to_string(counts: Map<string, number>): string {
+  let out = '';
+  for (const [ch, n] of counts) {
+    for (let i = 0; i < n; i++) {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+// Remove the `neg` negative-reinforcement units from a carried-over survivor
+// pool.  Units still on the battlefield (`remain`) are consumed before
+// retreated units (`retreat`), so a unit that leaves is taken from the
+// non-retreated survivors when possible.  If `neg` names more of a unit than
+// the state actually holds, the surplus is ignored (the count clamps at zero).
+//
+// `removed` is the multiset actually taken out.  Callers record it as the
+// wave's retreater, so the unit leaves the battle without being a casualty.
+function subtract_carryover(
+  remain: string,
+  retreat: string,
+  neg: string,
+): { remain: string; retreat: string; removed: string } {
+  if (neg.length == 0) {
+    return { remain, retreat, removed: '' };
+  }
+  const remainKeep = count_chars(remain);
+  const retreatKeep = count_chars(retreat);
+  const removedKeep: Map<string, number> = new Map();
+  for (const [ch, n] of count_chars(neg)) {
+    const fromRemain = Math.min(remainKeep.get(ch) ?? 0, n);
+    remainKeep.set(ch, (remainKeep.get(ch) ?? 0) - fromRemain);
+    const fromRetreat = Math.min(retreatKeep.get(ch) ?? 0, n - fromRemain);
+    retreatKeep.set(ch, (retreatKeep.get(ch) ?? 0) - fromRetreat);
+    removedKeep.set(ch, fromRemain + fromRetreat);
+  }
+  return {
+    remain: keep_first(remain, remainKeep),
+    retreat: keep_first(retreat, retreatKeep),
+    removed: counts_to_string(removedKeep),
+  };
+}
+
+// The units that leave the battle on entering `wave`, in ch2 (display)
+// encoding.  Wave 1 has no carried-over pool, so this is empty there.
+function getNegativeDefender(um: unit_manager, wave: wave_input): string {
+  const neg = wave.negative_defender;
+  if (neg == undefined || neg.length == 0) {
+    return '';
+  }
+  return toCh2(um, preparse_token(neg));
+}
+
+// Process a survivor state from wave i into the remain/retreat strings for wave
+// i+1's defender.  Units named by nextWave.negative_defender are taken out of
+// the survivor pool and returned as `retreat`, so the next wave tracks them as
+// early retreaters: they no longer fight and do not count as survivors.
 function processSurvivorIntoRemain(
   um: unit_manager,
   survivorRemain: string,
@@ -90,18 +175,24 @@ function processSurvivorIntoRemain(
   nextWave: wave_input,
   isNaval: boolean,
   isSwap: boolean,
-): string {
+): { remain: string; retreat: string } {
   const remainCh2 = toCh2(um, survivorRemain);
   const retreatCh2 = toCh2(um, survivorRetreat);
-  const survivors = (isSwap && !isNaval ? remove_planes(remainCh2) : remainCh2) + retreatCh2;
+  const neg = getNegativeDefender(um, nextWave);
+  const carry = subtract_carryover(
+    isSwap && !isNaval ? remove_planes(remainCh2) : remainCh2,
+    retreatCh2,
+    neg,
+  );
+  const survivors = carry.remain + carry.retreat;
   const defToken = preparse_token(nextWave.defender);
   const oolProcessed = apply_ool(survivors + defToken, nextWave.def_ool, nextWave.def_aalast);
   const battleshipProcessed = isNaval ? preparse_battleship(oolProcessed) : oolProcessed;
   if (isNaval) {
     const { remain } = crash_fighters(um, battleshipProcessed);
-    return remain;
+    return { remain, retreat: carry.removed };
   }
-  return battleshipProcessed;
+  return { remain: battleshipProcessed, retreat: carry.removed };
 }
 
 // Build the defender string for wave i from max survivors of wave i-1 + wave i reinforcements
@@ -120,6 +211,9 @@ function buildWaveDefenderString(
   }
   const rawSurvivors = isSwap ? prevAttackerStr! : prevDefenderStr;
   const um = new unit_manager(input.verbose_level);
+  // The template defender string is the "maximum" state: the units leaving via
+  // negative_defender are kept here because the real run re-adds them to this
+  // wave's base through each def_cas entry's `retreat` field.
   const survivorsCh2 = toCh2(um, rawSurvivors);
 
   const defToken = preparse_token(wave.defender);
@@ -200,7 +294,7 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
       const prevNodeArr = prevIsSwap ? prevProb.att_data.nodeArr : prevProb.def_data.nodeArr;
       defCas = [];
       for (let j = 0; j < prevNodeArr.length; j++) {
-        const remain = processSurvivorIntoRemain(
+        const carry = processSurvivorIntoRemain(
           um,
           prevNodeArr[j].unit_str,
           prevNodeArr[j].retreat,
@@ -208,7 +302,7 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
           input.is_naval,
           prevIsSwap,
         );
-        defCas.push({ remain, retreat: '', casualty: '', prob: 0.001 });
+        defCas.push({ remain: carry.remain, retreat: carry.retreat, casualty: '', prob: 0.001 });
       }
     }
 
@@ -265,7 +359,7 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
         futureMap.set(j, 0);
         continue;
       }
-      const remain = processSurvivorIntoRemain(
+      const carry = processSurvivorIntoRemain(
         um,
         nodeArr[j].unit_str,
         nodeArr[j].retreat,
@@ -273,9 +367,9 @@ function computeFutureEVMaps(input: multiwave_input): (Map<number, number> | und
         input.is_naval,
         isSwap,
       );
-      const ii = refDefMap.get(remain);
+      const ii = refDefMap.get(carry.remain);
       if (ii == undefined) {
-        throw new Error(`Survivor state ${remain} not found in next wave's defender map`);
+        throw new Error(`Survivor state ${carry.remain} not found in next wave's defender map`);
       }
       const ev = computeFutureWaveEV(refProb, ii);
       futureMap.set(j, (isSwap ? -1 : +1) * ev);
@@ -351,21 +445,27 @@ export function multiwave(input: multiwave_input): multiwave_output {
           }
           // retreated subs fight in the second wave.
           const isAttacker = wave.use_attackers_from_previous_wave;
+          const carry = subtract_carryover(
+            isAttacker && !input.is_naval ? remove_planes(cas.remain) : cas.remain,
+            cas.retreat,
+            getNegativeDefender(um, wave),
+          );
           const newcasstr_ool = apply_ool(
-            (isAttacker && !input.is_naval ? remove_planes(cas.remain) : cas.remain) +
-              cas.retreat +
-              def_token,
+            carry.remain + carry.retreat + def_token,
             wave.def_ool,
             wave.def_aalast,
           );
           const newcasstr = input.is_naval ? preparse_battleship(newcasstr_ool) : newcasstr_ool;
 
           let cas_remain = newcasstr;
-          let cas_retreat = '';
+          // negative_defender units leave the battle: record them as this
+          // wave's retreaters so they do not fight and do not count as
+          // survivors, instead of silently dropping them.
+          let cas_retreat = carry.removed;
           if (input.multiwave_enforce_naval_fighters_carriers && input.is_naval) {
             const { remain, retreat } = crash_fighters(um, newcasstr);
             cas_remain = remain;
-            cas_retreat = retreat;
+            cas_retreat = retreat + carry.removed;
           }
 
           const newcas = isAttacker && !input.is_naval ? remove_planes(cas.casualty) : cas.casualty;

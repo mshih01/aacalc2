@@ -78,6 +78,13 @@ export interface MultiwaveInput {
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
 }
 
+export interface UnitGroup {
+  units: Army; // defense.units may be negative from wave 2 on: those units leave the battle
+  ool: UnitIdentifier[];
+  takes: number;
+  aaLast: boolean;
+}
+
 export interface WaveInput {
   attack: UnitGroup;
   defense: UnitGroup;
@@ -322,3 +329,61 @@ they leave the battle instead of continuing to fight in the wave.
 This option is distinct from the per-wave `is_crash_fighters` control, which
 models air units being destroyed (crashed) during combat.
 ```
+
+### negative reinforcements (wave 2+)
+
+```
+WaveInput.defense.units  -- negative counts are allowed from wave 2 on.
+multiwave_input wave_info[i].negative_defender  -- optional internal string.
+```
+
+In a multiwave battle, the defenders of wave 2+ are the survivors carried over
+from the previous wave plus that wave's reinforcements.  A negative count in
+`defense.units` models a surviving unit leaving the battle before the wave: the
+named units are subtracted from the carried-over pool instead of added to it.
+The positive counts still form the wave's own defense reinforcements.
+`make_unit_group_string` splits them: positives become `wave_input.defender`,
+negatives become `wave_input.negative_defender`.
+
+  * The subtraction applies to whichever side carries over -- by default the
+    previous wave's surviving defenders, or its surviving attackers when
+    `use_attackers_from_previous_wave` is set.  Both cases use the negative
+    counts on `defense.units`.
+  * Negative counts only affect the carry-over.  They never remove units from
+    the wave's own `defense` reinforcements, so `{ inf: 1, art: -1 }` adds one
+    infantry reinforcement and removes one carried-over artillery.
+  * Because a unit type has a single count, one type cannot be both added as a
+    reinforcement and removed from the carry-over in the same wave.
+  * Survivors still on the battlefield are removed before retreated ones, so a
+    unit that leaves is taken from the non-retreated survivors when possible.
+  * Counts are clamped at what the state actually holds: naming more units of a
+    type than survived leaves zero of that unit (no error).
+  * The units that leave are recorded as that wave's retreaters on the
+    `def_cas` (defend reinforcement) entry.  They therefore do not fight and do
+    not count as survivors of the wave, and they appear as retreaters in the
+    wave's casualty breakdown.
+  * Charged nothing in IPC: a unit that leaves is not a casualty of the wave.
+  * Negative counts on `attack.units` are ignored.  Negative counts are inert on
+    wave 1, which has no carry-over pool.  In the frontend, the Defender unit
+    inputs accept negative values from wave 2 on; wave 1 inputs (and every
+    Attacker input) are clamped at zero.
+  * Consequence for 3+ waves: the engine carries a wave's retreaters forward
+    into the next wave ("retreated units fight in the next wave"), so a unit
+    removed from wave i is available again in wave i+1.  Re-apply the negative
+    count on each wave where the unit should stay out.
+
+Example: wave 1 is defended by 4 infantry; wave 2 has no new defenders, but one
+surviving infantry is pulled out to garrison another territory:
+
+```
+{
+  attack: ..., defense: { units: { inf: 4 }, ool: [...], takes: 0, aaLast: false },
+  ...
+},
+{
+  attack: ..., defense: { units: { inf: -1 }, ool: [...], takes: 0, aaLast: false },
+  ...
+}
+```
+
+Wave 2's defenders are then wave 1's surviving infantry minus one.
