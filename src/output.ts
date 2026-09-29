@@ -78,6 +78,16 @@ function get_general_group_string(
   return [out1, out];
 }
 
+function hasSurvivingUnits(um: unit_manager, group: general_unit_group, index: number): boolean {
+  const node = group.nodeArr[index];
+  // Early retreaters are assumed to be in a different territory and do not
+  // count as survivors of this wave.  Current-wave retreaters still count.
+  const nonEarlyRetreat = node.retreat.length - node.num_early_retreat;
+  return (
+    get_general_cost_remain(um, group, index) > 0 && node.unit_str.length + nonEarlyRetreat > 0
+  );
+}
+
 export function get_reduced_group_string(input: string): string {
   const map: Map<string, number> = new Map();
 
@@ -206,10 +216,10 @@ export function print_general_results(
     const p = result.p;
     sum += p;
     result.cumm = sum;
-    if (get_general_cost_remain(baseproblem.um, problem.att_data, result.i) > 0) {
+    if (hasSurvivingUnits(baseproblem.um, problem.att_data, result.i)) {
       attsurvive += p;
     }
-    if (get_general_cost_remain(baseproblem.um, problem.def_data, result.j) > 0) {
+    if (hasSurvivingUnits(baseproblem.um, problem.def_data, result.j)) {
       defsurvive += p;
     }
   }

@@ -430,7 +430,9 @@ export function multiwave(input: multiwave_input): multiwave_output {
       probArr.push(prob);
       const init_ipc_cost = defend_add_reinforce
         ? defend_add_reinforce.reduce((acc, cas) => {
-            const ipcCost = get_cost_from_str(prob.um, cas.casualty, cas.retreat);
+            // `cas.retreat` units are retreaters, not IPC losses.  They are
+            // already represented in the wave's base survive/retreat state.
+            const ipcCost = get_cost_from_str(prob.um, cas.casualty);
             acc += cas.prob * ipcCost;
             return acc;
           }, 0)

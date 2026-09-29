@@ -313,6 +313,9 @@ export class unit_group {
 export class general_unit_graph_node {
   unit_str: string;
   retreat: string = '';
+  // Units already in retreat before the current wave.  These are excluded from
+  // the wave's survives statistic because they are in a different territory.
+  num_early_retreat: number = 0;
   N: number;
   num_subs: number;
   num_air: number;
@@ -347,9 +350,16 @@ export class general_unit_graph_node {
   nosub_group: unit_group | undefined = undefined;
   naval_group: unit_group | undefined = undefined;
   numBB: number = 0;
-  constructor(um: unit_manager, unit_str: string, retreat: string, is_nonaval: boolean) {
+  constructor(
+    um: unit_manager,
+    unit_str: string,
+    retreat: string,
+    is_nonaval: boolean,
+    is_early_retreat: boolean = false,
+  ) {
     this.unit_str = unit_str;
     this.retreat = retreat;
+    this.num_early_retreat = is_early_retreat ? retreat.length : 0;
     this.N = unit_str.length;
     this.num_subs = count_units(unit_str, 'S');
     this.num_bomber = count_units(unit_str, 'b');
@@ -847,8 +857,8 @@ export function get_cost_from_str(um: unit_manager, s: string, retreat: string =
   }
   return cost;
 }
-function make_node_key(s: string, retreat: string) {
-  return s + ';' + retreat;
+function make_node_key(s: string, retreat: string, is_early_retreat: boolean = false) {
+  return s + ';' + retreat + (is_early_retreat && retreat.length > 0 ? ';e' : '');
 }
 function getOrCreateGraphNode(
   mymap: Map<string, general_unit_graph_node>,
@@ -856,13 +866,14 @@ function getOrCreateGraphNode(
   um: unit_manager,
   unit_str: string,
   retreat: string,
+  is_early_retreat: boolean,
   is_nonaval: boolean,
   computeDlast: (node: general_unit_graph_node) => boolean,
 ): general_unit_graph_node {
-  const key = make_node_key(unit_str, retreat);
+  const key = make_node_key(unit_str, retreat, is_early_retreat);
   const existing = mymap.get(key);
   if (existing != undefined) return existing;
-  const node = new general_unit_graph_node(um, unit_str, retreat, is_nonaval);
+  const node = new general_unit_graph_node(um, unit_str, retreat, is_nonaval, is_early_retreat);
   node.dlast = computeDlast(node);
   mymap.set(key, node);
   myheap.push(node);
@@ -935,12 +946,14 @@ export function compute_remove_hits(
   if (cas != undefined) {
     for (let i = 0; i < cas.length; i++) {
       const s = cas[i].remain;
+      const retreat = cas[i].retreat;
       getOrCreateGraphNode(
         mymap,
         myheap,
         naval_group.um,
         s,
-        '',
+        retreat,
+        true,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -975,6 +988,7 @@ export function compute_remove_hits(
       naval_group.um,
       s,
       node.retreat,
+      node.num_early_retreat > 0,
       naval_group.is_nonaval,
       (n) => n.num_naval > 0 && node.dlast,
     );
@@ -989,6 +1003,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -1003,6 +1018,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -1022,6 +1038,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         () => true,
       );
@@ -1034,6 +1051,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         () => true,
       );
@@ -1046,6 +1064,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         () => true,
       );
@@ -1058,6 +1077,7 @@ export function compute_remove_hits(
         naval_group.um,
         retreat_subs_output.s,
         retreat_subs_output.subs,
+        false,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -1070,6 +1090,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         amphibious,
+        false,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -1082,6 +1103,7 @@ export function compute_remove_hits(
         naval_group.um,
         s2,
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );
@@ -1097,6 +1119,7 @@ export function compute_remove_hits(
         naval_group.um,
         '',
         node.retreat,
+        node.num_early_retreat > 0,
         naval_group.is_nonaval,
         (n) => n.num_naval > 0 && node.dlast,
       );

@@ -1113,7 +1113,12 @@ export function solve_general(problem: general_problem) {
   } else {
     const mymap: Map<string, number> = new Map();
     for (let i = 0; i < M; i++) {
-      mymap.set(problem.def_data.nodeArr[i].unit_str, i);
+      const node = problem.def_data.nodeArr[i];
+      // `:e` keeps early-retreat states distinct from current-wave retreat
+      // states that happen to have the same unit string and retreat string.
+      const earlyRetreatKey =
+        node.retreat.length > 0 && node.num_early_retreat === node.retreat.length ? ':e' : '';
+      mymap.set(node.unit_str + ':' + node.retreat + earlyRetreatKey, i);
     }
     let aaData: unit_group | undefined;
     let aaTblSize: number | undefined;
@@ -1122,7 +1127,9 @@ export function solve_general(problem: general_problem) {
       aaTblSize = aaData.tbl_size;
     }
     for (let i = 0; i < problem.def_cas.length; i++) {
-      const ii = mymap.get(problem.def_cas[i].remain);
+      const cas = problem.def_cas[i];
+      const earlyRetreatKey = cas.retreat.length > 0 ? ':e' : '';
+      const ii = mymap.get(cas.remain + ':' + cas.retreat + earlyRetreatKey);
       if (ii == undefined) {
         throw new Error();
       } else {
