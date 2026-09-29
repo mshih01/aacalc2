@@ -231,6 +231,47 @@ describe('computeBattle with damaged battleships', () => {
   })
 })
 
+describe('negative defense counts', () => {
+  it('keeps negative defense counts in the library input', () => {
+    const result = buildMultiwaveInput({
+      attack: { 0: { inf: 3 }, 1: { inf: 1 } },
+      defense: { 0: { inf: 3 }, 1: { inf: -1 } },
+      mode: 'land',
+      numWaves: 2,
+      retreatModes: {},
+    })
+
+    expect(result.wave_info[1].defense.units).toEqual({ inf: -1 })
+  })
+
+  it('models a surviving unit leaving the battle before wave 2', () => {
+    const base: BattleInput = {
+      attack: { 0: { inf: 1 }, 1: { inf: 1 } },
+      defense: { 0: { inf: 6 }, 1: {} },
+      mode: 'land',
+      numWaves: 2,
+      retreatModes: {},
+    }
+
+    const without = computeBattle(base)
+    const withLeaver = computeBattle({
+      ...base,
+      defense: { 0: { inf: 6 }, 1: { inf: -6 } },
+    })
+
+    // Wave 1 leaves ~5-6 attacking-defenders; removing all of them before wave
+    // 2 leaves the territory undefended, so the wave-2 attacker always wins.
+    expect(without.takesTerritory[1]).toBeLessThan(0.5)
+    expect(withLeaver.takesTerritory[1]).toBeCloseTo(1, 12)
+
+    // The units that left are reported as wave-2 retreaters, not casualties.
+    const retreaters = Object.values(withLeaver.casualtiesInfoArr[1].defense).map(
+      (casualty) => casualty.retreaters,
+    )
+    expect(retreaters.some((r) => r.includes('Inf'))).toBe(true)
+  })
+})
+
 describe('computeSbrBattle', () => {
   it('exposes the SBR casualty distribution through casualtiesInfoArr', () => {
     const output = computeSbrBattle(sbrInput())

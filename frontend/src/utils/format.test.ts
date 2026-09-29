@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getOolString, getUnitChar, getUnitString, getUnitName } from './format.ts'
+import { getNegativeUnitString, getOolString, getUnitChar, getUnitString, getUnitName } from './format.ts'
 
 describe('getUnitChar', () => {
   it('maps a unit id to its single character', () => {
@@ -49,6 +49,10 @@ describe('getUnitString', () => {
     expect(getUnitString({ inf: 3, art: 0 })).toBe('3i')
   })
 
+  it('omits negative counts, which are not part of the wave army', () => {
+    expect(getUnitString({ inf: 3, art: -1 })).toBe('3i')
+  })
+
   it('does not prefix count of 1', () => {
     expect(getUnitString({ inf: 1 })).toBe('i')
   })
@@ -60,6 +64,25 @@ describe('getUnitString', () => {
 
   it('follows the defined unit order', () => {
     expect(getUnitString({ arm: 2, inf: 1 })).toBe('i2t')
+  })
+})
+
+describe('getNegativeUnitString', () => {
+  it('returns an empty string when nothing is negative', () => {
+    expect(getNegativeUnitString({ inf: 3, art: 0 })).toBe('')
+    expect(getNegativeUnitString({})).toBe('')
+  })
+
+  it('renders negative counts without a sign', () => {
+    expect(getNegativeUnitString({ inf: -1, art: -2 })).toBe('i2a')
+  })
+
+  it('ignores positive counts', () => {
+    expect(getNegativeUnitString({ inf: 3, art: -1 })).toBe('a')
+  })
+
+  it('follows the defined unit order', () => {
+    expect(getNegativeUnitString({ arm: -2, inf: -1 })).toBe('i2t')
   })
 })
 

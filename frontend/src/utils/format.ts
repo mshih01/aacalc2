@@ -229,11 +229,12 @@ export function getOolString(ool: readonly string[]): string {
   return ool.map(getUnitChar).join('')
 }
 
+const UNIT_ORDER = ['inf', 'art', 'arm', 'fig', 'bom', 'aa', 'sub', 'tra', 'des', 'cru', 'acc', 'bat', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'];
+
 export function getUnitString(units: Record<string, number>): string {
-  const unitOrder = ['inf', 'art', 'arm', 'fig', 'bom', 'aa', 'sub', 'tra', 'des', 'cru', 'acc', 'bat', 'dbat', 'ic', 'inf_a', 'art_a', 'arm_a'];
   let result = '';
 
-  for (const unitId of unitOrder) {
+  for (const unitId of UNIT_ORDER) {
     if (unitId in units && units[unitId] > 0) {
       const count = units[unitId];
       const unitChar = UNIT_CHAR_MAP[unitId];
@@ -245,6 +246,27 @@ export function getUnitString(units: Record<string, number>): string {
         }
       }
     }
+  }
+
+  return result;
+}
+
+/**
+ * Negative counts as a unit string, e.g. { inf: 3, art: -1 } → '1a'.
+ * These name units that leave the battle before the wave (see
+ * `WaveInput.defense.units`), so they are not part of the wave's army and are
+ * excluded from `getUnitString` / the army summary.
+ */
+export function getNegativeUnitString(units: Record<string, number>): string {
+  let result = '';
+
+  for (const unitId of UNIT_ORDER) {
+    const count = units[unitId];
+    if (!(unitId in units) || count >= 0) continue;
+    const unitChar = UNIT_CHAR_MAP[unitId];
+    if (!unitChar) continue;
+    const n = Math.abs(count);
+    result += n === 1 ? unitChar : `${n}${unitChar}`;
   }
 
   return result;

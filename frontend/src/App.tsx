@@ -1140,7 +1140,10 @@ function App() {
               config={waveConfigs[waveIdx]}
               onUnitChange={(side, unit, count) => {
                 const units = { ...(side === 'attack' ? (attack[waveIdx] || {}) : (defense[waveIdx] || {})) }
-                if (count > 0) {
+                // Negative counts are kept for the defense side: on wave 2+ they
+                // name units that leave the battle.  WaveCard only allows them
+                // there, so the attacker side never sees a negative here.
+                if (count !== 0) {
                   units[unit] = count
                 } else {
                   delete units[unit]

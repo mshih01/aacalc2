@@ -173,3 +173,40 @@ describe('InputSummary order of loss', () => {
     expect(screen.getByText(/^OOL:/).textContent).toBe('OOL: ijagtufb vs ciatbf')
   })
 })
+
+describe('InputSummary negative defense counts', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
+  function renderSummary(defense: Record<number, Record<string, number>>) {
+    render(
+      <InputSummary
+        mode="land"
+        numWaves={2}
+        diceMode="standard"
+        amphibious={false}
+        territoryValue={0}
+        isDeadzone={false}
+        inProgress={false}
+        attack={{ 0: { inf: 5 }, 1: { inf: 2 } }}
+        defense={defense}
+        waveConfigs={{ 0: { ...DEFAULT_WAVE_CONFIG }, 1: { ...DEFAULT_WAVE_CONFIG } }}
+        onExpand={() => {}}
+      />,
+    )
+  }
+
+  it('shows units that leave the battle when the wave has reinforcements too', () => {
+    renderSummary({ 0: { inf: 5 }, 1: { inf: 2, art: -1 } })
+
+    const lines = screen.getAllByText(/2i — 2 units/)
+    expect(lines.some((el) => el.textContent?.includes('(leaves: a)'))).toBe(true)
+  })
+
+  it('shows only the leave note when the wave has nothing but negatives', () => {
+    renderSummary({ 0: { inf: 5 }, 1: { inf: -1 } })
+
+    expect(screen.getByText('leaves: i')).toBeInTheDocument()
+  })
+})

@@ -23,6 +23,15 @@ export function WaveCard({
   attack, defense, config,
   onUnitChange, onSwapSides, onSwapWave, onUpdateConfig,
 }: WaveCardProps) {
+  // Wave 1 has no carried-over survivors, so negative counts are meaningless
+  // there. From wave 2 on, a negative count names units that leave the battle:
+  // they are removed from the same-type survivors carried over from the
+  // previous wave (the "Defender" column holds that carry-over).
+  const allowNegativeDefense = waveIdx > 0
+  const parseCount = (raw: string) => {
+    const n = Number(raw) || 0
+    return allowNegativeDefense ? n : Math.max(0, n)
+  }
   return (
     <div className="card">
       <h2 style={{ marginTop: 0 }}>Wave {waveIdx + 1}</h2>
@@ -105,6 +114,11 @@ export function WaveCard({
 
           <div>
 <label className="label-muted">Units:</label>
+                    {allowNegativeDefense && (
+                      <div className="label-muted" style={{ marginTop: '-6px', fontSize: '12px' }}>
+                        A negative count removes that unit from the previous wave's survivors.
+                      </div>
+                    )}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '12px' }}>
                       {(modeUnitMap[mode] || []).map((unit) => {
                 const isDisabled = mode === 'sea' ? unit === 'bom' : (unit === 'cru' || unit === 'bat')
@@ -112,13 +126,12 @@ export function WaveCard({
                   <div key={`def-${waveIdx}-${unit}`} className="floating-label-group" style={{ opacity: isDisabled ? 0.5 : 1 }}>
                     <input
                       type="number"
-                      min={0}
+                      min={allowNegativeDefense ? undefined : 0}
                       disabled={isDisabled}
                       value={defense[unit] || ''}
                       className={defense[unit] ? 'has-value' : ''}
                       onChange={(e) => {
-                        const n = Math.max(0, Number(e.target.value) || 0)
-                        onUnitChange('defense', unit, n)
+                        onUnitChange('defense', unit, parseCount(e.target.value))
                       }}
                     />
                     <label>{getUnitName(unit)}</label>

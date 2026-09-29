@@ -1,6 +1,6 @@
 import type { BattleMode, WaveConfig } from '../types.ts'
 import { attackerOolPresets, attackerAmphibOolPresets, defenderOolPresets } from '../data/oolPresets.ts'
-import { getOolString, getUnitString } from '../utils/format.ts'
+import { getNegativeUnitString, getOolString, getUnitString } from '../utils/format.ts'
 import { calculateUnitSummary } from '../utils/unitStats.ts'
 import { RETREAT_OPTIONS } from '../constants.ts'
 
@@ -33,9 +33,11 @@ function retreatLabel(config: WaveConfig): string {
 
 function unitLine(units: Record<string, number>, isAttacker: boolean, isLandMode: boolean): string {
   const string = getUnitString(units)
-  if (!string) return 'none'
+  const leaving = getNegativeUnitString(units)
+  if (!string) return leaving ? `leaves: ${leaving}` : 'none'
   const summary = calculateUnitSummary(string, isAttacker, isLandMode)
-  return `${string} — ${summary.unitCount} units, ${summary.cost} IPC, ${summary.hitPoints} HP, ${summary.power} power`
+  const line = `${string} — ${summary.unitCount} units, ${summary.cost} IPC, ${summary.hitPoints} HP, ${summary.power} power`
+  return leaving ? `${line} (leaves: ${leaving})` : line
 }
 
 export function InputSummary({
