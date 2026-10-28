@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.2.1
+
+### Patch Changes
+
+- 1c1f779: improve complexity computation -- when no subs on both sides -- simple complexity should be used
+
 ## 2.2.0
 
 ### Minor Changes
