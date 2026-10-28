@@ -37,7 +37,7 @@ import { SBRModeSection } from './components/SBRModeSection.tsx'
 import { InputSummary } from './components/InputSummary.tsx'
 
 // Configuration Constants
-const MAX_COMPLEXITY = 200000
+const MAX_COMPLEXITY = 400000
 const INSTANTANEOUS_EVALUATION_THRESHOLD = 10000
 const AUTO_EVALUATE_BOUNCE_TIMER = 750 // ms
 
