@@ -375,10 +375,11 @@ export function multiwaveComplexityFastV2(input: MultiwaveInput): number {
     if (attacker_counts.num_air < numAAShots) {
       numAAShots = attacker_counts.num_air;
     }
-    let attacker_complexity = input.is_naval
+    let is_naval = (input.is_naval && attacker_counts.num_subs > 0) || defender_counts.num_subs > 0;
+    let attacker_complexity = is_naval
       ? attacker_counts.N * (attacker_counts.num_air + 1)
       : attacker_counts.N * (numAAShots + 1);
-    let defender_complexity = input.is_naval
+    let defender_complexity = is_naval
       ? defender_counts.N * (defender_counts.num_air + 1)
       : defender_counts.N;
     defender_complexity *= defenseOOLComplexity;
