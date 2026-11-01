@@ -138,6 +138,8 @@ export class unit_group {
   pless: number[][];
   pgreater: number[][];
   prob_table2: number[];
+  // memoized support bounds per unit count, see get_core_bounds.
+  core_bounds: Map<number, { tail: number; lo: number; hi: number }> = new Map();
 
   getIndex(i: number, j: number): number {
     return i * this.tbl_size + j;
@@ -155,6 +157,64 @@ export class unit_group {
   set_prob_table(i: number, j: number, val: number) {
     const ii = this.getIndex(i, j);
     this.prob_table2[ii] = val;
+  }
+  // Support interval [lo, hi] of the hit-count distribution for `count` units
+  // after discarding the cumulative tail below `tail` (relative to the row's
+  // total mass).  A hit distribution is unimodal, so this interval carries all
+  // but `tail` of the mass on each side; iterating only over it skips work
+  // whose contribution is below the caller's accuracy target.  `tail` of 0
+  // returns the full support.  Results are memoized per unit count.
+  get_core_bounds(count: number, tail: number): [number, number] {
+    if (count <= 0) {
+      return [0, 0];
+    }
+    const cached = this.core_bounds.get(count);
+    if (cached !== undefined && cached.tail === tail) {
+      return [cached.lo, cached.hi];
+    }
+    const max = this.tbl_size - 1;
+    let lo = 0;
+    let hi = count;
+    if (tail > 0) {
+      const base = count * this.tbl_size;
+      let total = 0;
+      for (let h = 0; h <= max; h++) {
+        total += this.prob_table2[base + h];
+      }
+      if (total > 0) {
+        const cut = tail * total;
+        let lo2 = 0;
+        let hi2 = count;
+        let acc = 0;
+        for (let h = 0; h <= max; h++) {
+          acc += this.prob_table2[base + h];
+          if (acc > cut) {
+            lo2 = h;
+            break;
+          }
+        }
+        acc = 0;
+        for (let h = max; h >= 0; h--) {
+          acc += this.prob_table2[base + h];
+          if (acc > cut) {
+            hi2 = h;
+            break;
+          }
+        }
+        if (hi2 >= lo2) {
+          lo = lo2;
+          hi = hi2;
+        }
+      }
+    }
+    lo = Math.min(lo, count);
+    hi = Math.min(hi, count);
+    if (hi < lo) {
+      lo = 0;
+      hi = count;
+    }
+    this.core_bounds.set(count, { tail, lo, hi });
+    return [lo, hi];
   }
 
   constructor(manager: unit_manager, input_str: string, attdef: number, diceMode: DiceMode) {

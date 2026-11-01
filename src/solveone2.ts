@@ -20,6 +20,12 @@ export function solve_one_general_state_copy2(
   numBombard: number,
   do_retreat_only: boolean,
   disable_retreat: boolean,
+  // Relative tail mass this sweep may discard when bounding the hit-count
+  // distributions.  0 keeps the full support, which is what callers need when
+  // the transition weights feed a discrete decision (retreat EV / pwin) rather
+  // than a probability sum: a knife-edge comparison would turn a negligible
+  // mass change into a large discrete outcome change.
+  prune_tail: number = 0,
   onNextState: (
     problem: general_problem,
     ii: number,
@@ -302,10 +308,18 @@ export function solve_one_general_state_copy2(
       node = node.next_navalhit;
     }
 
-    for (i = 0; i <= NNN; i++) {
+    // Only enumerate the part of each hit distribution that carries all but
+    // `prune_tail` of its mass.  The dropped pairs contribute less than
+    // `prune_tail` of this state's probability, which is below the accuracy
+    // target already implied by the prune thresholds.  `prune_tail` of 0
+    // returns the full support.
+    const att_core = att_nosub.get_core_bounds(NNN, prune_tail);
+    const def_core = def_nosub.get_core_bounds(MMM, prune_tail);
+
+    for (i = att_core[0]; i <= att_core[1]; i++) {
       const m = defIdxArr[i];
       const p1 = attProbArr[i];
-      for (j = 0; j <= MMM; j++) {
+      for (j = def_core[0]; j <= def_core[1]; j++) {
         prob = p1 * defProbArr[j];
         const n = attIdxArr[j];
         const ii = problem.getIndex(n, m);

@@ -224,6 +224,14 @@ export class general_problem {
   get_complexity(): number {
     return this.att_data.nodeArr.length * this.def_data.nodeArr.length;
   }
+  // Relative tail mass that the probability sweeps may discard when bounding
+  // the hit-count distributions.  Tied to the early prune threshold so that the
+  // accuracy knobs move together; 0 (pruning disabled) keeps the full support
+  // and therefore exact sums.  Sweeps whose transition weights feed a discrete
+  // decision (retreat EV / pwin) pass 0 explicitly -- see solveone.ts.
+  get_core_tail(): number {
+    return this.early_prune_threshold > 0 ? this.early_prune_threshold : 0;
+  }
   constructor(config: GeneralProblemConfig) {
     const {
       verbose_level,
@@ -824,6 +832,7 @@ export function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
+        0, // EV feeds the retreat decision -- keep the full support
         onResult1,
         onStart1,
         onEnd1,
@@ -911,6 +920,7 @@ export function compute_prob_wins(problem: general_problem): void {
         0,
         false,
         false,
+        0, // pwin feeds the retreat decision -- keep the full support
         onResult3,
         onStart3,
         onEnd3,
@@ -987,6 +997,9 @@ function do_roundless_eval(problem: general_problem, init_rounds: number): void 
         0,
         false,
         false,
+        // probability plus expected rounds, both linear in the transition
+        // weights -- safe to bound.
+        problem.get_core_tail(),
         onResult2,
         onStart2,
         onEnd2,
@@ -1014,7 +1027,7 @@ function do_roundless_eval_without_rounds(problem: general_problem): void {
   let i, j;
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
-      solve_one_general_state(problem, i, j, false, 0, false, false);
+      solve_one_general_state(problem, i, j, false, 0, false, false, problem.get_core_tail());
     }
   }
 }
@@ -1039,6 +1052,7 @@ export function do_round_eval(
         num_bombard,
         do_retreat_only,
         disable_retreat,
+        problem.get_core_tail(),
       );
     }
   }
@@ -1304,7 +1318,16 @@ export function solve_general(problem: general_problem) {
 
     for (i = 0; i < N; i++) {
       for (j = 0; j < M; j++) {
-        solve_one_general_state(problem.nonavalproblem, i, j, false, 0, false, false);
+        solve_one_general_state(
+          problem.nonavalproblem,
+          i,
+          j,
+          false,
+          0,
+          false,
+          false,
+          problem.get_core_tail(),
+        );
       }
     }
     // map back to parent problem
