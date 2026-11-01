@@ -1,5 +1,12 @@
 # aacalc2
 
+## 2.2.2
+
+### Patch Changes
+
+- 11fbf47: improve runtime improved pruning.
+- bound the hit-count distributions in the probability sweep to the interval carrying all but the early prune threshold of their mass, instead of enumerating the full support. 2-4x faster on large land battles (200 inf/art vs 200 inf/art: 4.3s -> 1.2s). The retreat EV and pwin sweeps are deliberately left unpruned because their transition weights feed a threshold comparison, where a negligible mass change can flip a decision; those results are unchanged. Probability results move by at most the discarded tail mass, which is below the accuracy already implied by prune_threshold.
+
 ## 2.2.1
 
 ### Patch Changes
