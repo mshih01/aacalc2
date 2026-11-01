@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.2.3
+
+### Patch Changes
+
+- 96200d3: improved pruning
+
 ## 2.2.2
 
 ### Patch Changes
