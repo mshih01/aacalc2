@@ -224,11 +224,10 @@ export class general_problem {
   get_complexity(): number {
     return this.att_data.nodeArr.length * this.def_data.nodeArr.length;
   }
-  // Relative tail mass that the probability sweeps may discard when bounding
-  // the hit-count distributions.  Tied to the early prune threshold so that the
-  // accuracy knobs move together; 0 (pruning disabled) keeps the full support
-  // and therefore exact sums.  Sweeps whose transition weights feed a discrete
-  // decision (retreat EV / pwin) pass 0 explicitly -- see solveone.ts.
+  // Relative tail mass that the state transition sweeps may discard when
+  // bounding the hit-count distributions.  Tied to the early prune threshold so
+  // that the accuracy knobs move together; 0 (pruning disabled) keeps the full
+  // support and therefore exact sums.
   get_core_tail(): number {
     return this.early_prune_threshold > 0 ? this.early_prune_threshold : 0;
   }
@@ -832,7 +831,7 @@ export function compute_expected_value(problem: general_problem): void {
         0,
         false,
         false,
-        0, // EV feeds the retreat decision -- keep the full support
+        problem.get_core_tail(), // EV accumulation -- same bound as the sweeps
         onResult1,
         onStart1,
         onEnd1,
@@ -920,7 +919,7 @@ export function compute_prob_wins(problem: general_problem): void {
         0,
         false,
         false,
-        0, // pwin feeds the retreat decision -- keep the full support
+        problem.get_core_tail(), // pwin accumulation -- same bound as the sweeps
         onResult3,
         onStart3,
         onEnd3,

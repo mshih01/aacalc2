@@ -21,10 +21,11 @@ export function solve_one_general_state_copy3(
   do_retreat_only: boolean,
   disable_retreat: boolean,
   // Relative tail mass this sweep may discard when bounding the hit-count
-  // distributions.  0 keeps the full support, which is what callers need when
-  // the transition weights feed a discrete decision (retreat EV / pwin) rather
-  // than a probability sum: a knife-edge comparison would turn a negligible
-  // mass change into a large discrete outcome change.
+  // distributions.  The discarded mass stays below the accuracy the prune
+  // thresholds already imply, including for the retreat EV and pwin sweeps,
+  // whose results are compared against thresholds: the tail is far below the
+  // resolution of those comparisons.  0 keeps the full support and would be the
+  // way to request an exact sweep, but no caller needs one today.
   prune_tail: number = 0,
   onNextState: (
     problem: general_problem,
