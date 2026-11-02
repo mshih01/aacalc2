@@ -294,7 +294,7 @@ interface unit_counts {
 // complexity is too large -- caller should fallback to monte carlo
 export function multiwaveTooComplex(input: MultiwaveInput): boolean {
   const complexity = multiwaveComplexityFastV2(input);
-  if (complexity > 120000) {
+  if (complexity > 250000) {
     return true;
   }
   return false;
