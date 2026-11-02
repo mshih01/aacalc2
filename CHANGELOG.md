@@ -1,5 +1,13 @@
 # aacalc2
 
+## 2.2.4
+
+### Patch Changes
+
+- acdd1af: runtime -- EV and pwin compute can use the same improvement.
+- 84f2087: bound the hit-count distributions in every state transition sweep -- probability, expected-value retreat and pwin retreat -- to the interval carrying all but the early prune threshold of their mass, instead of enumerating the full support. The sweeps after the first now cost roughly half as much: a large land battle with retreat EV drops from 754ms to 580ms, one with pwin retreat from 471ms to 318ms, and plain 200 inf/art vs 200 inf/art from 4.3s to 1.2s. The discarded tail stays below the accuracy prune_threshold already implies: reported output and retreat decisions were bit-identical across the battles tested.
+- 1be3002: increase threshold for monte carlo fallback from 120K to 250K
+
 ## 2.2.3
 
 ### Patch Changes
