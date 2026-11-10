@@ -214,3 +214,18 @@ the state is either 0 or the final probability that we end in this state.
 - multieval.ts -- multi-eval.  solve multiple armies at one time to take advantage of subproblem reuse.
 		It leads to 10X runtime improvement -- but also large memory overhead.  
 		Currently abandoned -- approach in optimize.ts is used instead.
+
+### Frontends and complexity thresholds.
+
+The library is consumed by two frontends:
+
+- aa1942calc.com (external, maintained by popovitsj), which is migrating to this
+  engine for calculation. `multiwaveTooComplex()` is primarily for that
+  integration: it lets his calculator fall back to Monte Carlo above 250,000.
+- `frontend/` in this repo, a small React app for local development. It does
+  not call `multiwaveTooComplex()`; it calls `multiwaveComplexityFastV2()`
+  directly and applies its own `MAX_COMPLEXITY` in `frontend/src/App.tsx`
+  (currently 4,000,000; previously 400,000).
+
+The thresholds are independent. Changing `multiwaveTooComplex()` affects
+aa1942calc.com, not the bundled frontend.

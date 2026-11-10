@@ -33,6 +33,9 @@ export interface multiwave_input {
   in_progress: boolean;
   is_deadzone: boolean;
   do_roundless_eval: boolean;
+  // Solve a no-naval sub+air battle as independent subs-vs-subs and
+  // air-vs-air components.  Exact; preserves expected rounds.  Default true.
+  decompose_naval: boolean;
   territory_value: number;
   retreat_round_zero: boolean;
   num_runs: number;

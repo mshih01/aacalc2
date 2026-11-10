@@ -156,6 +156,8 @@ function run3(argc: number, argv: string[]) {
     territory_value: 0, // default to 0 if not provided
     retreat_round_zero: false,
     do_roundless_eval: false,
+    // keep the golden regression outputs on the pre-decomposition path
+    decompose_naval: false,
     num_runs: num_runs,
     verbose_level: verbose_level,
   };

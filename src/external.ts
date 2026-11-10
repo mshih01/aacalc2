@@ -169,6 +169,9 @@ export interface MultiwaveInput {
   // e.g. art ==> additional IPC cost 3
   // e.g. arm ==> additional IPC cost 4.5
   do_roundless_eval?: boolean; // enable roundless evaluation for improved runtime (on by default)
+  // Solve a no-naval sub+air battle as independent subs-vs-subs and
+  // air-vs-air components.  Exact; preserves expected rounds.  Default true.
+  decomposeNaval?: boolean;
   territory_value?: number; // value of the territory being attacked, used for expected profit calculations.
   retreat_round_zero?: boolean; // if true, retreat is allowed in round 0, default is true.
   experimentalConvolution?: boolean; // experimental: fix defender cumulative profit via convolution
@@ -291,7 +294,20 @@ interface unit_counts {
   N: number;
 }
 
-// complexity is too large -- caller should fallback to monte carlo
+// Complexity is too large -- the caller should fall back to Monte Carlo.
+//
+// This is a public helper with two very different consumers:
+//  - aa1942calc.com (external, maintained by popovitsj) is migrating to this
+//    engine for calculation and uses this function to decide when to fall back
+//    to Monte Carlo analysis.  The 250_000 cutoff below is tuned for that
+//    integration.
+//  - The `frontend/` directory in this repo is a small React app for local
+//    development.  It does NOT call this function: it calls
+//    multiwaveComplexityFastV2() directly with its own threshold
+//    (MAX_COMPLEXITY in frontend/src/App.tsx, currently 4_000_000; it used to
+//    be 400_000).
+//
+// Changing the cutoff here affects aa1942calc.com, not the bundled frontend.
 export function multiwaveTooComplex(input: MultiwaveInput): boolean {
   const complexity = multiwaveComplexityFastV2(input);
   if (complexity > 250000) {
@@ -480,6 +496,7 @@ export function getInternalInput(input: MultiwaveInput): multiwave_input {
     in_progress: input.in_progress,
     is_deadzone: input.is_deadzone ?? false, // default to false if not provided
     do_roundless_eval: do_roundless_eval,
+    decompose_naval: input.decomposeNaval ?? true, // default to true if not provided
     territory_value: input.territory_value ?? 0, // default to 0 if not provided
     retreat_round_zero: input.retreat_round_zero ?? true, // default to true if not provided
     diceMode: input.diceMode,

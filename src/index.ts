@@ -4,6 +4,7 @@ export { multiwaveExternal } from './external.js';
 export { multiwaveComplexityFastV2 } from './external.js';
 export { multiwaveTooComplex } from './external.js';
 export { armyRecommend } from './optimize.js';
+export { setNavalDecompositionEnabled } from './solve.js';
 export type {
   ArmyRecommendInput,
   ArmyRecommendOutput,

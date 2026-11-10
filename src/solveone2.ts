@@ -329,7 +329,7 @@ export function solve_one_general_state_copy2(
     }
   } else if (
     enable_airsub_optimization &&
-    problem.rounds < 0 &&
+    (problem.rounds < 0 || problem.midbattle_active) &&
     !problem.is_retreat &&
     problem.is_naval &&
     N3 == 0 &&
@@ -338,6 +338,14 @@ export function solve_one_general_state_copy2(
     // air vs. subs -- cannot hit each other... so can be solved independently.
     if (enable_airsub_optimization2 && problem.nonavalproblem != undefined) {
       problem.setNoNavalP(N1, M1, N2, M2, p_init);
+      if (problem.midbattle_active) {
+        // Boundary state: the remaining sub and air battles run independently,
+        // so add the expected rounds already spent plus E[max(R_sub, R_air)].
+        // Do not let onEndState zero this state's arrival rounds twice.
+        problem.boundary_rounds +=
+          (state_init_rounds + problem.get_boundary_rounds(N1, M1, N2, M2)) * p_init;
+        problem.setERound(N, M, 0.0);
+      }
     } else {
       if (N1 > 0 && M1 > 0) {
         const P0 = att_sub.get_prob_table(N1, 0) * def_sub.get_prob_table(M1, 0);

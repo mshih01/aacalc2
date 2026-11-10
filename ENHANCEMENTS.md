@@ -285,26 +285,35 @@ WaveInput.use_attackers_from_previous_wave  -- optional, default false.
 
 ### controlling complexity
 
+The engine exposes a shared size estimate:
+
 ```
-import {
-  multiwaveTooComplex
-} from 'aacalc2';
+import { multiwaveComplexityFastV2, multiwaveTooComplex } from 'aacalc2';
 
-// complexity is too large -- caller should fallback to monte carlo
-export function multiwaveTooComplex(input: MultiwaveInput): boolean {
+const complexity = multiwaveComplexityFastV2(input);
+// multiwaveTooComplex(input) is the same estimate with a fixed cutoff:
+// returns true above 250_000.
 ```
 
-    	The underlying algorithm is O(N^4)... so we need to guard input size.
+The underlying algorithm is roughly O(N^4), so callers guard input size.  This
+engine is currently used by two frontends, and they make that decision
+independently:
 
-    	const complexity = multiwaveComplexityFastV2(multiwaveInput)
+- **aa1942calc.com** (external, maintained by popovitsj) is migrating to this
+  engine for calculation.  `multiwaveTooComplex()` exists primarily for that
+  integration: it lets his calculator fall back to Monte Carlo analysis above
+  the cutoff (250_000 in `src/external.ts`).  Changing that cutoff affects
+  aa1942calc.com.
+- **`frontend/`** (the small React app in this repo, for local development) does
+  not call `multiwaveTooComplex()`.  It calls `multiwaveComplexityFastV2()`
+  directly with its own `MAX_COMPLEXITY` in `frontend/src/App.tsx` (currently
+  4_000_000; it used to be 400_000).  It also has a separate
+  `INSTANTANEOUS_EVALUATION_THRESHOLD` (currently 10_000) for auto-evaluating
+  small inputs.
 
-    	complexity 120000 might be a good value to for switching to monte carlo for runtime.  
-		From my previous experiments -- calculation matches simulation aroud there.
-
-    	I'm using 200000 currently as a hard limit, since I don't have monte carlo.
-
-    	for the exhaustive search -- a smaller limit is needed.  Without testing, maybe 
-		something like 1000
+So the two thresholds are independent: 4M is the author's own dev-UI choice,
+250K is the external calculator's Monte Carlo cutoff.  For exhaustive search,
+callers may still want a much smaller limit.
 
 
 ### naval fighters/carrier landing capacity in multiwave (wave 2+)

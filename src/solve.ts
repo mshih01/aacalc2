@@ -1,5 +1,14 @@
 export const epsilon: number = 1e-9;
 
+// Master switch for the naval sub/air decomposition.  The decomposition is
+// exact (see docs/naval_sub_air_decomposition.md); this exists so callers and
+// tests can fall back to the joint solve without rebuilding any input.
+export let enable_naval_decomposition = true;
+
+export function setNavalDecompositionEnabled(enabled: boolean): void {
+  enable_naval_decomposition = enabled;
+}
+
 export type DiceMode = 'standard' | 'lowluck' | 'biased';
 
 export type SortMode = 'unit_count' | 'ipc_cost';
@@ -15,6 +24,7 @@ import { count_units } from './preparse.js';
 import {
   buildAAGroup,
   forEachAAOutcome,
+  general_unit_graph_node,
   general_unit_group,
   hasAmphibious,
   hasDestroyer,
@@ -52,6 +62,10 @@ export interface GeneralProblemConfig {
   ev_territory_value?: number;
   retreat_round_zero?: boolean;
   do_roundless_eval?: boolean;
+  // Decompose a no-naval sub+air naval battle into independent subs-vs-subs and
+  // air-vs-air component solves.  Exact, and preserves expected rounds.  Only
+  // used when the problem is eligible (see general_problem.can_decompose()).
+  decompose_naval?: boolean;
   retreat_lose_air_probability: number;
   retreat_expected_ipc_profit_threshold?: number;
   retreat_pwin_threshold?: number;
@@ -108,6 +122,16 @@ export class general_problem {
   Pwin_1d: Float64Array = new Float64Array(0); // Pwin of state i, j
 
   nonavalproblem: general_problem | undefined = undefined;
+  decompose_naval: boolean = true;
+  use_decomposition: boolean = false;
+  // Mid-battle decomposition: a battle that starts with surface ships can reach
+  // a state with no naval units left, at which point the surviving subs and
+  // aircraft can no longer hit each other.  Such states become a boundary: their
+  // probability is handed to `nonavalproblem` and their future expected rounds
+  // come from precomputed component survival functions.
+  midbattle_active: boolean = false;
+  boundary_rounds: number = 0;
+  midbattle: midbattle_data | undefined = undefined;
   def_cas: casualty_1d[] | undefined = undefined;
   prune_threshold: number = -1;
   early_prune_threshold: number = -1;
@@ -224,6 +248,84 @@ export class general_problem {
   get_complexity(): number {
     return this.att_data.nodeArr.length * this.def_data.nodeArr.length;
   }
+  // A naval battle with subs and aircraft but no destroyers / surface ships is
+  // the product of an independent subs-vs-subs battle and an air-vs-air battle:
+  // subs cannot hit aircraft and aircraft cannot hit subs, so neither component
+  // can affect the other.  The decomposition is only attempted for a point-mass
+  // initial position on the unlimited-round path with no retreat conditions.
+  can_decompose(): boolean {
+    return (
+      enable_naval_decomposition &&
+      this.decompose_naval &&
+      this.is_naval &&
+      !this.is_nonaval &&
+      this.do_roundless_eval &&
+      !this.is_retreat &&
+      !this.is_crash_fighters &&
+      this.def_cas == undefined &&
+      !this.att_data.submerge_sub &&
+      !this.def_data.submerge_sub &&
+      this.att_data.num_subs > 0 &&
+      this.att_data.num_air > 0 &&
+      this.def_data.num_subs > 0 &&
+      this.def_data.num_air > 0 &&
+      this.att_data.num_naval == 0 &&
+      this.def_data.num_naval == 0 &&
+      this.rounds <= 0
+    );
+  }
+  // Eligible if this is a surface battle that can reach a no-naval state.  The
+  // old `nonavalproblem` object supplies the terminal distribution; precomputed
+  // component survival functions supply the remaining expected rounds.
+  can_midbattle_decompose(): boolean {
+    return (
+      enable_naval_decomposition &&
+      this.decompose_naval &&
+      this.is_naval &&
+      !this.is_nonaval &&
+      this.do_roundless_eval &&
+      !this.is_retreat &&
+      !this.is_crash_fighters &&
+      !this.att_data.submerge_sub &&
+      !this.def_data.submerge_sub &&
+      this.rounds <= 0 &&
+      !this.use_decomposition &&
+      this.nonavalproblem != undefined &&
+      // At rounds < 0 the old code already diverts to the nonaval problem (and
+      // loses the rounds), so adding the round bookkeeping there is free.  On
+      // the normal rounds = 0 path only do it for no-destroyer battles: a
+      // destroyer lets the other side's aircraft hit subs, which shortens the
+      // expensive sub tail, and those battles already solve quickly.
+      (this.rounds < 0 ||
+        (this.att_data.nodeArr[0].num_dest == 0 && this.def_data.nodeArr[0].num_dest == 0))
+    );
+  }
+  // Expected number of rounds for subs/air from the given surviving counts,
+  // using the precomputed component survival functions.  This is
+  // E[max(R_sub, R_air)] from that boundary state.
+  get_boundary_rounds(N1: number, M1: number, N2: number, M2: number): number {
+    const d = this.midbattle;
+    if (d == undefined) {
+      return 0;
+    }
+    const si = d.sub_att_index.get(N1);
+    const sj = d.sub_def_index.get(M1);
+    const ai = d.air_att_index.get(N2);
+    const aj = d.air_def_index.get(M2);
+    if (si == undefined || sj == undefined || ai == undefined || aj == undefined) {
+      throw new Error('midbattle: component state lookup failed');
+    }
+    const sIdx = d.sub.getIndex(si, sj);
+    const aIdx = d.air.getIndex(ai, aj);
+    const T = Math.max(d.sub_survival.length, d.air_survival.length);
+    let E = 0;
+    for (let t = 0; t < T; t++) {
+      const sa = t < d.sub_survival.length ? d.sub_survival[t][sIdx] : 0;
+      const sb = t < d.air_survival.length ? d.air_survival[t][aIdx] : 0;
+      E += 1 - (1 - sa) * (1 - sb);
+    }
+    return E;
+  }
   // Relative tail mass that the state transition sweeps may discard when
   // bounding the hit-count distributions.  Tied to the early prune threshold so
   // that the accuracy knobs move together; 0 (pruning disabled) keeps the full
@@ -256,6 +358,7 @@ export class general_problem {
       territory_value = 0,
       retreat_round_zero = true,
       do_roundless_eval = false,
+      decompose_naval = true,
       retreat_lose_air_probability,
       retreat_expected_ipc_profit_threshold,
       retreat_pwin_threshold,
@@ -266,6 +369,7 @@ export class general_problem {
     } = config;
     this.um = um;
     this.verbose_level = verbose_level;
+    this.decompose_naval = decompose_naval;
 
     const numAA = count_units(def_str, 'c');
 
@@ -344,7 +448,8 @@ export class general_problem {
     this.defmap = new Map();
     this.attmap2 = new Map();
     this.defmap2 = new Map();
-    if (is_naval && !is_nonaval) {
+    this.use_decomposition = this.can_decompose();
+    if (is_naval && !is_nonaval && !this.use_decomposition) {
       if (
         !att_submerge &&
         !def_submerge &&
@@ -947,6 +1052,16 @@ function do_roundless_eval(problem: general_problem, init_rounds: number): void 
   }
   //problem.ERound_1d = [];
   problem.ERound_1d = new Float64Array(N * M);
+  // Mid-battle decomposition: hand no-naval states to the nonaval problem and
+  // charge their future expected rounds from the component survival functions.
+  problem.boundary_rounds = 0;
+  problem.midbattle_active = false;
+  if (problem.can_midbattle_decompose()) {
+    if (problem.midbattle == undefined) {
+      prepare_midbattle(problem);
+    }
+    problem.midbattle_active = problem.midbattle != undefined;
+  }
   // initialize expected rounds for each state
   for (i = 0; i < N; i++) {
     for (j = 0; j < M; j++) {
@@ -1012,7 +1127,9 @@ function do_roundless_eval(problem: general_problem, init_rounds: number): void 
       sum += problem.getERound(i, j);
     }
   }
+  sum += problem.boundary_rounds;
   problem.average_rounds = sum;
+  problem.midbattle_active = false;
 
   if (problem.verbose_level > 2) {
     console.log(sum, 'average rounds');
@@ -1057,8 +1174,464 @@ export function do_round_eval(
   }
 }
 
+// The decomposed path is only used for small component chains; this guards
+// pathological dice modes where the per-round self-loop probability is ~1.
+const MAX_DECOMPOSITION_ROUNDS = 10000;
+
+interface component_profile {
+  survival: number[]; // P(component unresolved after t rounds), t = 0, 1, ...
+  terminal: [number, number, number][]; // (att index, def index, probability)
+}
+
+interface midbattle_data {
+  sub: general_problem;
+  air: general_problem;
+  // survival[t][state index] = P(component unresolved after t rounds | start)
+  sub_survival: Float64Array[];
+  air_survival: Float64Array[];
+  sub_att_index: Map<number, number>; // attacker subs count -> node index
+  sub_def_index: Map<number, number>;
+  air_att_index: Map<number, number>; // attacker air count -> node index
+  air_def_index: Map<number, number>;
+}
+
+function is_component_nonterminal(problem: general_problem, i: number, j: number): boolean {
+  return problem.att_data.nodeArr[i].N > 0 && problem.def_data.nodeArr[j].N > 0;
+}
+
+function component_nonterminal_mass(problem: general_problem): number {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  let mass = 0;
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      const p = problem.getP(i, j);
+      if (p > 0 && is_component_nonterminal(problem, i, j)) {
+        mass += p;
+      }
+    }
+  }
+  return mass;
+}
+
+// One physical combat round per sweep: allow_same_state=true keeps the round
+// count real.  (The roundless path uses allow_same_state=false, which resums
+// self-loops and consequently has no per-round information.)  Returns the
+// component's survival function and terminal distribution.
+function solve_component_profile(problem: general_problem, eps: number): component_profile {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  problem.P_1d = new Float64Array(N * M);
+  problem.setP(0, 0, 1.0);
+  const survival: number[] = [is_component_nonterminal(problem, 0, 0) ? 1 : 0];
+  let t = 0;
+  while (survival[t] > eps && t < MAX_DECOMPOSITION_ROUNDS) {
+    do_round_eval(problem, true, 0, false, false);
+    t++;
+    survival.push(component_nonterminal_mass(problem));
+  }
+  const terminal: [number, number, number][] = [];
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      const p = problem.getP(i, j);
+      if (p > 0 && !is_component_nonterminal(problem, i, j)) {
+        terminal.push([i, j, p]);
+      }
+    }
+  }
+  return { survival, terminal };
+}
+
+function make_decomposition_component(
+  problem: general_problem,
+  att_str: string,
+  def_str: string,
+  use_pruning: boolean = true,
+): general_problem {
+  const comp = new general_problem({
+    verbose_level: problem.verbose_level,
+    um: problem.um,
+    att_str,
+    def_str,
+    prob: 1.0,
+    att_dest_last: false,
+    att_submerge: false,
+    def_dest_last: false,
+    def_submerge: false,
+    rounds: 0,
+    retreat_threshold: 0,
+    is_crash_fighters: false,
+    is_naval: true,
+    is_nonaval: false,
+    diceMode: problem.diceMode,
+    sortMode: problem.sortMode,
+    is_deadzone: problem.is_deadzone,
+    territory_value: problem.territory_value,
+    retreat_round_zero: problem.retreat_round_zero,
+    do_roundless_eval: false,
+    retreat_lose_air_probability: 1.0,
+    decompose_naval: false, // components must not recurse
+  });
+  comp.set_prune_threshold(
+    problem.prune_threshold,
+    problem.early_prune_threshold,
+    problem.report_prune_threshold,
+  );
+  if (!use_pruning) {
+    // The mid-battle survival matrix is evaluated for every start state, so keep
+    // the full support; the component chains are small.
+    comp.set_prune_threshold(-1, -1, -1);
+  }
+  return comp;
+}
+
+// Map a component's unit count on one side to its node index.  For a pure-subs
+// or pure-air component the removal graph is a chain, so the count is unique.
+function build_component_count_index(
+  group: general_unit_group,
+  count: (node: general_unit_graph_node) => number,
+): Map<number, number> {
+  const map = new Map<number, number>();
+  for (let i = 0; i < group.nodeArr.length; i++) {
+    map.set(count(group.nodeArr[i]), i);
+  }
+  return map;
+}
+
+// Adjoint survival DP:
+//   S_0(s) = 1 if s is non-terminal, else 0
+//   S_{t+1}(s) = sum_{s'} K(s -> s') * S_t(s')
+// The one-round kernel includes self-loops, so `allow_same_state` is true.  This
+// gives S(t | start) for *every* start state in one pass per t.
+function build_component_survival(problem: general_problem, eps: number): Float64Array[] {
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  problem.P_1d = new Float64Array(N * M);
+  const S0 = new Float64Array(N * M);
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      if (is_component_nonterminal(problem, i, j)) {
+        S0[problem.getIndex(i, j)] = 1;
+      }
+    }
+  }
+  const result: Float64Array[] = [S0];
+  let maxS = 1;
+  let t = 0;
+  while (maxS > eps && t < MAX_DECOMPOSITION_ROUNDS) {
+    const prev = result[t];
+    const next = new Float64Array(N * M);
+    let nextMax = 0;
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < M; j++) {
+        if (!is_component_nonterminal(problem, i, j)) {
+          continue;
+        }
+        let acc = 0;
+        solve_one_general_state(
+          problem,
+          i,
+          j,
+          true, // one real round, self-loops included
+          0,
+          false,
+          false,
+          problem.get_core_tail(),
+          (_problem, ii, prob) => {
+            acc += prob * prev[ii];
+          },
+          () => {
+            acc = 0;
+            return 1;
+          },
+          () => {},
+        );
+        next[problem.getIndex(i, j)] = acc;
+        if (acc > nextMax) {
+          nextMax = acc;
+        }
+      }
+    }
+    result.push(next);
+    t++;
+    maxS = nextMax;
+  }
+  return result;
+}
+
+// Build the mid-battle boundary data: component problems, their survival
+// matrices, and count -> node lookups.
+function prepare_midbattle(problem: general_problem): void {
+  if (problem.nonavalproblem == undefined) {
+    return;
+  }
+  const sub = make_decomposition_component(
+    problem,
+    problem.att_data.sub_group.unit_str,
+    problem.def_data.sub_group.unit_str,
+  );
+  const air = make_decomposition_component(
+    problem,
+    problem.att_data.air_group.unit_str,
+    problem.def_data.air_group.unit_str,
+  );
+  const eps = Math.max(
+    problem.early_prune_threshold > 0 ? problem.early_prune_threshold : 0,
+    1e-14,
+  );
+  problem.midbattle = {
+    sub,
+    air,
+    sub_survival: build_component_survival(sub, eps),
+    air_survival: build_component_survival(air, eps),
+    sub_att_index: build_component_count_index(sub.att_data, (node) => node.num_subs),
+    sub_def_index: build_component_count_index(sub.def_data, (node) => node.num_subs),
+    air_att_index: build_component_count_index(air.att_data, (node) => node.num_air),
+    air_def_index: build_component_count_index(air.def_data, (node) => node.num_air),
+  };
+}
+
+function build_decomposition_node_map(group: general_unit_group): Map<string, number> {
+  const map = new Map<string, number>();
+  for (let i = 0; i < group.nodeArr.length; i++) {
+    const node = group.nodeArr[i];
+    if (node.num_naval == 0) {
+      map.set(node.num_subs + ',' + node.num_air, i);
+    }
+  }
+  return map;
+}
+
+// Exact solve of an eligible no-naval sub+air battle.
+//
+// The subs-vs-subs and air-vs-air battles cannot hit each other, so the terminal
+// distribution is the product of the two component distributions.  Both
+// components fire every round, so the battle lasts max(R_sub, R_air) and
+//
+//   E[rounds] = sum_t [ 1 - (1 - S_sub(t)) * (1 - S_air(t)) ]
+//
+// where S(t) is the probability the component is still unresolved after t
+// rounds.
+function solve_decomposed(problem: general_problem): void {
+  const sub = make_decomposition_component(
+    problem,
+    problem.att_data.sub_group.unit_str,
+    problem.def_data.sub_group.unit_str,
+  );
+  const air = make_decomposition_component(
+    problem,
+    problem.att_data.air_group.unit_str,
+    problem.def_data.air_group.unit_str,
+  );
+  const eps = Math.max(
+    problem.early_prune_threshold > 0 ? problem.early_prune_threshold : 0,
+    1e-14,
+  );
+  const sub_profile = solve_component_profile(sub, eps);
+  const air_profile = solve_component_profile(air, eps);
+
+  const N = problem.att_data.nodeArr.length;
+  const M = problem.def_data.nodeArr.length;
+  const P = new Float64Array(N * M);
+  const attmap = build_decomposition_node_map(problem.att_data);
+  const defmap = build_decomposition_node_map(problem.def_data);
+
+  for (const [si, sj, sp] of sub_profile.terminal) {
+    const att_sub_node = sub.att_data.nodeArr[si];
+    const def_sub_node = sub.def_data.nodeArr[sj];
+    for (const [ai, aj, ap] of air_profile.terminal) {
+      const att_air_node = air.att_data.nodeArr[ai];
+      const def_air_node = air.def_data.nodeArr[aj];
+      const att_key = att_sub_node.num_subs + ',' + att_air_node.num_air;
+      const def_key = def_sub_node.num_subs + ',' + def_air_node.num_air;
+      const ii = attmap.get(att_key);
+      const jj = defmap.get(def_key);
+      if (ii == undefined || jj == undefined) {
+        throw new Error('decomposed naval: node lookup failed for ' + att_key + ' / ' + def_key);
+      }
+      P[problem.getIndex(ii, jj)] += problem.prob * sp * ap;
+    }
+  }
+
+  const total_rounds = Math.max(sub_profile.survival.length, air_profile.survival.length);
+  let average_rounds = 0;
+  for (let t = 0; t < total_rounds; t++) {
+    const sa = t < sub_profile.survival.length ? sub_profile.survival[t] : 0;
+    const sb = t < air_profile.survival.length ? air_profile.survival[t] : 0;
+    average_rounds += 1 - (1 - sa) * (1 - sb);
+  }
+
+  problem.P_1d = P;
+  problem.average_rounds = average_rounds;
+}
+
+// Fixed-boundary factorization fast path.
+//
+// After a surface ship phase the boundary distribution over the surviving subs
+// and aircraft is a joint distribution.  In many cases (e.g. a single cruiser
+// that dies in round 1) it is numerically the product of a subs-vs-subs
+// distribution and an air-vs-air distribution.  If so, the terminal
+// distribution can be computed from the two component marginals with one
+// roundless solve each, instead of expanding the full joint nonaval problem.
+//
+// Only used when pruning is enabled; an exact run (prune_threshold <= 0) keeps
+// the joint solve.
+// Test hook: default 1e-6.  Not part of the public API.
+export let boundary_factorization_tolerance = 1e-6;
+
+export function setBoundaryFactorizationTolerance(tolerance: number): void {
+  boundary_factorization_tolerance = tolerance;
+}
+
+function seed_component_from_marginal(
+  comp: general_problem,
+  marginal: Float64Array,
+  att_max: number,
+  def_max: number,
+  count: (node: general_unit_graph_node) => number,
+): void {
+  const N = comp.att_data.nodeArr.length;
+  const M = comp.def_data.nodeArr.length;
+  comp.P_1d = new Float64Array(N * M);
+  const att_index = build_component_count_index(comp.att_data, count);
+  const def_index = build_component_count_index(comp.def_data, count);
+  for (let a = 0; a <= att_max; a++) {
+    for (let d = 0; d <= def_max; d++) {
+      const p = marginal[a * (def_max + 1) + d];
+      if (p == 0) {
+        continue;
+      }
+      const i = att_index.get(a);
+      const j = def_index.get(d);
+      if (i == undefined || j == undefined) {
+        throw new Error('boundary factorization: component state lookup failed');
+      }
+      comp.setP(i, j, comp.getP(i, j) + p);
+    }
+  }
+}
+
+function component_terminal_states(comp: general_problem): [number, number, number][] {
+  const N = comp.att_data.nodeArr.length;
+  const M = comp.def_data.nodeArr.length;
+  const out: [number, number, number][] = [];
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < M; j++) {
+      const p = comp.getP(i, j);
+      if (p > 0 && !is_component_nonterminal(comp, i, j)) {
+        out.push([i, j, p]);
+      }
+    }
+  }
+  return out;
+}
+
+// Returns true if the boundary distribution was factorized and the terminal
+// distribution was written into the parent.  Returns false to use the joint
+// nonaval solve.
+function solve_factorized_boundary(problem: general_problem): boolean {
+  const np = problem.nonavalproblem;
+  if (np == undefined || problem.prune_threshold <= 0) {
+    return false;
+  }
+  const N = np.att_data.nodeArr.length;
+  const M = np.def_data.nodeArr.length;
+  const as_max = problem.att_data.num_subs;
+  const ds_max = problem.def_data.num_subs;
+  const aa_max = problem.att_data.num_air;
+  const da_max = problem.def_data.num_air;
+  const sub_stride = ds_max + 1;
+  const air_stride = da_max + 1;
+  const sub_marg = new Float64Array((as_max + 1) * sub_stride);
+  const air_marg = new Float64Array((aa_max + 1) * air_stride);
+  let total = 0;
+  for (let i = 0; i < N; i++) {
+    const a = np.att_data.nodeArr[i];
+    for (let j = 0; j < M; j++) {
+      const p = np.getP(i, j);
+      if (p == 0) {
+        continue;
+      }
+      const d = np.def_data.nodeArr[j];
+      total += p;
+      sub_marg[a.num_subs * sub_stride + d.num_subs] += p;
+      air_marg[a.num_air * air_stride + d.num_air] += p;
+    }
+  }
+  if (total <= 0) {
+    return true;
+  }
+  let err = 0;
+  for (let i = 0; i < N; i++) {
+    const a = np.att_data.nodeArr[i];
+    for (let j = 0; j < M; j++) {
+      const p = np.getP(i, j);
+      if (p == 0) {
+        continue;
+      }
+      const d = np.def_data.nodeArr[j];
+      const pred =
+        sub_marg[a.num_subs * sub_stride + d.num_subs] *
+        air_marg[a.num_air * air_stride + d.num_air];
+      err += Math.abs(p - pred);
+    }
+  }
+  if (problem.verbose_level > 2) {
+    console.log('boundary factorization error', err);
+  }
+  if (err > boundary_factorization_tolerance) {
+    return false;
+  }
+  if (problem.verbose_level > 2) {
+    console.log('using factorized boundary');
+  }
+
+  const sub = make_decomposition_component(
+    problem,
+    problem.att_data.sub_group.unit_str,
+    problem.def_data.sub_group.unit_str,
+  );
+  const air = make_decomposition_component(
+    problem,
+    problem.att_data.air_group.unit_str,
+    problem.def_data.air_group.unit_str,
+  );
+  seed_component_from_marginal(sub, sub_marg, as_max, ds_max, (node) => node.num_subs);
+  seed_component_from_marginal(air, air_marg, aa_max, da_max, (node) => node.num_air);
+  do_roundless_eval_without_rounds(sub);
+  do_roundless_eval_without_rounds(air);
+
+  const sub_term = component_terminal_states(sub);
+  const air_term = component_terminal_states(air);
+  const attmap = build_decomposition_node_map(problem.att_data);
+  const defmap = build_decomposition_node_map(problem.def_data);
+  for (const [si, sj, sp] of sub_term) {
+    const att_sub = sub.att_data.nodeArr[si];
+    const def_sub = sub.def_data.nodeArr[sj];
+    for (const [ai, aj, ap] of air_term) {
+      const att_air = air.att_data.nodeArr[ai];
+      const def_air = air.def_data.nodeArr[aj];
+      const ii = attmap.get(att_sub.num_subs + ',' + att_air.num_air);
+      const jj = defmap.get(def_sub.num_subs + ',' + def_air.num_air);
+      if (ii == undefined || jj == undefined) {
+        throw new Error('boundary factorization: parent state lookup failed');
+      }
+      const idx = problem.getIndex(ii, jj);
+      problem.setiP(idx, problem.getiP(idx) + sp * ap);
+    }
+  }
+  // The dense boundary grid is no longer needed.
+  np.P_1d = new Float64Array(0);
+  return true;
+}
+
 export function solve_general(problem: general_problem) {
   //debugger;
+
+  if (problem.use_decomposition) {
+    solve_decomposed(problem);
+    return;
+  }
 
   const N = problem.att_data.nodeArr.length;
   const M = problem.def_data.nodeArr.length;
@@ -1311,49 +1884,51 @@ export function solve_general(problem: general_problem) {
   }
 
   if (problem.nonavalproblem != undefined) {
-    const N = problem.nonavalproblem.att_data.nodeArr.length;
-    const M = problem.nonavalproblem.def_data.nodeArr.length;
-    let i, j;
+    if (!solve_factorized_boundary(problem)) {
+      const N = problem.nonavalproblem.att_data.nodeArr.length;
+      const M = problem.nonavalproblem.def_data.nodeArr.length;
+      let i, j;
 
-    for (i = 0; i < N; i++) {
-      for (j = 0; j < M; j++) {
-        solve_one_general_state(
-          problem.nonavalproblem,
-          i,
-          j,
-          false,
-          0,
-          false,
-          false,
-          problem.get_core_tail(),
-        );
-      }
-    }
-    // map back to parent problem
-    let sum = 0;
-    for (i = 0; i < N; i++) {
-      const attnode = problem.nonavalproblem.att_data.nodeArr[i];
-      const key: string = attnode.num_subs + ',' + attnode.num_air;
-      const ii = problem.attmap.get(key);
-      for (j = 0; j < M; j++) {
-        const node = problem.nonavalproblem.def_data.nodeArr[j];
-        const key2: string = node.num_subs + ',' + node.num_air;
-        const jj = problem.defmap.get(key2);
-        const p = problem.nonavalproblem.getP(i, j);
-        if (p > 0) {
-          //console.log(attnode.num_subs, attnode.num_air, node.num_subs, node.num_air, p, "p here");
-          if (ii == undefined || jj == undefined) {
-            console.log(key, key2, 'key, key2');
-            throw new Error();
-          }
-          const iii = problem.getIndex(ii, jj);
-          problem.setiP(iii, problem.getiP(iii) + p);
-          sum += p;
+      for (i = 0; i < N; i++) {
+        for (j = 0; j < M; j++) {
+          solve_one_general_state(
+            problem.nonavalproblem,
+            i,
+            j,
+            false,
+            0,
+            false,
+            false,
+            problem.get_core_tail(),
+          );
         }
       }
-    }
-    if (problem.verbose_level > 2) {
-      console.log(sum, 'sum');
+      // map back to parent problem
+      let sum = 0;
+      for (i = 0; i < N; i++) {
+        const attnode = problem.nonavalproblem.att_data.nodeArr[i];
+        const key: string = attnode.num_subs + ',' + attnode.num_air;
+        const ii = problem.attmap.get(key);
+        for (j = 0; j < M; j++) {
+          const node = problem.nonavalproblem.def_data.nodeArr[j];
+          const key2: string = node.num_subs + ',' + node.num_air;
+          const jj = problem.defmap.get(key2);
+          const p = problem.nonavalproblem.getP(i, j);
+          if (p > 0) {
+            //console.log(attnode.num_subs, attnode.num_air, node.num_subs, node.num_air, p, "p here");
+            if (ii == undefined || jj == undefined) {
+              console.log(key, key2, 'key, key2');
+              throw new Error();
+            }
+            const iii = problem.getIndex(ii, jj);
+            problem.setiP(iii, problem.getiP(iii) + p);
+            sum += p;
+          }
+        }
+      }
+      if (problem.verbose_level > 2) {
+        console.log(sum, 'sum');
+      }
     }
     problem.E_1d = new Float64Array(0);
     problem.ERound_1d = new Float64Array(0);

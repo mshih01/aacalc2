@@ -35,6 +35,7 @@ export function createGeneralProblem(
     territory_value: input.territory_value,
     retreat_round_zero: input.retreat_round_zero,
     do_roundless_eval: input.do_roundless_eval,
+    decompose_naval: input.decompose_naval,
     retreat_lose_air_probability: wave.retreat_lose_air_probability,
     retreat_expected_ipc_profit_threshold: wave.retreat_expected_ipc_profit_threshold,
     retreat_pwin_threshold: wave.retreat_pwin_threshold,
