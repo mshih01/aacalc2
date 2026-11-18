@@ -516,7 +516,14 @@ function App() {
           )
         : undefined
       
-      const retreatModeValue = input.retreatModes?.[i] || 'unitCount'
+      const savedRetreatMode = input.retreatModes?.[i] || 'unitCount'
+      // The engine rejects the strafe and lose-air retreat modes for naval
+      // battles, so fall back to the unit-count threshold when loading one
+      // (e.g. from a hand-edited share URL).
+      const retreatModeValue =
+        mode === 'sea' && (savedRetreatMode === 'strafe' || savedRetreatMode === 'loseAir')
+          ? 'unitCount'
+          : savedRetreatMode
       
       // Build threshold updates based on retreat mode
       const thresholdUpdates: Partial<WaveConfig> = {
@@ -528,7 +535,7 @@ function App() {
       }
       
       if (retreatModeValue === 'unitCount') {
-        thresholdUpdates.retreatThreshold = input.retreatThreshold?.[i]
+        thresholdUpdates.retreatThreshold = input.retreatThreshold?.[i] ?? 0
       } else if (retreatModeValue === 'expectedIpcProfit') {
         thresholdUpdates.retreatExpectedIpcProfitThreshold = input.retreatExpectedIpcProfitThresholds?.[i]
       } else if (retreatModeValue === 'probabilityWins') {

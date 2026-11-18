@@ -31,26 +31,33 @@ export const RETREAT_OPTIONS = [
     id: RETREAT_OPTION_TYPES.UNIT_COUNT,
     label: 'Retreat if Number of Attacking Units ≤',
     thresholdField: 'retreatThreshold' as const,
+    navalAllowed: true,
   },
   {
     id: RETREAT_OPTION_TYPES.EXPECTED_IPC_PROFIT,
     label: 'Expected IPC Profit <',
     thresholdField: 'retreatExpectedIpcProfitThreshold' as const,
+    navalAllowed: true,
   },
   {
     id: RETREAT_OPTION_TYPES.PROBABILITY_WINS,
     label: 'Probability Wins ≤',
     thresholdField: 'retreatPwinThreshold' as const,
+    navalAllowed: true,
   },
   {
+    // The engine rejects a strafe threshold for naval battles.
     id: RETREAT_OPTION_TYPES.STRAFE,
     label: 'Probability of Killing Defenders >',
     thresholdField: 'retreatStrafeThreshold' as const,
+    navalAllowed: false,
   },
   {
+    // The engine rejects a lose-air probability below 1 for naval battles.
     id: RETREAT_OPTION_TYPES.LOSE_AIR,
     label: 'Probability of Losing Air >',
     thresholdField: 'retreatLoseAirProbabilityThreshold' as const,
+    navalAllowed: false,
   },
 ] as const
 

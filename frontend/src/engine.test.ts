@@ -127,6 +127,36 @@ describe('buildMultiwaveInput', () => {
     expect(result.do_roundless_eval).toBe(true)
   })
 
+  it('drops retreat modes the library rejects for naval battles', () => {
+    const result = buildMultiwaveInput({
+      attack: { 0: { sub: 2 } },
+      defense: { 0: { des: 1 } },
+      mode: 'sea',
+      numWaves: 1,
+      retreatModes: { 0: 'strafe' },
+      retreatStrafeThresholds: { 0: 0.5 },
+      retreatLoseAirProbabilityThresholds: { 0: 0.2 },
+    })
+
+    expect(result.wave_info[0].retreat_strafe_threshold).toBeUndefined()
+    expect(result.wave_info[0].retreat_lose_air_probability).toBeUndefined()
+  })
+
+  it('leaves the naval retreat thresholds intact for land battles', () => {
+    const result = buildMultiwaveInput({
+      attack: { 0: { inf: 2 } },
+      defense: { 0: { inf: 1 } },
+      mode: 'land',
+      numWaves: 1,
+      retreatModes: { 0: 'strafe' },
+      retreatStrafeThresholds: { 0: 0.5 },
+      retreatLoseAirProbabilityThresholds: { 0: 0.2 },
+    })
+
+    expect(result.wave_info[0].retreat_strafe_threshold).toBe(0.5)
+    expect(result.wave_info[0].retreat_lose_air_probability).toBe(0.2)
+  })
+
   it('defaults numWaves to one wave', () => {
     const result = buildMultiwaveInput({
       attack: { 0: { inf: 1 } },

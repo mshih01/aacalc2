@@ -19,6 +19,12 @@ export function WaveOptions({ waveIdx, config, isNaval, onUpdate }: WaveOptionsP
     config.retreatLoseAirProbabilityThreshold === undefined &&
     config.retreatExpectedIpcProfitThreshold === undefined
 
+  // The engine rejects the strafe and lose-air retreat modes for naval
+  // battles, so they are not offered in sea mode.
+  const retreatOptions = isNaval
+    ? RETREAT_OPTIONS.filter((option) => option.navalAllowed)
+    : RETREAT_OPTIONS
+
   return (
     <div style={WAVE_OPTIONS_BORDER_STYLE}>
       {/* Grid: rounds + land-specific fields or sea controls */}
@@ -113,7 +119,7 @@ export function WaveOptions({ waveIdx, config, isNaval, onUpdate }: WaveOptionsP
       <div style={{ marginBottom: '10px' }}>
         <label style={RETREAT_LABEL_STYLE}>Retreat Options:</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {RETREAT_OPTIONS.map((option) => {
+          {retreatOptions.map((option) => {
             const thresholdField = option.thresholdField as keyof WaveConfig
             const isSelected = config.retreatMode !== undefined
               ? option.id === config.retreatMode
@@ -148,81 +154,78 @@ export function WaveOptions({ waveIdx, config, isNaval, onUpdate }: WaveOptionsP
         </div>
       </div>
 
-      {/* Conditional threshold inputs — land mode only */}
-      {!isNaval && (
-        <>
-          {isDefaultReteatOption && (
-            <div style={{ marginBottom: '10px' }}>
-              <div className="floating-label-group">
-                <input
-                  type="number"
-                  min={0}
-                  value={config.retreatThreshold || ''}
-                  onChange={(e) => onUpdate({ retreatThreshold: Number(e.target.value) || 0 })}
-                  className={config.retreatThreshold ? 'has-value' : ''}
-                  style={{ width: '100%' }}
-                />
-                <label>Threshold</label>
-              </div>
-            </div>
-          )}
-          {config.retreatExpectedIpcProfitThreshold !== undefined && (
-            <div style={{ marginBottom: '10px' }}>
-              <div className="floating-label-group">
-                <input
-                  type="number"
-                  step="any"
-                  value={config.retreatExpectedIpcProfitThreshold}
-                  onChange={(e) => onUpdate({ retreatExpectedIpcProfitThreshold: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-                <label>Threshold</label>
-              </div>
-            </div>
-          )}
-          {config.retreatPwinThreshold !== undefined && (
-            <div style={{ marginBottom: '10px' }}>
-              <div className="floating-label-group">
-                <input
-                  type="number"
-                  step="any"
-                  value={config.retreatPwinThreshold}
-                  onChange={(e) => onUpdate({ retreatPwinThreshold: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-                <label>Threshold</label>
-              </div>
-            </div>
-          )}
-          {config.retreatStrafeThreshold !== undefined && (
-            <div style={{ marginBottom: '10px' }}>
-              <div className="floating-label-group">
-                <input
-                  type="number"
-                  step="any"
-                  value={config.retreatStrafeThreshold}
-                  onChange={(e) => onUpdate({ retreatStrafeThreshold: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-                <label>Threshold</label>
-              </div>
-            </div>
-          )}
-          {config.retreatLoseAirProbabilityThreshold !== undefined && (
-            <div style={{ marginBottom: '10px' }}>
-              <div className="floating-label-group">
-                <input
-                  type="number"
-                  step="any"
-                  value={config.retreatLoseAirProbabilityThreshold}
-                  onChange={(e) => onUpdate({ retreatLoseAirProbabilityThreshold: Number(e.target.value) })}
-                  style={{ width: '100%' }}
-                />
-                <label>Threshold</label>
-              </div>
-            </div>
-          )}
-        </>
+      {/* Conditional threshold inputs — both land and sea: the engine honours
+          retreat thresholds for naval battles too */}
+      {isDefaultReteatOption && (
+        <div style={{ marginBottom: '10px' }}>
+          <div className="floating-label-group">
+            <input
+              type="number"
+              min={0}
+              value={config.retreatThreshold || ''}
+              onChange={(e) => onUpdate({ retreatThreshold: Number(e.target.value) || 0 })}
+              className={config.retreatThreshold ? 'has-value' : ''}
+              style={{ width: '100%' }}
+            />
+            <label>Threshold</label>
+          </div>
+        </div>
+      )}
+      {config.retreatExpectedIpcProfitThreshold !== undefined && (
+        <div style={{ marginBottom: '10px' }}>
+          <div className="floating-label-group">
+            <input
+              type="number"
+              step="any"
+              value={config.retreatExpectedIpcProfitThreshold}
+              onChange={(e) => onUpdate({ retreatExpectedIpcProfitThreshold: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
+            <label>Threshold</label>
+          </div>
+        </div>
+      )}
+      {config.retreatPwinThreshold !== undefined && (
+        <div style={{ marginBottom: '10px' }}>
+          <div className="floating-label-group">
+            <input
+              type="number"
+              step="any"
+              value={config.retreatPwinThreshold}
+              onChange={(e) => onUpdate({ retreatPwinThreshold: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
+            <label>Threshold</label>
+          </div>
+        </div>
+      )}
+      {!isNaval && config.retreatStrafeThreshold !== undefined && (
+        <div style={{ marginBottom: '10px' }}>
+          <div className="floating-label-group">
+            <input
+              type="number"
+              step="any"
+              value={config.retreatStrafeThreshold}
+              onChange={(e) => onUpdate({ retreatStrafeThreshold: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
+            <label>Threshold</label>
+          </div>
+        </div>
+      )}
+      {!isNaval && config.retreatLoseAirProbabilityThreshold !== undefined && (
+        <div style={{ marginBottom: '10px' }}>
+          <div className="floating-label-group">
+            <input
+              type="number"
+              step="any"
+              value={config.retreatLoseAirProbabilityThreshold}
+              onChange={(e) => onUpdate({ retreatLoseAirProbabilityThreshold: Number(e.target.value) })}
+              style={{ width: '100%' }}
+            />
+            <label>Threshold</label>
+          </div>
+        </div>
       )}
 
       {/* Per-wave EV overrides — affects retreat decision only, shown when Expected IPC Profit is selected */}

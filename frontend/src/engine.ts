@@ -39,6 +39,7 @@ export function withDbatInOol(
  */
 export function buildMultiwaveInput(input: BattleInput): MultiwaveInput {
   const numWaves = input.numWaves ?? 1
+  const isNaval = input.mode === 'sea'
 
   const wave_info = Array.from({ length: numWaves }, (_, waveIdx) => {
     const attackOol: UnitId[] = withDbatInOol(
@@ -75,8 +76,15 @@ export function buildMultiwaveInput(input: BattleInput): MultiwaveInput {
       retreat_threshold: input.retreatThreshold?.[waveIdx] ?? 0,
       retreat_expected_ipc_profit_threshold: input.retreatExpectedIpcProfitThresholds?.[waveIdx],
       retreat_pwin_threshold: input.retreatPwinThresholds?.[waveIdx],
-      retreat_strafe_threshold: input.retreatStrafeThresholds?.[waveIdx],
-      retreat_lose_air_probability: input.retreatLoseAirProbabilityThresholds?.[waveIdx],
+      // The library throws for these two modes on naval battles. The UI hides
+      // them in sea mode; dropping them here also covers stale inputs (e.g. a
+      // hand-edited share URL) that still carry a land-mode retreat choice.
+      retreat_strafe_threshold: isNaval
+        ? undefined
+        : input.retreatStrafeThresholds?.[waveIdx],
+      retreat_lose_air_probability: isNaval
+        ? undefined
+        : input.retreatLoseAirProbabilityThresholds?.[waveIdx],
       pwinMode: 'takes' as const,
       use_attackers_from_previous_wave: input.useAttackersFromPreviousWave?.[waveIdx] ?? false,
       ev_deadzone: input.evDeadzone?.[waveIdx],
@@ -89,7 +97,7 @@ export function buildMultiwaveInput(input: BattleInput): MultiwaveInput {
     debug: false,
     prune_threshold: input.pruneThreshold ?? 1e-12,
     report_prune_threshold: input.reportPruneThreshold ?? 1e-12,
-    is_naval: input.mode === 'sea',
+    is_naval: isNaval,
     in_progress: input.inProgress ?? false,
     num_runs: 1,
     verbose_level: input.verboseLevel ?? 0,
