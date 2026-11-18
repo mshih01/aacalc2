@@ -8,10 +8,8 @@ describe('beta-style calculator', () => {
     window.history.replaceState(null, '', '/');
   });
 
-  it('renders the simple calculator and produces results', async () => {
+  it('renders the calculator and produces results', async () => {
     render(<BetaApp />);
-
-    expect(screen.getByRole('button', { name: /switch to advanced mode/i })).toBeInTheDocument();
 
     const infantry = screen.getAllByLabelText('Infantry');
     fireEvent.change(infantry[0], { target: { value: '10' } });
@@ -30,9 +28,8 @@ describe('beta-style calculator', () => {
     expect(screen.getByText('Defender IPC')).toBeInTheDocument();
   });
 
-  it('opens the advanced options and shows all modes', () => {
+  it('shows all modes and advanced options', () => {
     render(<BetaApp />);
-    fireEvent.click(screen.getByRole('button', { name: /switch to advanced mode/i }));
 
     expect(screen.getByLabelText('SBR')).toBeInTheDocument();
     expect(screen.getByText('Amphibious assault')).toBeInTheDocument();

@@ -56,17 +56,16 @@ const SETTINGS_KEY = 'aacalc2BetaSettings';
 const HISTORY_KEY = 'aacalc2BetaHistory';
 
 type DrawerState = null | 'menu' | 'settings' | 'common' | 'history';
-type Page = 'calculator' | 'overview' | 'faq' | 'about' | 'video';
+type Page = 'calculator' | 'overview' | 'faq' | 'about';
 
 interface BetaSettings {
   darkMode: 'auto' | 'light' | 'dark';
-  width: 'sm' | 'md' | 'lg';
+  width: 'sm' | 'md' | 'lg' | 'xl';
   ipcDiffDisplay: 'absolute' | 'roi';
-  hideUnlikely: 'off' | '0.01' | '0.1' | '1';
+  hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
   historySortOrder: 'title' | 'date';
   showHistoryDetails: boolean;
   hideUnnamedHistory: boolean;
-  hideVideo: boolean;
 }
 
 const DEFAULT_SETTINGS: BetaSettings = {
@@ -77,13 +76,13 @@ const DEFAULT_SETTINGS: BetaSettings = {
   historySortOrder: 'title',
   showHistoryDetails: false,
   hideUnnamedHistory: true,
-  hideVideo: false,
 };
 
 const WIDTHS: Record<BetaSettings['width'], string> = {
   sm: '600px',
-  md: '800px',
-  lg: '1000px',
+  md: '900px',
+  lg: '1200px',
+  xl: '1536px',
 };
 
 function loadSettings(): BetaSettings {
@@ -186,7 +185,6 @@ const COMMON_BATTLES: Array<{ name: string; input: BattleInput }> = [
 ];
 
 export default function BetaApp() {
-  const [advanced, setAdvanced] = useState(false);
   const [mode, setMode] = useState<BattleMode>('land');
   const [numWaves, setNumWaves] = useState(1);
   const [diceMode, setDiceMode] = useState<'standard' | 'lowluck' | 'biased'>('standard');
@@ -797,21 +795,7 @@ export default function BetaApp() {
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }, [history, historySearch, settings.hideUnnamedHistory, settings.historySortOrder]);
 
-  const retireMode = advanced ? 'Switch to simple mode' : 'Switch to advanced mode';
-  const showAdvanced = advanced;
-
-  const handleAdvancedToggle = () => {
-    if (advanced) {
-      setAdvanced(false);
-      setNumWaves(1);
-      if (mode === 'sbr') setMode('land');
-    } else {
-      setAdvanced(true);
-    }
-  };
-
   const onModeChange = (next: BattleMode) => {
-    if (!advanced && next === 'sbr') return;
     setMode(next);
     setResult(null);
     setError(null);
@@ -836,8 +820,8 @@ export default function BetaApp() {
   const filteredRetreatTypes = RETREAT_TYPES.filter((option) => mode !== 'sea' || option.naval);
 
   return (
-    <div className="beta-app">
-      <div className="beta-container">
+    <div className={`beta-app beta-app--${settings.width}`}>
+      <div className={`beta-container beta-container--${settings.width}`}>
         <header className="beta-header">
           <button
             type="button"
@@ -891,11 +875,7 @@ export default function BetaApp() {
 
         {page === 'calculator' ? (
           <>
-            <button type="button" className="beta-switch" onClick={handleAdvancedToggle}>
-              {retireMode}
-            </button>
-
-            <div className="beta-mode-row">
+            <div className="beta-top-controls">
               <div className="beta-radio-group" role="radiogroup" aria-label="Battle mode">
                 <label className="beta-radio">
                   <input
@@ -917,43 +897,19 @@ export default function BetaApp() {
                   />
                   Sea
                 </label>
-                {showAdvanced ? (
-                  <label className="beta-radio">
-                    <input
-                      type="radio"
-                      name="mode"
-                      value="sbr"
-                      checked={mode === 'sbr'}
-                      onChange={() => onModeChange('sbr')}
-                    />
-                    SBR
-                  </label>
-                ) : null}
+                <label className="beta-radio">
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="sbr"
+                    checked={mode === 'sbr'}
+                    onChange={() => onModeChange('sbr')}
+                  />
+                  SBR
+                </label>
               </div>
-              <div className="beta-mode-actions">
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={resetUnits}
-                  aria-label="Reset units"
-                  title="Reset units"
-                >
-                  <Icon name="delete" />
-                </button>
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={resetAll}
-                  aria-label="Reset all"
-                  title="Reset all"
-                >
-                  <Icon name="block" />
-                </button>
-              </div>
-            </div>
 
-            {showAdvanced && mode !== 'sbr' ? (
-              <div className="beta-advanced">
+              <div className="beta-advanced-top">
                 {mode === 'land' ? (
                   <div className="beta-toggle-line">
                     <CheckboxControl
@@ -964,24 +920,18 @@ export default function BetaApp() {
                   </div>
                 ) : null}
                 <div className="beta-select-row">
-                  <SelectField
-                    className="field--waves"
-                    label="Waves"
-                    value={String(numWaves)}
-                    options={Array.from({ length: TARGET_MAX_WAVES }, (_, index) => ({
-                      value: String(index + 1),
-                      label: `${index + 1} wave${index === 0 ? '' : 's'}`,
-                    }))}
-                    onChange={(value) => setNumWaves(Number(value) || 1)}
-                  />
-                  <SelectField
-                    className="field--sim"
-                    label="Simulations"
-                    value="exact"
-                    options={[{ value: 'exact', label: 'Exact' }]}
-                    disabled
-                    onChange={() => undefined}
-                  />
+                  {mode !== 'sbr' ? (
+                    <SelectField
+                      className="field--waves"
+                      label="Waves"
+                      value={String(numWaves)}
+                      options={Array.from({ length: TARGET_MAX_WAVES }, (_, index) => ({
+                        value: String(index + 1),
+                        label: `${index + 1} wave${index === 0 ? '' : 's'}`,
+                      }))}
+                      onChange={(value) => setNumWaves(Number(value) || 1)}
+                    />
+                  ) : null}
                   <SelectField
                     className="field--dice"
                     label="Dice mode"
@@ -994,77 +944,60 @@ export default function BetaApp() {
                     onChange={(value) => setDiceMode(value as 'standard' | 'lowluck' | 'biased')}
                   />
                 </div>
-                <ConfigSection
-                  mode={mode}
-                  numWaves={numWaves}
-                  amphibious={amphibious}
-                  waveConfigs={waveConfigs}
-                  inProgress={inProgress}
-                  onInProgress={setInProgress}
-                  territoryValue={territoryValue}
-                  onTerritoryValue={setTerritoryValue}
-                  isDeadzone={isDeadzone}
-                  onDeadzone={setIsDeadzone}
-                  onUpdateWave={updateWave}
-                  onRetreatClick={(wave, rect) =>
-                    setRetreatPopover({
-                      wave,
-                      left: Math.max(8, Math.min(rect.left, window.innerWidth - 330)),
-                      top: Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 260)),
-                    })
-                  }
-                />
-              </div>
-            ) : null}
-
-            {showAdvanced && mode === 'sbr' ? (
-              <div className="beta-advanced">
-                <div className="beta-select-row">
-                  <SelectField
-                    className="field--dice"
-                    label="Dice mode"
-                    value={diceMode}
-                    options={[
-                      { value: 'standard', label: 'Standard' },
-                      { value: 'lowluck', label: 'Low luck' },
-                      { value: 'biased', label: 'Biased' },
-                    ]}
-                    onChange={(value) => setDiceMode(value as 'standard' | 'lowluck' | 'biased')}
+                {mode === 'sbr' ? (
+                  <CheckboxControl
+                    label="Battle in progress"
+                    checked={inProgress}
+                    onChange={setInProgress}
                   />
-                </div>
-                <CheckboxControl
-                  label="Battle in progress"
-                  checked={inProgress}
-                  onChange={setInProgress}
-                />
+                ) : null}
               </div>
-            ) : null}
 
-            {!showAdvanced ? (
-              <div className="simple-ool">
-                <SelectField
-                  className="field--ool"
-                  green
-                  label="Order of loss"
-                  value={waveConfigs[0]?.attackOolPreset ?? wavePresets(mode, false)[mode][0]?.id}
-                  options={wavePresets(mode, false)[mode].map((preset) => ({
-                    value: preset.id,
-                    label: preset.label,
-                  }))}
-                  onChange={(value) => updateWave(0, { attackOolPreset: value })}
-                />
-                <SelectField
-                  className="field--ool"
-                  green
-                  label="Order of loss"
-                  value={waveConfigs[0]?.defenseOolPreset ?? defenderOolPresets[mode][0]?.id}
-                  options={defenderOolPresets[mode].map((preset) => ({
-                    value: preset.id,
-                    label: preset.label,
-                  }))}
-                  onChange={(value) => updateWave(0, { defenseOolPreset: value })}
-                />
+              <div className="beta-mode-actions">
+                <button
+                  type="button"
+                  className="reset-action"
+                  onClick={resetUnits}
+                  aria-label="Reset units"
+                  title="Reset units"
+                >
+                  <Icon name="delete" size={18} />
+                  <span className="reset-action__label">Reset units</span>
+                </button>
+                <button
+                  type="button"
+                  className="reset-action"
+                  onClick={resetAll}
+                  aria-label="Reset all"
+                  title="Reset all"
+                >
+                  <Icon name="block" size={18} />
+                  <span className="reset-action__label">Reset all</span>
+                </button>
               </div>
+            </div>
+
+            {mode !== 'sbr' ? (
+              <ConfigSection
+                mode={mode}
+                numWaves={numWaves}
+                amphibious={amphibious}
+                waveConfigs={waveConfigs}
+                inProgress={inProgress}
+                onInProgress={setInProgress}
+                territoryValue={territoryValue}
+                onTerritoryValue={setTerritoryValue}
+                isDeadzone={isDeadzone}
+                onDeadzone={setIsDeadzone}
+                onUpdateWave={updateWave}
+                onRetreatClick={(wave, rect) =>
+                  setRetreatPopover({
+                    wave,
+                    left: Math.max(8, Math.min(rect.left, window.innerWidth - 330)),
+                    top: Math.min(rect.bottom + 4, Math.max(8, window.innerHeight - 260)),
+                  })
+                }
+              />
             ) : null}
 
             <UnitGrid
@@ -1102,46 +1035,11 @@ export default function BetaApp() {
               <Results
                 result={result}
                 numWaves={numWaves}
-                advanced={advanced}
                 settings={{
                   ipcDiffDisplay: settings.ipcDiffDisplay,
                   hideUnlikely: settings.hideUnlikely,
                 }}
               />
-            ) : null}
-
-            {!settings.hideVideo ? (
-              <div className="video-card">
-                <div className="video-card__head">
-                  <h2 className="video-card__title">Video tutorial by Gamia</h2>
-                  <button
-                    type="button"
-                    className="video-card__dismiss"
-                    onClick={() => setSettings((prev) => ({ ...prev, hideVideo: true }))}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-                <div className="video-card__frame">
-                  <iframe
-                    src="https://player.vimeo.com/video/823101336"
-                    title="Video tutorial by Gamia"
-                    loading="lazy"
-                    allow="fullscreen; picture-in-picture"
-                  />
-                </div>
-                <div className="video-card__foot">
-                  aa1942calc.com tutorial from{' '}
-                  <a href="https://vimeo.com/user/18246046" target="_blank" rel="noreferrer">
-                    C D
-                  </a>{' '}
-                  on{' '}
-                  <a href="https://vimeo.com/823101336" target="_blank" rel="noreferrer">
-                    Vimeo
-                  </a>
-                  .
-                </div>
-              </div>
             ) : null}
           </>
         ) : (
@@ -1170,7 +1068,6 @@ export default function BetaApp() {
             { page: 'calculator' as Page, label: 'Calculator', icon: 'calculator' as const },
             { page: 'faq' as Page, label: 'FAQ', icon: 'help' as const },
             { page: 'about' as Page, label: 'About', icon: 'info' as const },
-            { page: 'video' as Page, label: 'Video Tutorial', icon: 'link' as const },
           ].map((item) => (
             <button
               type="button"
@@ -1231,6 +1128,7 @@ export default function BetaApp() {
                 { value: '0.01', label: '< 0.01%' },
                 { value: '0.1', label: '< 0.1%' },
                 { value: '1', label: '< 1%' },
+                { value: '5', label: '< 5%' },
               ]}
               onChange={(value) =>
                 setSettings((prev) => ({
@@ -1298,6 +1196,7 @@ export default function BetaApp() {
                 { value: 'sm', label: 'Small' },
                 { value: 'md', label: 'Medium' },
                 { value: 'lg', label: 'Large' },
+                { value: 'xl', label: 'Extra large' },
               ]}
               onChange={(value) =>
                 setSettings((prev) => ({
@@ -1324,16 +1223,6 @@ export default function BetaApp() {
                   darkMode: value as BetaSettings['darkMode'],
                 }))
               }
-            />
-          </SettingRow>
-          <SettingRow
-            title="Hide Video Tutorial"
-            description="Cool tutorial, but I already know how it works."
-          >
-            <SwitchControl
-              label="Hide Video Tutorial"
-              checked={settings.hideVideo}
-              onChange={(checked) => setSettings((prev) => ({ ...prev, hideVideo: checked }))}
             />
           </SettingRow>
         </div>
@@ -1579,19 +1468,7 @@ function StaticPage({
       <button type="button" className="beta-text-button" onClick={onBack}>
         ← Back to calculator
       </button>
-      {page === 'video' ? (
-        <>
-          <h1>Video Tutorial</h1>
-          <p>A walkthrough of the calculator by Gamia.</p>
-          <div className="video-card__frame" style={{ borderRadius: 4, overflow: 'hidden' }}>
-            <iframe
-              src="https://player.vimeo.com/video/823101336"
-              title="Video tutorial by Gamia"
-              allow="fullscreen; picture-in-picture"
-            />
-          </div>
-        </>
-      ) : page === 'overview' ? (
+      {page === 'overview' ? (
         <>
           <h1>Overview</h1>
           <p>
@@ -1600,7 +1477,7 @@ function StaticPage({
           </p>
           <p>
             Pick a mode, enter the attacking and defending units, choose an order of loss and
-            calculate. Advanced mode adds waves, dice modes, retreat rules and naval options.
+            calculate. Waves, dice modes, retreat rules and naval options are always available.
           </p>
           <p>
             Results include the average number of rounds, survival and conquest chances, IPC
