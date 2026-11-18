@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            frontend/redesign/package-lock.json
 
       - name: Install frontend dependencies
         run: cd frontend && npm install
@@ -28,10 +31,21 @@ jobs:
       - name: Build frontend
         run: cd frontend && npm run build
 
+      - name: Install redesign dependencies
+        run: cd frontend/redesign && npm install
+
+      - name: Build redesign
+        run: cd frontend/redesign && npm run build
+
       - name: Fix base paths in HTML
         run: |
           sed -i 's|src="/assets/|src="/aacalc2/assets/|g' frontend/dist/index.html
           sed -i 's|href="/assets/|href="/aacalc2/assets/|g' frontend/dist/index.html
+
+      - name: Add redesign to the Pages artifact
+        run: |
+          mkdir -p frontend/dist/redesign
+          cp -R frontend/redesign/dist/. frontend/dist/redesign/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
