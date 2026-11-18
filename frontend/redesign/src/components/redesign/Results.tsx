@@ -2,7 +2,7 @@ import type { MultiwaveOutput } from 'aacalc2';
 
 export interface ResultsSettings {
   ipcDiffDisplay: 'absolute' | 'roi';
-  hideUnlikely: 'off' | '0.01' | '0.1' | '1';
+  hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
 }
 
 interface CasualtyEntry {
@@ -70,12 +70,10 @@ function Overview({
   result,
   numWaves,
   settings,
-  advanced,
 }: {
   result: MultiwaveOutput;
   numWaves: number;
   settings: ResultsSettings;
-  advanced: boolean;
 }) {
   const multi = numWaves > 1;
   const rows: Array<{
@@ -135,11 +133,7 @@ function Overview({
   );
 
   return (
-    <div
-      className={`overview${multi ? ' overview--multi' : ''} overview--${
-        advanced ? 'advanced' : 'simple'
-      }`}
-    >
+    <div className={`overview${multi ? ' overview--multi' : ''} overview--advanced`}>
       <div className="overview__grid overview__head">{header}</div>
       {rows.map((row) => (
         <div
@@ -184,12 +178,10 @@ function CasualtyTable({
   side,
   data,
   settings,
-  advanced,
 }: {
   side: 'attack' | 'defense';
   data: CasualtyData | undefined;
   settings: ResultsSettings;
-  advanced: boolean;
 }) {
   if (!data || Object.keys(data).length === 0) return null;
 
@@ -222,14 +214,13 @@ function CasualtyTable({
 
   const fullSide = side === 'attack' ? 'Attacker' : 'Defender';
   const shortSide = side === 'attack' ? 'Att.' : 'Def.';
-  const modeClass = advanced ? 'advanced' : 'simple';
 
   return (
-    <div className={`casualty-card casualty-card--${modeClass}`}>
+    <div className="casualty-card casualty-card--advanced">
       <div className="casualty-head">
         <div className={`casualty-side casualty-side--${side}`}>
           <span className="desktop-only">{fullSide}</span>
-          <span className="mobile-only">{advanced ? shortSide : fullSide}</span>
+          <span className="mobile-only">{shortSide}</span>
         </div>
         <div className="casualty-head__label casualty-head__label--confidence">Confidence %</div>
         <div className="casualty-head__label casualty-head__label--surviving">
@@ -256,32 +247,15 @@ function CasualtyTable({
                 </span>
               ) : null}
             </div>
-            {advanced ? (
-              <>
-                <div
-                  className="casualty-row__confidence casualty-row__confidence--exact"
-                  role="cell"
-                >
-                  <PercentValue value={row.exact} />
-                </div>
-                <div
-                  className="casualty-row__confidence casualty-row__confidence--better"
-                  role="cell"
-                >
-                  <PercentValue value={row.cumulative} />
-                </div>
-                <div
-                  className="casualty-row__confidence casualty-row__confidence--worse"
-                  role="cell"
-                >
-                  <PercentValue value={row.reverse} />
-                </div>
-              </>
-            ) : (
-              <div className="casualty-row__confidence casualty-row__confidence--exact" role="cell">
-                <PercentValue value={row.exact} />
-              </div>
-            )}
+            <div className="casualty-row__confidence casualty-row__confidence--exact" role="cell">
+              <PercentValue value={row.exact} />
+            </div>
+            <div className="casualty-row__confidence casualty-row__confidence--better" role="cell">
+              <PercentValue value={row.cumulative} />
+            </div>
+            <div className="casualty-row__confidence casualty-row__confidence--worse" role="cell">
+              <PercentValue value={row.reverse} />
+            </div>
             <div className="casualty-row__surviving" role="cell">
               {row.entry.survivors || '-'}
             </div>
@@ -308,28 +282,16 @@ export function Results({
   result,
   numWaves,
   settings,
-  advanced,
 }: {
   result: MultiwaveOutput;
   numWaves: number;
   settings: ResultsSettings;
-  advanced: boolean;
 }) {
   return (
     <div className="results">
-      <Overview result={result} numWaves={numWaves} settings={settings} advanced={advanced} />
-      <CasualtyTable
-        side="attack"
-        data={result.casualtiesInfo?.attack}
-        settings={settings}
-        advanced={advanced}
-      />
-      <CasualtyTable
-        side="defense"
-        data={result.casualtiesInfo?.defense}
-        settings={settings}
-        advanced={advanced}
-      />
+      <Overview result={result} numWaves={numWaves} settings={settings} />
+      <CasualtyTable side="attack" data={result.casualtiesInfo?.attack} settings={settings} />
+      <CasualtyTable side="defense" data={result.casualtiesInfo?.defense} settings={settings} />
     </div>
   );
 }

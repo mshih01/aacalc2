@@ -30,13 +30,18 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 
 ## Behaviour notes
 
-- Probability calculation is exact; the Simulations control is intentionally
-  disabled and shows `Exact`.
+- The app always uses the advanced calculator; there is no simple/advanced
+  toggle.
+- Probability calculation is exact. There is no Monte Carlo/Simulations
+  control.
 - Unit icons are original inline SVG. Multi-wave desktop shows one icon per
   unit row; multi-wave mobile drops the icon column entirely.
-- Results are mode-aware: simple mode shows exact outcome probabilities;
-  advanced mode shows green “or better” / red “or worse” confidence intervals
-  (and exact probability on desktop).
+- Results always show the green “or better” / red “or worse” confidence
+  intervals (plus exact probability on desktop). There is no simple-mode table.
+- Width modes are Small (600), Medium (900), Large (1200) and Extra large
+  (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
+  row and Reset All/Reset Units become icon+text buttons; smaller layouts stack
+  them and use icon-only reset buttons.
 - Settings/history use isolated keys (`aacalc2BetaSettings`,
   `aacalc2BetaHistory`), and sharing uses `#/<lz-state>/<title>`.
 - Reference screenshots are in `docs/screenshots/`.
