@@ -85,6 +85,18 @@ export function ConfigSection({
   );
   const waves = Array.from({ length: numWaves }, (_, index) => index);
 
+  const retreatRow = (
+    <div className="beta-config-row" style={style}>
+      {waves.map((wave) => (
+        <RetreatField
+          key={`att-retreat-${wave}`}
+          config={waveConfigs[wave]}
+          onClick={(rect) => onRetreatClick(wave, rect)}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <div className="beta-config-grid">
       <div className="beta-config-side">
@@ -115,15 +127,7 @@ export function ConfigSection({
           ))}
         </div>
 
-        <div className="beta-config-row" style={style}>
-          {waves.map((wave) => (
-            <RetreatField
-              key={`att-retreat-${wave}`}
-              config={waveConfigs[wave]}
-              onClick={(rect) => onRetreatClick(wave, rect)}
-            />
-          ))}
-        </div>
+        {mode === 'land' ? retreatRow : null}
 
         {mode === 'land' ? (
           <>
@@ -148,11 +152,11 @@ export function ConfigSection({
                 />
               ))}
             </div>
-            <CheckboxControl large label="Dead zone" checked={isDeadzone} onChange={onDeadzone} />
+            <CheckboxControl label="Dead zone" checked={isDeadzone} onChange={onDeadzone} />
           </>
         ) : (
           <>
-            <div className="beta-config-row checkbox-row" style={style}>
+            <div className="beta-config-row checkbox-row config-row--tall" style={style}>
               {waves.map((wave) => (
                 <CheckboxControl
                   key={`att-sub-${wave}`}
@@ -172,6 +176,7 @@ export function ConfigSection({
                 />
               ))}
             </div>
+            {retreatRow}
           </>
         )}
       </div>

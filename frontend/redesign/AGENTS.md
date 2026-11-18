@@ -38,6 +38,7 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   unit row; multi-wave mobile drops the icon column entirely.
 - Results always show the green “or better” / red “or worse” confidence
   intervals (plus exact probability on desktop). There is no simple-mode table.
+  At Large/Extra large widths the attacker and defender tables sit side by side.
 - Width modes are Small (600), Medium (900), Large (1200) and Extra large
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack

@@ -37,7 +37,8 @@ npm run preview -- --port 5175
   attacker/defender IPC, attacker profit, 95/68/50/32/5% confidence chips, and
   full attacker/defender casualty tables. The green “or better” and red “or
   worse” confidence intervals are shown in the tables (plus exact probability
-  on desktop; mobile keeps the confidence intervals only).
+  on desktop; mobile keeps the confidence intervals only). At Large and Extra
+  large widths, the attacker and defender tables sit side by side.
 - **Drawers** — menu, settings, common battles, history.
 - **Settings** — IPC display (absolute/ROI), hide unlikely outcomes (including
   `< 5%`), history sort/show/hide-unnamed, width (Small / Medium / Large /

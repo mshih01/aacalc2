@@ -290,8 +290,10 @@ export function Results({
   return (
     <div className="results">
       <Overview result={result} numWaves={numWaves} settings={settings} />
-      <CasualtyTable side="attack" data={result.casualtiesInfo?.attack} settings={settings} />
-      <CasualtyTable side="defense" data={result.casualtiesInfo?.defense} settings={settings} />
+      <div className="results__tables">
+        <CasualtyTable side="attack" data={result.casualtiesInfo?.attack} settings={settings} />
+        <CasualtyTable side="defense" data={result.casualtiesInfo?.defense} settings={settings} />
+      </div>
     </div>
   );
 }
