@@ -1299,8 +1299,14 @@ button {
   white-space: nowrap;
 }
 
-.profit-table th:first-child {
-  text-align: left;
+/* Percentile badges sit in the leftmost column, matching the casualty
+   tables, with every numeric column right aligned. */
+.profit-table th:first-child,
+.profit-table td:first-child {
+  width: 50px;
+  padding-right: 4px;
+  padding-left: 4px;
+  text-align: center;
 }
 
 .profit-table td {
@@ -1310,20 +1316,12 @@ button {
   white-space: nowrap;
 }
 
-.profit-table td:first-child {
-  text-align: left;
-}
-
 .profit-table tbody tr:nth-child(even) td {
   background: var(--beta-table-alt);
 }
 
 .profit-table tbody tr:last-child td {
   border-bottom: 0;
-}
-
-.profit-row__ipc .chip {
-  margin-left: 6px;
 }
 
 .profit-card__note {
@@ -2091,6 +2089,20 @@ button {
 
   .profit-table th {
     white-space: normal;
+  }
+
+  /* Matches the casualty tables on mobile: the individual outcome
+     probability is omitted, but the percentile badge still renders. */
+  .profit-table__prob,
+  .profit-row__prob {
+    display: none;
+  }
+
+  .profit-table th:first-child,
+  .profit-table td:first-child {
+    width: 38px;
+    padding-right: 2px;
+    padding-left: 4px;
   }
 
   .config-inline-row {

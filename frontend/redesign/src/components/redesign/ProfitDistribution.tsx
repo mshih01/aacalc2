@@ -309,7 +309,12 @@ export function ProfitDistributionTable({
           <table className="profit-table">
             <thead>
               <tr>
-                <th scope="col">Probability %</th>
+                <th scope="col">
+                  <span className="beta-sr-only">Confidence percentile</span>
+                </th>
+                <th scope="col" className="profit-table__prob">
+                  Probability %
+                </th>
                 <th scope="col">Confidence %</th>
                 <th scope="col">Reverse confidence %</th>
                 <th scope="col">IPC profit</th>
@@ -318,18 +323,23 @@ export function ProfitDistributionTable({
             <tbody>
               {rows.map((row) => (
                 <tr key={`profit-row-${row.ipc}`}>
-                  <td>{fmtPercent(row.exact)}</td>
+                  <td className="profit-row__badge">
+                    {row.percentile ? (
+                      <span
+                        className={`chip chip--${chipTone(row.percentile)}`}
+                        title={`${row.percentile}% confidence`}
+                      >
+                        {row.percentile}%
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="profit-row__prob">{fmtPercent(row.exact)}</td>
                   <td>{fmtPercent(row.cumulative)}</td>
                   <td>{fmtPercent(row.reverse)}</td>
                   <td className="profit-row__ipc">
                     <span className={row.ipc < 0 ? 'profit-negative' : 'profit-positive'}>
                       {row.ipc.toFixed(1)}
                     </span>
-                    {row.percentile ? (
-                      <span className={`chip chip--${chipTone(row.percentile)}`}>
-                        {row.percentile}%
-                      </span>
-                    ) : null}
                   </td>
                 </tr>
               ))}

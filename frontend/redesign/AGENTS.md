@@ -51,10 +51,14 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   the per-wave `casualtiesInfoArr[wave]` tables; All waves shows cumulative
   casualties and a note that profit data is per wave. Hide unlikely outcomes
   filters casualty and profit table rows; profit confidence and percentile chips
-  are recalculated over the visible rows, while the histogram remains full. At Extra
-  large the histogram and profit table share a row; at Large/Extra large the
-  attacker and defender tables sit side by side. The histogram bucket size is
-  selectable (Auto plus fixed 1–50 IPC sizes).
+  are recalculated over the visible rows, while the histogram remains full. The
+  profit table mirrors the casualty tables: percentile badges sit in the
+  leftmost column, numeric columns (including the individual-outcome
+  probability) are right aligned, and on mobile the probability column is
+  dropped while the badges keep rendering. At Extra large the histogram and
+  profit table share a row; at Large/Extra large the attacker and defender
+  tables sit side by side. The histogram bucket size is selectable (Auto plus
+  fixed 1–50 IPC sizes).
 - Width modes are Small (600), Medium (900), Large (1200) and Extra large
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack

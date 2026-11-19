@@ -49,9 +49,13 @@ npm run preview -- --port 5175
   casualty tables with a note that profit data is per wave. Hide unlikely
   outcomes filters both casualty and profit table rows; profit confidence and
   percentile chips are recalculated over the visible rows, while the histogram
-  continues to show the full distribution. At Large and Extra large widths, the attacker
-  and defender casualty tables sit side by side; at Extra large the histogram
-  and profit distribution table also share a row.
+  continues to show the full distribution. The profit table mirrors the casualty
+  tables: percentile badges sit in the leftmost column and the numeric columns
+  (including the individual-outcome probability) are right aligned; on mobile
+  the probability column is dropped while the badges keep rendering. At Large
+  and Extra large widths, the attacker and defender casualty tables sit side by
+  side; at Extra large the histogram and profit distribution table also share a
+  row.
 - **Drawers** — menu, settings, common battles, history.
 - **Settings** — IPC display (absolute/ROI), exhaustive OOL autocomplete, hide
   unlikely outcomes (including `< 5%`, defaulting to `< 0.01%`), history
