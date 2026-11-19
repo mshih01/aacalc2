@@ -210,8 +210,13 @@ export function decodeStateFromUrl(): BattleInput | null {
  * readable form used by beta.aa1942calc.com.
  */
 export function encodeStateToHash(input: BattleInput, title = ''): string {
+  // Read the encoded state directly from the URL instead of via
+  // URLSearchParams: the LZ-string alphabet contains "+", which
+  // URLSearchParams decodes as a space and corrupts the state.
+  const marker = '?state='
   const url = encodeStateToUrl(input)
-  const encoded = new URL(url).searchParams.get('state') ?? ''
+  const markerIndex = url.indexOf(marker)
+  const encoded = markerIndex >= 0 ? url.slice(markerIndex + marker.length) : ''
   const cleanTitle = title.trim()
   const titlePart = cleanTitle
     ? '/' + encodeURIComponent(cleanTitle).replace(/%20/g, '_')

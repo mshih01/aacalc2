@@ -57,6 +57,7 @@ function WaveCheckboxes({
   onChange,
   stacked,
   style,
+  skipWaves,
 }: {
   label: string;
   waves: number[];
@@ -64,18 +65,28 @@ function WaveCheckboxes({
   onChange: (wave: number, checked: boolean) => void;
   stacked: boolean;
   style: CSSProperties;
+  /** Waves without a control (wave 1 has no previous wave to carry over). */
+  skipWaves?: number[];
 }) {
+  const renderBox = (wave: number) => {
+    if (skipWaves?.includes(wave)) {
+      return <span key={`${label}-${wave}`} className="checkbox-placeholder" aria-hidden="true" />;
+    }
+    return (
+      <CheckboxControl
+        key={`${label}-${wave}`}
+        label={stacked ? '' : label}
+        ariaLabel={stacked ? label : undefined}
+        checked={checked(wave)}
+        onChange={(value) => onChange(wave, value)}
+      />
+    );
+  };
+
   if (!stacked) {
     return (
       <div className="beta-config-row checkbox-row config-row--tall" style={style}>
-        {waves.map((wave) => (
-          <CheckboxControl
-            key={`${label}-${wave}`}
-            label={label}
-            checked={checked(wave)}
-            onChange={(value) => onChange(wave, value)}
-          />
-        ))}
+        {waves.map(renderBox)}
       </div>
     );
   }
@@ -83,17 +94,7 @@ function WaveCheckboxes({
   return (
     <div className="wave-checkbox-group" style={style}>
       <span className="wave-checkbox-group__label">{label}</span>
-      <div className="wave-checkbox-group__boxes">
-        {waves.map((wave) => (
-          <CheckboxControl
-            key={`${label}-${wave}`}
-            label=""
-            ariaLabel={label}
-            checked={checked(wave)}
-            onChange={(value) => onChange(wave, value)}
-          />
-        ))}
-      </div>
+      <div className="wave-checkbox-group__boxes">{waves.map(renderBox)}</div>
     </div>
   );
 }
@@ -368,6 +369,19 @@ export function ConfigSection({
             />
           </>
         )}
+        {numWaves > 1 ? (
+          <WaveCheckboxes
+            label="Prev wave attackers"
+            waves={waves}
+            stacked={stackedCheckboxes}
+            checked={(wave) => waveConfigs[wave]?.useAttackersFromPreviousWave ?? false}
+            onChange={(wave, value) =>
+              onUpdateWave(wave, { useAttackersFromPreviousWave: value })
+            }
+            style={style}
+            skipWaves={[0]}
+          />
+        ) : null}
       </div>
     </div>
   );

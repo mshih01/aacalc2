@@ -72,6 +72,12 @@ npm run preview -- --port 5175
   checkboxes when the wave columns are narrow (multi-wave below 500px viewport,
   or three or more waves below 700px / with the Small width); otherwise every
   checkbox keeps its own label.
+- **Multi-wave options** — every wave has its own order of loss, rounds, retreat,
+  and side options. Waves after the first get a **Prev wave attackers** checkbox
+  in the defender column (land and sea): checked means the wave’s defenders are
+  the previous wave’s surviving attackers, unchecked (default) means they are
+  the previous wave’s surviving defenders. Wave 1 has no slot because there is
+  no earlier wave to carry survivors over from.
 - **Persistence** — settings and history in `localStorage`; history entries are
   saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links

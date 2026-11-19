@@ -850,6 +850,11 @@ button {
   justify-content: center;
 }
 
+.checkbox-placeholder {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .wave-checkbox-group__boxes .checkbox__label-text:empty {
   display: none;
 }

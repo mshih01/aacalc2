@@ -69,6 +69,11 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   happens for any multi-wave battle below a 500px viewport, and for three or
   more waves below a 700px viewport or with the Small width setting. Otherwise
   every checkbox keeps its own label beside it.
+- Waves after the first get a **Prev wave attackers** checkbox in the defender
+  column (land and sea). Checked means the current wave’s defenders are the
+  previous wave’s surviving attackers; unchecked (the default) means they are
+  the previous wave’s surviving defenders. Wave 1’s slot stays empty because
+  there is no earlier wave to carry units over from.
 - On mobile the Dead zone checkbox shares the Territory value line, using the
   short “DZ” label (the field label shortens to “Territory IPC”); desktop keeps
   “Dead zone” and “Territory value (IPC)”.

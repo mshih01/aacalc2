@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getNegativeUnitString, getOolString, getUnitChar, getUnitString, getUnitName } from './format.ts'
+import { getNegativeUnitString, getOolString, getUnitChar, getUnitString, getUnitName, decodeStateFromHash, encodeStateToHash } from './format.ts'
 
 describe('getUnitChar', () => {
   it('maps a unit id to its single character', () => {
@@ -95,5 +95,26 @@ describe('getUnitName', () => {
 
   it('falls back to uppercase for unknown units', () => {
     expect(getUnitName('foo')).toBe('FOO')
+  })
+})
+
+describe('share hash', () => {
+  it('preserves LZ-string "+" characters through encode and decode', () => {
+    // Two-wave battle with "Prev wave attackers" enabled for wave 2. This
+    // state compresses to an LZ string containing "+", which must not be
+    // decoded as a space (URLSearchParams would do that).
+    const hash =
+      '#/N4IghiBcoAxaBLAdgMygRhgXwDQnfLiAEyF4DMhRAJvCHNCMmpABxEHRGlcVV5gA9nQYBtJqhACATgBcp4aQFsFKBAHMFAI0EqAunk7jmCsHNPLVG7bpB6awxmPAQ8JmfJkq8O7yDWaBvhQ4mCuEmgeFn6+VoFEAK4ADnScstIJAKZEAG4ANlAweEnykOiZALSYeNIpZZXVIADOKpBMSQDGAPodgk2eILI5hXhIAO5QxFhAA'
+    window.history.replaceState(null, '', hash)
+
+    const decoded = decodeStateFromHash()
+    expect(decoded?.input.useAttackersFromPreviousWave?.[1]).toBe(true)
+
+    const reencoded = encodeStateToHash(decoded!.input)
+    expect(reencoded).toContain('+')
+    expect(reencoded).not.toContain('%20')
+
+    window.history.replaceState(null, '', reencoded)
+    expect(decodeStateFromHash()?.input.useAttackersFromPreviousWave?.[1]).toBe(true)
   })
 })

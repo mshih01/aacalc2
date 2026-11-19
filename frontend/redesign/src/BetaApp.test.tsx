@@ -105,6 +105,19 @@ describe('beta-style calculator', () => {
     expect(screen.getByText('-26')).toBeInTheDocument();
   });
 
+  it('offers previous-wave attackers only for waves after the first', () => {
+    render(<BetaApp />);
+    expect(screen.queryByText('Prev wave attackers')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Waves'), { target: { value: '3' } });
+    expect(screen.getAllByText('Prev wave attackers')).toHaveLength(1);
+    expect(screen.getAllByLabelText('Prev wave attackers')).toHaveLength(2);
+
+    const sides = document.querySelectorAll('.beta-config-side');
+    expect(sides).toHaveLength(2);
+    expect(screen.getByText('Prev wave attackers').closest('.beta-config-side')).toBe(sides[1]);
+  });
+
   it('links probability decimals to the prune thresholds and exposes the advanced settings', () => {
     render(<BetaApp />);
     fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
