@@ -152,7 +152,6 @@ export function ConfigSection({
                 />
               ))}
             </div>
-            <CheckboxControl label="Dead zone" checked={isDeadzone} onChange={onDeadzone} />
           </>
         ) : (
           <>
@@ -206,14 +205,18 @@ export function ConfigSection({
 
         {mode === 'land' ? (
           <>
-            <TextField
-              label="Territory value (IPC)"
-              type="number"
-              min={0}
-              step={1}
-              value={territoryValue ? String(territoryValue) : ''}
-              onChange={(value) => onTerritoryValue(Math.max(0, Number(value) || 0))}
-            />
+            <div className="config-inline-row">
+              <TextField
+                className="field--territory"
+                label="Territory value (IPC)"
+                type="number"
+                min={0}
+                step={1}
+                value={territoryValue ? String(territoryValue) : ''}
+                onChange={(value) => onTerritoryValue(Math.max(0, Number(value) || 0))}
+              />
+              <CheckboxControl label="Dead zone" checked={isDeadzone} onChange={onDeadzone} />
+            </div>
             <div className="beta-config-row checkbox-row config-row--tall" style={style}>
               {waves.map((wave) => (
                 <CheckboxControl

@@ -51,7 +51,7 @@ import {
 } from './components/redesign/retreat.ts';
 
 const MAX_COMPLEXITY = 4_000_000;
-const TARGET_MAX_WAVES = 3;
+const TARGET_MAX_WAVES = 4;
 const SETTINGS_KEY = 'aacalc2BetaSettings';
 const HISTORY_KEY = 'aacalc2BetaHistory';
 
@@ -221,6 +221,7 @@ export default function BetaApp() {
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [page, setPage] = useState<Page>('calculator');
   const [settings, setSettings] = useState<BetaSettings>(loadSettings);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [historySearch, setHistorySearch] = useState('');
   const [toast, setToast] = useState<string | null>(null);
@@ -229,6 +230,9 @@ export default function BetaApp() {
     left: number;
     top: number;
   } | null>(null);
+
+  const allowFourWaves = settings.width === 'xl' && viewportWidth >= 1000;
+  const maxWaves = allowFourWaves ? 4 : 3;
 
   const isLoadingRef = useRef(false);
   const shouldRunBattleRef = useRef(false);
@@ -548,6 +552,19 @@ export default function BetaApp() {
   useEffect(() => {
     document.documentElement.style.setProperty('--beta-container-width', WIDTHS[settings.width]);
   }, [settings.width]);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (numWaves > maxWaves) {
+      setNumWaves(maxWaves);
+      setResult(null);
+    }
+  }, [maxWaves, numWaves]);
 
   useEffect(() => {
     const fromHash = decodeStateFromHash();
@@ -925,7 +942,7 @@ export default function BetaApp() {
                       className="field--waves"
                       label="Waves"
                       value={String(numWaves)}
-                      options={Array.from({ length: TARGET_MAX_WAVES }, (_, index) => ({
+                      options={Array.from({ length: maxWaves }, (_, index) => ({
                         value: String(index + 1),
                         label: `${index + 1} wave${index === 0 ? '' : 's'}`,
                       }))}
@@ -1116,7 +1133,7 @@ export default function BetaApp() {
           </SettingRow>
           <SettingRow
             title="Hide unlikely outcomes"
-            description="Hide low-probability rows in the casualty tables. The 95/68/50 confidence intervals are still shown."
+            description="Hide low-probability rows in the casualty and profit tables. The 95/68/50 confidence intervals are still shown."
           >
             <SelectField
               className="field--outlined"

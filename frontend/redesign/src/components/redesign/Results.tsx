@@ -1,4 +1,10 @@
+import { useState } from 'react';
 import type { MultiwaveOutput } from 'aacalc2';
+import {
+  ProfitDistributionTable,
+  ProfitHistogram,
+  type ProfitDistribution,
+} from './ProfitDistribution.tsx';
 
 export interface ResultsSettings {
   ipcDiffDisplay: 'absolute' | 'roi';
@@ -278,6 +284,20 @@ function chipTone(percentile: number) {
   return 'error';
 }
 
+function profitDistributionFor(
+  result: MultiwaveOutput,
+  waveIndex: number,
+): ProfitDistribution | undefined {
+  const distribution = result.profitDistribution as unknown;
+  if (Array.isArray(distribution)) {
+    return distribution[waveIndex] as ProfitDistribution | undefined;
+  }
+  if (distribution && typeof distribution === 'object') {
+    return distribution as ProfitDistribution;
+  }
+  return undefined;
+}
+
 export function Results({
   result,
   numWaves,
@@ -287,12 +307,73 @@ export function Results({
   numWaves: number;
   settings: ResultsSettings;
 }) {
+  const waveCount = Math.max(1, Math.min(numWaves, result.waves ?? numWaves));
+  const lastWave = waveCount - 1;
+  const [waveSelection, setWaveSelection] = useState<{
+    result: MultiwaveOutput;
+    wave: number | 'all';
+  }>({ result, wave: lastWave });
+
+  const selectedWave = (() => {
+    const value = waveSelection.result === result ? waveSelection.wave : lastWave;
+    if (value === 'all') return 'all';
+    return value < waveCount ? value : lastWave;
+  })();
+
+  const detailWave = selectedWave === 'all' ? null : selectedWave;
+  const profitDistribution =
+    detailWave === null ? undefined : profitDistributionFor(result, detailWave);
+  const casualties =
+    detailWave === null
+      ? result.casualtiesInfo
+      : (result.casualtiesInfoArr?.[detailWave] ?? result.casualtiesInfo);
+
   return (
     <div className="results">
       <Overview result={result} numWaves={numWaves} settings={settings} />
+      {waveCount > 1 ? (
+        <div className="results__profit-wave">
+          <label htmlFor="results-wave-select">Results wave</label>
+          <select
+            id="results-wave-select"
+            className="profit-wave-select"
+            value={String(selectedWave)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setWaveSelection({
+                result,
+                wave: value === 'all' ? 'all' : Number(value),
+              });
+            }}
+          >
+            <option value="all">All waves</option>
+            {Array.from({ length: waveCount }, (_, index) => (
+              <option key={`results-wave-${index}`} value={index}>
+                Wave {index + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+      {detailWave === null ? (
+        <div className="results__profit-note">
+          Profit distribution is available per wave. Select a wave above to view its histogram and
+          distribution.
+        </div>
+      ) : (
+        <div className="results__charts">
+          <ProfitHistogram profitDist={profitDistribution} wave={detailWave} numWaves={waveCount} />
+          <ProfitDistributionTable
+            profitDist={profitDistribution}
+            wave={detailWave}
+            numWaves={waveCount}
+            hideUnlikely={settings.hideUnlikely}
+          />
+        </div>
+      )}
       <div className="results__tables">
-        <CasualtyTable side="attack" data={result.casualtiesInfo?.attack} settings={settings} />
-        <CasualtyTable side="defense" data={result.casualtiesInfo?.defense} settings={settings} />
+        <CasualtyTable side="attack" data={casualties?.attack} settings={settings} />
+        <CasualtyTable side="defense" data={casualties?.defense} settings={settings} />
       </div>
     </div>
   );
