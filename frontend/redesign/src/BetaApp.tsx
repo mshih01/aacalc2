@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { multiwaveComplexityFastV2, type MultiwaveOutput } from 'aacalc2';
+import ReactGA from 'react-ga4';
 import './beta.css';
 import {
   MAX_WAVES,
@@ -53,6 +54,11 @@ import {
 const MAX_COMPLEXITY = 4_000_000;
 const TARGET_MAX_WAVES = 4;
 const SETTINGS_KEY = 'aacalc2BetaSettings';
+const ANALYTICS_ENABLED = import.meta.env.MODE !== 'test';
+
+if (ANALYTICS_ENABLED) {
+  ReactGA.initialize('G-XFRR47N18Q');
+}
 const HISTORY_KEY = 'aacalc2BetaHistory';
 
 type DrawerState = null | 'menu' | 'settings' | 'common' | 'history';
@@ -399,6 +405,13 @@ export default function BetaApp() {
 
         const output = mode === 'sbr' ? computeSbrBattle(input) : computeBattle(input);
         setResult(output);
+        if (ANALYTICS_ENABLED) {
+          ReactGA.event({
+            category: 'battle',
+            action: 'calculate',
+            label: `${mode}-${numWaves}wave${diceMode !== 'standard' ? `-${diceMode}` : ''}`,
+          });
+        }
         lastInputRef.current = input;
         updateHash(input, title);
         if (options?.saveToHistory !== false) {
@@ -409,7 +422,17 @@ export default function BetaApp() {
         setResult(null);
       }
     },
-    [attack, defense, numWaves, buildCurrentInput, mode, updateHash, title, saveHistoryEntry],
+    [
+      attack,
+      defense,
+      numWaves,
+      buildCurrentInput,
+      mode,
+      diceMode,
+      updateHash,
+      title,
+      saveHistoryEntry,
+    ],
   );
 
   const loadFromHistoryInput = useCallback(
