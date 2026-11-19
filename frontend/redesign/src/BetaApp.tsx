@@ -62,6 +62,7 @@ interface BetaSettings {
   darkMode: 'auto' | 'light' | 'dark';
   width: 'sm' | 'md' | 'lg' | 'xl';
   ipcDiffDisplay: 'absolute' | 'roi';
+  exhaustiveOOL: boolean;
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
   historySortOrder: 'title' | 'date';
   showHistoryDetails: boolean;
@@ -72,6 +73,7 @@ const DEFAULT_SETTINGS: BetaSettings = {
   darkMode: 'auto',
   width: 'sm',
   ipcDiffDisplay: 'absolute',
+  exhaustiveOOL: false,
   hideUnlikely: '0.01',
   historySortOrder: 'title',
   showHistoryDetails: false,
@@ -273,8 +275,8 @@ export default function BetaApp() {
       const defensePreset = defenderOolPresets[mode].find(
         (preset) => preset.id === config?.defenseOolPreset,
       );
-      attackOol[wave] = attackPreset?.ool ?? [];
-      defenseOol[wave] = defensePreset?.ool ?? [];
+      attackOol[wave] = config?.attackOol ?? attackPreset?.ool ?? [];
+      defenseOol[wave] = config?.defenseOol ?? defensePreset?.ool ?? [];
       rounds[wave] = config?.rounds ?? 'all';
       retreatThresholds[wave] = config?.retreatThreshold ?? 0;
       takesTerritory[wave] = config?.takesTerritory ?? 0;
@@ -476,6 +478,8 @@ export default function BetaApp() {
         updateWave(wave, {
           attackOolPreset: attackPreset?.id ?? DEFAULT_WAVE_CONFIG.attackOolPreset,
           defenseOolPreset: defensePreset?.id ?? DEFAULT_WAVE_CONFIG.defenseOolPreset,
+          attackOol: attackPreset ? undefined : attackOol,
+          defenseOol: defensePreset ? undefined : defenseOol,
           rounds: input.rounds?.[wave]?.toString() ?? 'all',
           takesTerritory: input.takesTerritory?.[wave] ?? 0,
           aaLast: input.aaLast?.[wave] ?? false,
@@ -656,6 +660,8 @@ export default function BetaApp() {
       updateWave(wave, {
         attackOolPreset: attackPresetsForMode[0]?.id ?? DEFAULT_WAVE_CONFIG.attackOolPreset,
         defenseOolPreset: defenderOolPresets[mode][0]?.id ?? DEFAULT_WAVE_CONFIG.defenseOolPreset,
+        attackOol: undefined,
+        defenseOol: undefined,
       });
     }
   }, [mode, amphibious, updateWave, wavePresets]);
@@ -784,7 +790,11 @@ export default function BetaApp() {
     setComplexityWarning(null);
     setTitle('');
     for (let wave = 0; wave < MAX_WAVES; wave++) {
-      updateWave(wave, { ...DEFAULT_WAVE_CONFIG });
+      updateWave(wave, {
+        ...DEFAULT_WAVE_CONFIG,
+        attackOol: undefined,
+        defenseOol: undefined,
+      });
     }
     setToast('Calculator reset');
   }, [emptyWaves, updateWave]);
@@ -1007,6 +1017,7 @@ export default function BetaApp() {
                 isDeadzone={isDeadzone}
                 onDeadzone={setIsDeadzone}
                 onUpdateWave={updateWave}
+                exhaustiveOOL={settings.exhaustiveOOL}
                 onRetreatClick={(wave, rect) =>
                   setRetreatPopover({
                     wave,
@@ -1129,6 +1140,16 @@ export default function BetaApp() {
                   ipcDiffDisplay: value as BetaSettings['ipcDiffDisplay'],
                 }))
               }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Exhaustive OOL"
+            description="Change the OOL picker to an autocomplete field. Nearly all OOLs will be available, with some restrictions."
+          >
+            <SwitchControl
+              label="Exhaustive OOL"
+              checked={settings.exhaustiveOOL}
+              onChange={(checked) => setSettings((prev) => ({ ...prev, exhaustiveOOL: checked }))}
             />
           </SettingRow>
           <SettingRow

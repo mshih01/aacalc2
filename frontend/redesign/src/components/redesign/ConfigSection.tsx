@@ -1,11 +1,13 @@
 import type { CSSProperties } from 'react';
-import type { BattleMode, WaveConfig } from '../../types.ts';
+import type { BattleMode, UnitId, WaveConfig } from '../../types.ts';
 import {
   attackerAmphibOolPresets,
   attackerOolPresets,
   defenderOolPresets,
 } from '../../data/oolPresets.ts';
 import { CheckboxControl, SelectField, TextField } from './primitives.tsx';
+import { OolAutocomplete } from './OolAutocomplete.tsx';
+import { oolOptionsFor, sameOol, withCurrentOol } from './oolOptions.ts';
 import { retreatSummary } from './retreat.ts';
 
 const ROUND_OPTIONS = [
@@ -55,6 +57,7 @@ export function ConfigSection({
   onDeadzone,
   onUpdateWave,
   onRetreatClick,
+  exhaustiveOOL,
 }: {
   mode: BattleMode;
   numWaves: number;
@@ -68,6 +71,7 @@ export function ConfigSection({
   onDeadzone: (value: boolean) => void;
   onUpdateWave: (wave: number, updates: Partial<WaveConfig>) => void;
   onRetreatClick: (wave: number, rect: DOMRect) => void;
+  exhaustiveOOL: boolean;
 }) {
   const style = { '--wave-count': numWaves } as CSSProperties;
   const attackPresets =
@@ -97,21 +101,73 @@ export function ConfigSection({
     </div>
   );
 
+  const presetOptions = {
+    attack: attackOolOptions,
+    defense: defenseOolOptions,
+  };
+
+  const renderOolField = (side: 'attack' | 'defense', wave: number) => {
+    const config = waveConfigs[wave];
+    const presets = side === 'attack' ? attackPresets[mode] : defenderOolPresets[mode];
+    const presetId = side === 'attack' ? config?.attackOolPreset : config?.defenseOolPreset;
+    const custom = side === 'attack' ? config?.attackOol : config?.defenseOol;
+    const preset = presets.find((item) => item.id === presetId);
+    const current = custom ?? preset?.ool ?? presets[0]?.ool ?? [];
+    if (exhaustiveOOL) {
+      const options = withCurrentOol(oolOptionsFor(side, mode, amphibious), current);
+      return (
+        <OolAutocomplete
+          key={`${side}-ool-${wave}`}
+          label="Order of loss"
+          value={current}
+          options={options}
+          onChange={(ool: UnitId[]) => {
+            const match = presets.find((item) => sameOol(item.ool, ool));
+            if (side === 'attack') {
+              onUpdateWave(wave, {
+                attackOolPreset: match?.id ?? presetId ?? presets[0]?.id ?? '',
+                attackOol: match ? undefined : ool,
+              });
+            } else {
+              onUpdateWave(wave, {
+                defenseOolPreset: match?.id ?? presetId ?? presets[0]?.id ?? '',
+                defenseOol: match ? undefined : ool,
+              });
+            }
+          }}
+        />
+      );
+    }
+
+    const selectOptions = custom
+      ? [...presetOptions[side], { value: '__custom__', label: 'Custom OOL' }]
+      : presetOptions[side];
+
+    return (
+      <SelectField
+        key={`${side}-ool-${wave}`}
+        className="field--ool"
+        green
+        label="Order of loss"
+        value={custom ? '__custom__' : (presetId ?? presets[0]?.id ?? '')}
+        options={selectOptions}
+        onChange={(value) => {
+          if (value === '__custom__') return;
+          if (side === 'attack') {
+            onUpdateWave(wave, { attackOolPreset: value, attackOol: undefined });
+          } else {
+            onUpdateWave(wave, { defenseOolPreset: value, defenseOol: undefined });
+          }
+        }}
+      />
+    );
+  };
+
   return (
     <div className="beta-config-grid">
       <div className="beta-config-side">
         <div className="beta-config-row" style={style}>
-          {waves.map((wave) => (
-            <SelectField
-              key={`att-ool-${wave}`}
-              className="field--ool"
-              green
-              label="Order of loss"
-              value={waveConfigs[wave]?.attackOolPreset ?? attackOolOptions[0]?.value}
-              options={attackOolOptions}
-              onChange={(value) => onUpdateWave(wave, { attackOolPreset: value })}
-            />
-          ))}
+          {waves.map((wave) => renderOolField('attack', wave))}
         </div>
 
         <div className="beta-config-row" style={style}>
@@ -182,17 +238,7 @@ export function ConfigSection({
 
       <div className="beta-config-side">
         <div className="beta-config-row" style={style}>
-          {waves.map((wave) => (
-            <SelectField
-              key={`def-ool-${wave}`}
-              className="field--ool"
-              green
-              label="Order of loss"
-              value={waveConfigs[wave]?.defenseOolPreset ?? defenseOolOptions[0]?.value}
-              options={defenseOolOptions}
-              onChange={(value) => onUpdateWave(wave, { defenseOolPreset: value })}
-            />
-          ))}
+          {waves.map((wave) => renderOolField('defense', wave))}
         </div>
 
         <div className="config-control-row">

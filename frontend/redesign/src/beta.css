@@ -818,6 +818,59 @@ button {
   width: 100%;
 }
 
+.ool-autocomplete {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.ool-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: 0;
+  left: 0;
+  z-index: 60;
+  max-height: 240px;
+  padding: 4px 0;
+  overflow-y: auto;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  box-shadow: var(--beta-shadow);
+}
+
+.ool-option {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--beta-text);
+  font-size: 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ool-option:hover {
+  background: var(--beta-hover);
+}
+
+.ool-dropdown__empty {
+  padding: 8px 10px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.ool-dropdown__more {
+  padding: 6px 10px;
+  border-top: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+}
+
 /* ------------------------------------------------------------------ */
 /* Unit grid                                                           */
 /* ------------------------------------------------------------------ */

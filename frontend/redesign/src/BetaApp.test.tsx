@@ -40,6 +40,15 @@ describe('beta-style calculator', () => {
     expect(screen.getByRole('option', { name: '4 waves' })).toBeInTheDocument();
   });
 
+  it('uses OOL autocomplete fields when exhaustive OOL is enabled', () => {
+    localStorage.setItem('aacalc2BetaSettings', JSON.stringify({ exhaustiveOOL: true }));
+    render(<BetaApp />);
+
+    const fields = screen.getAllByRole('combobox', { name: 'Order of loss' });
+    expect(fields).toHaveLength(2);
+    expect(fields.every((field) => field.tagName === 'INPUT')).toBe(true);
+  });
+
   it('shows all modes and advanced options', () => {
     render(<BetaApp />);
 

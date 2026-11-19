@@ -32,6 +32,11 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 
 - The app always uses the advanced calculator; there is no simple/advanced
   toggle.
+- Exhaustive OOL is opt-in via settings. When enabled, OOL fields are
+  autocomplete inputs whose options are permutations of the legal unit types
+  for that side/mode (up to eight types). Custom OOL arrays are stored on
+  `WaveConfig.attackOol` / `defenseOol`, flow into share/history through
+  `BattleInput.attackOol` / `defenseOol`, and are reset on mode/reset changes.
 - Probability calculation is exact. There is no Monte Carlo/Simulations
   control.
 - Unit icons are original inline SVG. Multi-wave desktop shows one icon per
