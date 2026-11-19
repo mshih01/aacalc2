@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recharts';
 import type { ProfitDistEntry } from '../../types.ts';
+import { formatFixed, formatPercent } from '../../utils/display.ts';
 
 export type ProfitDistribution = Record<string, ProfitDistEntry>;
 
@@ -14,8 +15,14 @@ interface ProfitCardProps {
   numWaves: number;
 }
 
+interface ProfitHistogramProps extends ProfitCardProps {
+  probabilityDecimals: number;
+}
+
 interface ProfitTableProps extends ProfitCardProps {
   hideUnlikely: HideUnlikely;
+  probabilityDecimals: number;
+  ipcDecimals: number;
 }
 
 interface ProfitRow {
@@ -40,12 +47,6 @@ function sortDistribution(dist: ProfitDistribution) {
 function percentileFor(previous: number, cumulative: number) {
   const matches = PERCENTILES.filter((p) => previous < p && cumulative >= p);
   return matches.length ? matches[Math.floor(matches.length / 2)] : undefined;
-}
-
-function fmtPercent(value: number) {
-  if (!Number.isFinite(value)) return '-';
-  if (value > 0 && value < 0.01) return '<0.01%';
-  return `${value.toFixed(2)}%`;
 }
 
 function chipTone(percentile: number) {
@@ -138,7 +139,12 @@ function CardHeader({
   );
 }
 
-export function ProfitHistogram({ profitDist, wave, numWaves }: ProfitCardProps) {
+export function ProfitHistogram({
+  profitDist,
+  wave,
+  numWaves,
+  probabilityDecimals,
+}: ProfitHistogramProps) {
   const autoBucket = profitDist ? getAutoBucketSize(profitDist) : 1;
   const [bucketSize, setBucketSize] = useState<number | 'auto'>('auto');
   const data = profitDist
@@ -248,7 +254,7 @@ export function ProfitHistogram({ profitDist, wave, numWaves }: ProfitCardProps)
                 }}
                 labelStyle={{ color: 'var(--beta-text)' }}
                 itemStyle={{ color: 'var(--beta-text)' }}
-                formatter={(value) => [`${Number(value).toFixed(2)}%`, 'Probability']}
+                formatter={(value) => [formatPercent(Number(value), probabilityDecimals), 'Probability']}
                 labelFormatter={(label) => `IPC ${label}`}
               />
               <Bar
@@ -277,6 +283,8 @@ export function ProfitDistributionTable({
   wave,
   numWaves,
   hideUnlikely,
+  probabilityDecimals,
+  ipcDecimals,
 }: ProfitTableProps) {
   const threshold = hideUnlikely === 'off' ? 0 : Number(hideUnlikely);
   const visible = profitDist
@@ -333,12 +341,12 @@ export function ProfitDistributionTable({
                       </span>
                     ) : null}
                   </td>
-                  <td className="profit-row__prob">{fmtPercent(row.exact)}</td>
-                  <td>{fmtPercent(row.cumulative)}</td>
-                  <td>{fmtPercent(row.reverse)}</td>
+                  <td className="profit-row__prob">{formatPercent(row.exact, probabilityDecimals)}</td>
+                  <td>{formatPercent(row.cumulative, probabilityDecimals)}</td>
+                  <td>{formatPercent(row.reverse, probabilityDecimals)}</td>
                   <td className="profit-row__ipc">
                     <span className={row.ipc < 0 ? 'profit-negative' : 'profit-positive'}>
-                      {row.ipc.toFixed(1)}
+                      {formatFixed(row.ipc, ipcDecimals)}
                     </span>
                   </td>
                 </tr>

@@ -2,7 +2,7 @@ import { useId, useState, type ReactNode } from 'react';
 import { Icon } from './Icon.tsx';
 
 interface FieldProps {
-  label: string;
+  label: ReactNode;
   value: string | number;
   onChange: (value: string) => void;
   type?: 'text' | 'number';
@@ -12,6 +12,7 @@ interface FieldProps {
   disabled?: boolean;
   green?: boolean;
   outlined?: boolean;
+  compact?: boolean;
   className?: string;
   placeholder?: string;
   inputMode?: 'text' | 'numeric' | 'decimal';
@@ -32,6 +33,7 @@ export function TextField({
   disabled = false,
   green = false,
   outlined = false,
+  compact = false,
   className = '',
   placeholder,
   inputMode,
@@ -49,6 +51,7 @@ export function TextField({
         'field',
         outlined ? 'field--outlined' : '',
         green ? 'field--green' : '',
+        compact ? 'field--compact' : '',
         filled ? 'field--filled' : '',
         focused ? 'field--focused' : '',
         disabled ? 'field--disabled' : '',
@@ -68,7 +71,7 @@ export function TextField({
         disabled={disabled}
         placeholder={placeholder}
         inputMode={inputMode}
-        aria-label={ariaLabel ?? label}
+        aria-label={ariaLabel ?? (typeof label === 'string' ? label : undefined)}
         autoFocus={autoFocus}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => {
@@ -80,9 +83,11 @@ export function TextField({
           onBlur?.();
         }}
       />
-      <label className="field__label" htmlFor={id}>
-        {label}
-      </label>
+      {compact ? null : (
+        <label className="field__label" htmlFor={id}>
+          {label}
+        </label>
+      )}
     </div>
   );
 }
@@ -159,6 +164,7 @@ export function CheckboxControl({
   large = false,
   disabled = false,
   className = '',
+  ariaLabel,
 }: {
   label: ReactNode;
   checked: boolean;
@@ -166,6 +172,7 @@ export function CheckboxControl({
   large?: boolean;
   disabled?: boolean;
   className?: string;
+  ariaLabel?: string;
 }) {
   return (
     <label
@@ -182,6 +189,7 @@ export function CheckboxControl({
         type="checkbox"
         checked={checked}
         disabled={disabled}
+        aria-label={ariaLabel}
         onChange={(e) => onChange(e.target.checked)}
       />
       <span className="checkbox__box" aria-hidden="true">
@@ -204,11 +212,12 @@ export function SwitchControl({
   disabled?: boolean;
 }) {
   return (
-    <label className="switch" aria-label={label}>
+    <label className="switch">
       <input
         type="checkbox"
         checked={checked}
         disabled={disabled}
+        aria-label={label}
         onChange={(e) => onChange(e.target.checked)}
       />
       <span className="switch__track" />

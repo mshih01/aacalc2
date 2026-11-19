@@ -70,6 +70,16 @@ interface BetaSettings {
   ipcDiffDisplay: 'absolute' | 'roi';
   exhaustiveOOL: boolean;
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
+  probabilityDecimals: number;
+  ipcDecimals: number;
+  verboseLevel: number;
+  pruneThreshold: number;
+  reportPruneThreshold: number;
+  complexityThreshold: number;
+  sortMode: 'unit_count' | 'ipc_cost';
+  experimentalConvolution: boolean;
+  evFutureWave: boolean;
+  retreatZeroRound: boolean;
   historySortOrder: 'title' | 'date';
   showHistoryDetails: boolean;
   hideUnnamedHistory: boolean;
@@ -81,6 +91,16 @@ const DEFAULT_SETTINGS: BetaSettings = {
   ipcDiffDisplay: 'absolute',
   exhaustiveOOL: false,
   hideUnlikely: '0.01',
+  probabilityDecimals: 2,
+  ipcDecimals: 2,
+  verboseLevel: 0,
+  pruneThreshold: computeThreshold(2),
+  reportPruneThreshold: computeThreshold(2),
+  complexityThreshold: MAX_COMPLEXITY,
+  sortMode: 'ipc_cost',
+  experimentalConvolution: false,
+  evFutureWave: false,
+  retreatZeroRound: false,
   historySortOrder: 'title',
   showHistoryDetails: false,
   hideUnnamedHistory: true,
@@ -92,6 +112,27 @@ const WIDTHS: Record<BetaSettings['width'], string> = {
   lg: '1200px',
   xl: '1536px',
 };
+
+function clampDecimalPlaces(raw: string, fallback = 2): number {
+  if (raw.trim() === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(0, Math.min(10, Math.round(value)));
+}
+
+function parseNonNegativeInt(raw: string, fallback: number): number {
+  if (raw.trim() === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(0, Math.round(value));
+}
+
+function parseThreshold(raw: string, fallback: number): number {
+  if (raw.trim() === '') return fallback;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) return fallback;
+  return value;
+}
 
 function loadSettings(): BetaSettings {
   try {
@@ -200,13 +241,6 @@ export default function BetaApp() {
   const [territoryValue, setTerritoryValue] = useState(0);
   const [isDeadzone, setIsDeadzone] = useState(false);
   const [inProgress, setInProgress] = useState(false);
-  const [verboseLevel, setVerboseLevel] = useState(0);
-  const [pruneThreshold, setPruneThreshold] = useState(computeThreshold(2));
-  const [reportPruneThreshold, setReportPruneThreshold] = useState(computeThreshold(2));
-  const [sortMode, setSortMode] = useState<'unit_count' | 'ipc_cost'>('ipc_cost');
-  const [experimentalConvolution, setExperimentalConvolution] = useState(false);
-  const [evFutureWave, setEvFutureWave] = useState(false);
-  const [retreatZeroRound, setRetreatZeroRound] = useState(false);
 
   const { waveConfigs, updateWave } = useWaveState(MAX_WAVES);
 
@@ -241,6 +275,14 @@ export default function BetaApp() {
 
   const allowFourWaves = settings.width === 'xl' && viewportWidth >= 1000;
   const maxWaves = allowFourWaves ? 4 : 3;
+
+  // The reference UI moves the per-wave checkbox label above the boxes when
+  // the wave columns get too narrow for a label beside every box.
+  const inlineTwoWaveCheckboxes = viewportWidth >= 500;
+  const inlineThreeWaveCheckboxes = viewportWidth >= 700 && settings.width !== 'sm';
+  const stackedCheckboxes =
+    (numWaves > 1 && !inlineTwoWaveCheckboxes) ||
+    (numWaves > 2 && !inlineThreeWaveCheckboxes);
 
   const isLoadingRef = useRef(false);
   const shouldRunBattleRef = useRef(false);
@@ -325,17 +367,17 @@ export default function BetaApp() {
       mode,
       diceMode,
       inProgress,
-      verboseLevel,
-      pruneThreshold,
-      reportPruneThreshold,
-      sortMode,
+      verboseLevel: settings.verboseLevel,
+      pruneThreshold: settings.pruneThreshold,
+      reportPruneThreshold: settings.reportPruneThreshold,
+      sortMode: settings.sortMode,
       territoryValue,
       isDeadzone,
       numWaves,
       amphibious,
-      experimentalConvolution,
-      evFutureWave,
-      retreatZeroRound,
+      experimentalConvolution: settings.experimentalConvolution,
+      evFutureWave: settings.evFutureWave,
+      retreatZeroRound: settings.retreatZeroRound,
       evDeadzone,
       evTerritoryValue,
     };
@@ -347,16 +389,10 @@ export default function BetaApp() {
     mode,
     diceMode,
     inProgress,
-    verboseLevel,
-    pruneThreshold,
-    reportPruneThreshold,
-    sortMode,
+    settings,
     territoryValue,
     isDeadzone,
     amphibious,
-    experimentalConvolution,
-    evFutureWave,
-    retreatZeroRound,
     wavePresets,
   ]);
 
@@ -397,8 +433,8 @@ export default function BetaApp() {
         const input = buildCurrentInput();
         const complexityInput = buildMultiwaveInput(input);
         const complexity = multiwaveComplexityFastV2(complexityInput);
-        if (complexity > MAX_COMPLEXITY) {
-          setComplexityWarning({ complexity, threshold: MAX_COMPLEXITY });
+        if (complexity > settings.complexityThreshold) {
+          setComplexityWarning({ complexity, threshold: settings.complexityThreshold });
           setResult(null);
           return;
         }
@@ -432,6 +468,7 @@ export default function BetaApp() {
       updateHash,
       title,
       saveHistoryEntry,
+      settings.complexityThreshold,
     ],
   );
 
@@ -448,14 +485,7 @@ export default function BetaApp() {
       setDiceMode(input.diceMode ?? 'standard');
       setTerritoryValue(input.territoryValue ?? 0);
       setIsDeadzone(input.isDeadzone ?? false);
-      setExperimentalConvolution(input.experimentalConvolution ?? false);
-      setEvFutureWave(input.evFutureWave ?? false);
-      setRetreatZeroRound(input.retreatZeroRound ?? false);
       setInProgress(input.inProgress ?? false);
-      setVerboseLevel(input.verboseLevel ?? 0);
-      setPruneThreshold(input.pruneThreshold ?? computeThreshold(2));
-      setReportPruneThreshold(input.reportPruneThreshold ?? computeThreshold(2));
-      setSortMode(input.sortMode ?? 'ipc_cost');
 
       for (let wave = 0; wave < nextWaves; wave++) {
         const attackOol = input.attackOol?.[wave];
@@ -801,13 +831,6 @@ export default function BetaApp() {
     setTerritoryValue(0);
     setIsDeadzone(false);
     setInProgress(false);
-    setVerboseLevel(0);
-    setPruneThreshold(computeThreshold(2));
-    setReportPruneThreshold(computeThreshold(2));
-    setSortMode('ipc_cost');
-    setExperimentalConvolution(false);
-    setEvFutureWave(false);
-    setRetreatZeroRound(false);
     setResult(null);
     setError(null);
     setComplexityWarning(null);
@@ -1041,6 +1064,7 @@ export default function BetaApp() {
                 onDeadzone={setIsDeadzone}
                 onUpdateWave={updateWave}
                 exhaustiveOOL={settings.exhaustiveOOL}
+                stackedCheckboxes={stackedCheckboxes}
                 onRetreatClick={(wave, rect) =>
                   setRetreatPopover({
                     wave,
@@ -1077,8 +1101,9 @@ export default function BetaApp() {
             {error ? <div className="results__error">{error}</div> : null}
             {complexityWarning ? (
               <div className="results__warning">
-                This battle is too complex to evaluate exactly. Try fewer units, fewer waves, or a
-                simpler order of loss.
+                This battle is too complex to evaluate exactly. Try fewer units, fewer waves, a
+                simpler order of loss, or raise the complexity threshold in Settings → Advanced
+                options.
               </div>
             ) : null}
 
@@ -1089,6 +1114,8 @@ export default function BetaApp() {
                 settings={{
                   ipcDiffDisplay: settings.ipcDiffDisplay,
                   hideUnlikely: settings.hideUnlikely,
+                  probabilityDecimals: settings.probabilityDecimals,
+                  ipcDecimals: settings.ipcDecimals,
                 }}
               />
             ) : null}
@@ -1284,6 +1311,199 @@ export default function BetaApp() {
                   darkMode: value as BetaSettings['darkMode'],
                 }))
               }
+            />
+          </SettingRow>
+        </div>
+        <div className="settings-section">
+          <div className="settings-section__heading">
+            <div className="settings-section__title">Advanced options</div>
+            <div className="settings-section__desc">
+              Display precision and engine tuning for calculated results.
+            </div>
+          </div>
+          <SettingRow
+            title="Probability decimal places"
+            description="Decimals shown for probabilities in the overview, casualty tables, and profit distribution. Changing this also resets the prune thresholds below."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="Probability decimal places"
+              type="number"
+              min={0}
+              max={10}
+              step={1}
+              value={String(settings.probabilityDecimals)}
+              onChange={(value) =>
+                setSettings((prev) => {
+                  const probabilityDecimals = clampDecimalPlaces(value);
+                  return {
+                    ...prev,
+                    probabilityDecimals,
+                    pruneThreshold: computeThreshold(probabilityDecimals),
+                    reportPruneThreshold: computeThreshold(probabilityDecimals),
+                  };
+                })
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="IPC loss decimal places"
+            description="Decimals shown for IPC and profit values in the overview and profit distribution."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="IPC loss decimal places"
+              type="number"
+              min={0}
+              max={10}
+              step={1}
+              value={String(settings.ipcDecimals)}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  ipcDecimals: clampDecimalPlaces(value),
+                }))
+              }
+            />
+          </SettingRow>
+          <div className="settings-subheading">Engine</div>
+          <SettingRow
+            title="Verbose level"
+            description="Engine logging verbosity. 0 disables verbose logging."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="Verbose level"
+              type="number"
+              min={0}
+              step={1}
+              value={String(settings.verboseLevel)}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  verboseLevel: parseNonNegativeInt(value, 0),
+                }))
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Prune threshold"
+            description="Probabilities below this value are pruned while solving. Lower values are slower but more precise."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="Prune threshold"
+              type="number"
+              min={0}
+              step="1e-15"
+              value={String(settings.pruneThreshold)}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  pruneThreshold: parseThreshold(value, computeThreshold(prev.probabilityDecimals)),
+                }))
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Report prune threshold"
+            description="Probabilities below this value are pruned when building the result tables."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="Report prune threshold"
+              type="number"
+              min={0}
+              step="1e-15"
+              value={String(settings.reportPruneThreshold)}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  reportPruneThreshold: parseThreshold(
+                    value,
+                    computeThreshold(prev.probabilityDecimals),
+                  ),
+                }))
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Complexity threshold"
+            description="Battles whose estimated complexity exceeds this value are blocked with a warning. Raise it to allow heavier battles."
+          >
+            <TextField
+              className="field--outlined"
+              compact
+              label="Complexity threshold"
+              type="number"
+              min={0}
+              step={10000}
+              value={String(settings.complexityThreshold)}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  complexityThreshold: parseNonNegativeInt(value, MAX_COMPLEXITY),
+                }))
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Sort mode"
+            description="How the engine orders units internally. IPC cost is the default."
+          >
+            <SelectField
+              className="field--outlined"
+              compact
+              label="Sort mode"
+              value={settings.sortMode}
+              options={[
+                { value: 'unit_count', label: 'Unit count' },
+                { value: 'ipc_cost', label: 'IPC cost' },
+              ]}
+              onChange={(value) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  sortMode: value as BetaSettings['sortMode'],
+                }))
+              }
+            />
+          </SettingRow>
+          <div className="settings-subheading">Experimental</div>
+          <SettingRow
+            title="Fix defender profit via convolution"
+            description="Replace later-wave defender profit with a convolution of the wave and prior distributions, assuming independence."
+          >
+            <SwitchControl
+              label="Fix defender profit via convolution"
+              checked={settings.experimentalConvolution}
+              onChange={(checked) =>
+                setSettings((prev) => ({ ...prev, experimentalConvolution: checked }))
+              }
+            />
+          </SettingRow>
+          <SettingRow
+            title="Future-wave-aware EV retreat"
+            description="Make expected-value retreat decisions aware of the remaining waves."
+          >
+            <SwitchControl
+              label="Future-wave-aware EV retreat"
+              checked={settings.evFutureWave}
+              onChange={(checked) => setSettings((prev) => ({ ...prev, evFutureWave: checked }))}
+            />
+          </SettingRow>
+          <SettingRow
+            title="Allow retreat on round zero"
+            description="Allow retreat decisions before the first combat round."
+          >
+            <SwitchControl
+              label="Allow retreat on round zero"
+              checked={settings.retreatZeroRound}
+              onChange={(checked) => setSettings((prev) => ({ ...prev, retreatZeroRound: checked }))}
             />
           </SettingRow>
         </div>

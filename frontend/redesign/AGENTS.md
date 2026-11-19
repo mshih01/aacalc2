@@ -63,6 +63,26 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack
   them and use icon-only reset buttons.
+- Per-wave checkbox rows (Submerge subs, Destroyer last, Crash fighters, AA 2nd
+  last) follow the reference: when the wave columns are too narrow, the label is
+  drawn once above a row of checkboxes centred under each wave column. That
+  happens for any multi-wave battle below a 500px viewport, and for three or
+  more waves below a 700px viewport or with the Small width setting. Otherwise
+  every checkbox keeps its own label beside it.
+- On mobile the Dead zone checkbox shares the Territory value line, using the
+  short “DZ” label (the field label shortens to “Territory IPC”); desktop keeps
+  “Dead zone” and “Territory value (IPC)”.
+- Settings → Advanced options holds the display and engine controls:
+  probability/IPC decimal places, verbose level, prune and report-prune
+  thresholds, complexity threshold, sort mode, and the three experimental
+  switches. They persist in `aacalc2BetaSettings`; changing probability
+  decimals resets both prune thresholds via `computeThreshold`. Probability
+  decimals drive the overview, casualty tables, profit distribution and
+  histogram tooltip; IPC decimals drive the overview and profit distribution
+  IPC/profit values. Mobile casualty percentages keep their compact rounded
+  format. Advanced options are app settings: loading a share link or history
+  entry keeps the viewer’s current values rather than restoring the encoded
+  ones.
 - Waves 1–3 are available everywhere; 4 waves is offered only when the width
   setting is Extra large and the viewport is at least 1000px. Reducing the
   width or viewport clamps an active 4-wave battle to 3 waves.

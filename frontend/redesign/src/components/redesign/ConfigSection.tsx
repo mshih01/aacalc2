@@ -44,6 +44,60 @@ function RetreatField({
   );
 }
 
+/**
+ * Per-wave checkbox row. The reference UI draws the label above the row and
+ * keeps only the boxes under the wave columns when the wave columns would be
+ * too narrow for a label beside every box (mobile, narrow container widths, or
+ * three or more waves in a narrow layout).
+ */
+function WaveCheckboxes({
+  label,
+  waves,
+  checked,
+  onChange,
+  stacked,
+  style,
+}: {
+  label: string;
+  waves: number[];
+  checked: (wave: number) => boolean;
+  onChange: (wave: number, checked: boolean) => void;
+  stacked: boolean;
+  style: CSSProperties;
+}) {
+  if (!stacked) {
+    return (
+      <div className="beta-config-row checkbox-row config-row--tall" style={style}>
+        {waves.map((wave) => (
+          <CheckboxControl
+            key={`${label}-${wave}`}
+            label={label}
+            checked={checked(wave)}
+            onChange={(value) => onChange(wave, value)}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="wave-checkbox-group" style={style}>
+      <span className="wave-checkbox-group__label">{label}</span>
+      <div className="wave-checkbox-group__boxes">
+        {waves.map((wave) => (
+          <CheckboxControl
+            key={`${label}-${wave}`}
+            label=""
+            ariaLabel={label}
+            checked={checked(wave)}
+            onChange={(value) => onChange(wave, value)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ConfigSection({
   mode,
   numWaves,
@@ -58,6 +112,7 @@ export function ConfigSection({
   onUpdateWave,
   onRetreatClick,
   exhaustiveOOL,
+  stackedCheckboxes,
 }: {
   mode: BattleMode;
   numWaves: number;
@@ -72,6 +127,7 @@ export function ConfigSection({
   onUpdateWave: (wave: number, updates: Partial<WaveConfig>) => void;
   onRetreatClick: (wave: number, rect: DOMRect) => void;
   exhaustiveOOL: boolean;
+  stackedCheckboxes: boolean;
 }) {
   const style = { '--wave-count': numWaves } as CSSProperties;
   const attackPresets =
@@ -211,26 +267,22 @@ export function ConfigSection({
           </>
         ) : (
           <>
-            <div className="beta-config-row checkbox-row config-row--tall" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`att-sub-${wave}`}
-                  label="Submerge subs"
-                  checked={waveConfigs[wave]?.attackerSubmerge ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { attackerSubmerge: checked })}
-                />
-              ))}
-            </div>
-            <div className="beta-config-row checkbox-row" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`att-dest-${wave}`}
-                  label="Destroyer last"
-                  checked={waveConfigs[wave]?.attackerDestroyerLast ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { attackerDestroyerLast: checked })}
-                />
-              ))}
-            </div>
+            <WaveCheckboxes
+              label="Submerge subs"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.attackerSubmerge ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { attackerSubmerge: value })}
+              style={style}
+            />
+            <WaveCheckboxes
+              label="Destroyer last"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.attackerDestroyerLast ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { attackerDestroyerLast: value })}
+              style={style}
+            />
             {retreatRow}
           </>
         )}
@@ -254,59 +306,66 @@ export function ConfigSection({
             <div className="config-inline-row">
               <TextField
                 className="field--territory"
-                label="Territory value (IPC)"
+                label={
+                  <>
+                    <span className="desktop-only">Territory value (IPC)</span>
+                    <span className="mobile-only">Territory IPC</span>
+                  </>
+                }
+                ariaLabel="Territory value (IPC)"
                 type="number"
                 min={0}
                 step={1}
                 value={territoryValue ? String(territoryValue) : ''}
                 onChange={(value) => onTerritoryValue(Math.max(0, Number(value) || 0))}
               />
-              <CheckboxControl label="Dead zone" checked={isDeadzone} onChange={onDeadzone} />
+              <CheckboxControl
+                label={
+                  <>
+                    <span className="desktop-only">Dead zone</span>
+                    <span className="mobile-only">DZ</span>
+                  </>
+                }
+                ariaLabel="Dead zone"
+                checked={isDeadzone}
+                onChange={onDeadzone}
+              />
             </div>
-            <div className="beta-config-row checkbox-row config-row--tall" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`def-aa-${wave}`}
-                  large
-                  label="AA 2nd last"
-                  checked={waveConfigs[wave]?.aaLast ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { aaLast: checked })}
-                />
-              ))}
-            </div>
+            <WaveCheckboxes
+              label="AA 2nd last"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.aaLast ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { aaLast: value })}
+              style={style}
+            />
           </>
         ) : (
           <>
-            <div className="beta-config-row checkbox-row config-row--tall" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`def-sub-${wave}`}
-                  label="Submerge subs"
-                  checked={waveConfigs[wave]?.defenderSubmerge ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { defenderSubmerge: checked })}
-                />
-              ))}
-            </div>
-            <div className="beta-config-row checkbox-row" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`def-dest-${wave}`}
-                  label="Destroyer last"
-                  checked={waveConfigs[wave]?.defenderDestroyerLast ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { defenderDestroyerLast: checked })}
-                />
-              ))}
-            </div>
-            <div className="beta-config-row checkbox-row" style={style}>
-              {waves.map((wave) => (
-                <CheckboxControl
-                  key={`def-crash-${wave}`}
-                  label="Crash fighters"
-                  checked={waveConfigs[wave]?.crashFighters ?? false}
-                  onChange={(checked) => onUpdateWave(wave, { crashFighters: checked })}
-                />
-              ))}
-            </div>
+            <WaveCheckboxes
+              label="Submerge subs"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.defenderSubmerge ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { defenderSubmerge: value })}
+              style={style}
+            />
+            <WaveCheckboxes
+              label="Destroyer last"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.defenderDestroyerLast ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { defenderDestroyerLast: value })}
+              style={style}
+            />
+            <WaveCheckboxes
+              label="Crash fighters"
+              waves={waves}
+              stacked={stackedCheckboxes}
+              checked={(wave) => waveConfigs[wave]?.crashFighters ?? false}
+              onChange={(wave, value) => onUpdateWave(wave, { crashFighters: value })}
+              style={style}
+            />
           </>
         )}
       </div>

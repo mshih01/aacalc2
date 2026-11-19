@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MultiwaveOutput } from 'aacalc2';
+import { formatFixed, formatPercent } from '../../utils/display.ts';
 import {
   ProfitDistributionTable,
   ProfitHistogram,
@@ -9,6 +10,8 @@ import {
 export interface ResultsSettings {
   ipcDiffDisplay: 'absolute' | 'roi';
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
+  probabilityDecimals: number;
+  ipcDecimals: number;
 }
 
 interface CasualtyEntry {
@@ -23,27 +26,16 @@ type CasualtyData = Record<string, CasualtyEntry>;
 
 const percentileRows = [5, 32, 50, 68, 95];
 
-function fmtPercent(value: number, places = 2) {
-  if (!Number.isFinite(value)) return '-';
-  if (value > 0 && value < 0.01) return '<0.01%';
-  return `${value.toFixed(places)}%`;
-}
-
 function fmtPercentMobile(value: number) {
   if (!Number.isFinite(value)) return '-';
   if (value > 0 && value < 1) return '<1%';
   return `${Math.round(value)}%`;
 }
 
-function fmtNumber(value: number, places = 1) {
-  if (!Number.isFinite(value)) return '-';
-  return value.toFixed(places);
-}
-
-function PercentValue({ value }: { value: number }) {
+function PercentValue({ value, decimals }: { value: number; decimals: number }) {
   return (
     <>
-      <span className="desktop-only">{fmtPercent(value)}</span>
+      <span className="desktop-only">{formatPercent(value, decimals)}</span>
       <span className="mobile-only">{fmtPercentMobile(value)}</span>
     </>
   );
@@ -66,10 +58,10 @@ function cumulativeLoss(result: MultiwaveOutput, side: 'attack' | 'defense') {
   return Math.max(0, info.cumulativeIpcLoss?.[idx] ?? info.ipcLoss?.[idx] ?? 0);
 }
 
-function roiLabel(profit: number, attackLoss: number) {
+function roiLabel(profit: number, attackLoss: number, decimals: number) {
   if (!attackLoss) return '-';
   const value = (profit / attackLoss) * 100;
-  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+  return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`;
 }
 
 function Overview({
@@ -147,18 +139,18 @@ function Overview({
           className={`overview__grid overview__value${row.all ? ' overview__value--all' : ''}`}
         >
           {multi ? <div className="overview__cell overview__wave">{row.label}</div> : null}
-          <div className="overview__cell overview__cell--rounds">{fmtNumber(row.rounds)}</div>
+          <div className="overview__cell overview__cell--rounds">{formatFixed(row.rounds, 1)}</div>
           <div className="overview__cell overview__cell--attack-survives">
-            {fmtPercent(row.attackSurvives * 100, 1)}
+            {formatPercent(row.attackSurvives * 100, settings.probabilityDecimals)}
           </div>
           <div className="overview__cell overview__cell--attack-conquers">
-            {fmtPercent(row.attackConquers * 100, 1)}
+            {formatPercent(row.attackConquers * 100, settings.probabilityDecimals)}
           </div>
           <div className="overview__cell overview__cell--defense-survives">
-            {fmtPercent(row.defenseSurvives * 100, 1)}
+            {formatPercent(row.defenseSurvives * 100, settings.probabilityDecimals)}
           </div>
           <div className="overview__cell overview__cell--attack-ipc">
-            {row.attackIpc === 0 ? '0.0' : row.attackIpc.toFixed(1)}
+            {formatFixed(row.attackIpc, settings.ipcDecimals)}
           </div>
           <div className="overview__cell overview__cell--profit">
             <span
@@ -167,12 +159,12 @@ function Overview({
               }`}
             >
               {settings.ipcDiffDisplay === 'roi'
-                ? roiLabel(row.profit, Math.abs(row.attackIpc))
-                : row.profit.toFixed(1)}
+                ? roiLabel(row.profit, Math.abs(row.attackIpc), settings.ipcDecimals)
+                : formatFixed(row.profit, settings.ipcDecimals)}
             </span>
           </div>
           <div className="overview__cell overview__cell--defense-ipc">
-            {row.defenseIpc === 0 ? '0.0' : row.defenseIpc.toFixed(1)}
+            {formatFixed(row.defenseIpc, settings.ipcDecimals)}
           </div>
         </div>
       ))}
@@ -254,13 +246,13 @@ function CasualtyTable({
               ) : null}
             </div>
             <div className="casualty-row__confidence casualty-row__confidence--exact" role="cell">
-              <PercentValue value={row.exact} />
+              <PercentValue value={row.exact} decimals={settings.probabilityDecimals} />
             </div>
             <div className="casualty-row__confidence casualty-row__confidence--better" role="cell">
-              <PercentValue value={row.cumulative} />
+              <PercentValue value={row.cumulative} decimals={settings.probabilityDecimals} />
             </div>
             <div className="casualty-row__confidence casualty-row__confidence--worse" role="cell">
-              <PercentValue value={row.reverse} />
+              <PercentValue value={row.reverse} decimals={settings.probabilityDecimals} />
             </div>
             <div className="casualty-row__surviving" role="cell">
               {row.entry.survivors || '-'}
@@ -362,12 +354,19 @@ export function Results({
         </div>
       ) : (
         <div className="results__charts">
-          <ProfitHistogram profitDist={profitDistribution} wave={detailWave} numWaves={waveCount} />
+          <ProfitHistogram
+            profitDist={profitDistribution}
+            wave={detailWave}
+            numWaves={waveCount}
+            probabilityDecimals={settings.probabilityDecimals}
+          />
           <ProfitDistributionTable
             profitDist={profitDistribution}
             wave={detailWave}
             numWaves={waveCount}
             hideUnlikely={settings.hideUnlikely}
+            probabilityDecimals={settings.probabilityDecimals}
+            ipcDecimals={settings.ipcDecimals}
           />
         </div>
       )}

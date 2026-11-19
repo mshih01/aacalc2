@@ -59,12 +59,19 @@ npm run preview -- --port 5175
 - **Drawers** — menu, settings, common battles, history.
 - **Settings** — IPC display (absolute/ROI), exhaustive OOL autocomplete, hide
   unlikely outcomes (including `< 5%`, defaulting to `< 0.01%`), history
-  sort/show/hide-unnamed, width (Small / Medium / Large / Extra large), and dark
-  mode.
+  sort/show/hide-unnamed, width (Small / Medium / Large / Extra large), dark
+  mode, and **Advanced options**: probability/IPC decimal places, verbose level,
+  prune and report-prune thresholds, complexity threshold, sort mode, and the
+  three experimental switches. Changing probability decimals also resets both
+  prune thresholds.
 - **Wide layouts** — at Large and Extra large widths, Amphibious assault,
   Waves and Dice mode merge into the mode row, and Reset All / Reset Units
   become outlined icon+text buttons. Smaller widths keep them stacked and use
-  icon-only reset buttons.
+  icon-only reset buttons. Per-wave checkbox rows (Submerge subs, Destroyer
+  last, Crash fighters, AA 2nd last) draw their label once above a row of
+  checkboxes when the wave columns are narrow (multi-wave below 500px viewport,
+  or three or more waves below 700px / with the Small width); otherwise every
+  checkbox keeps its own label.
 - **Persistence** — settings and history in `localStorage`; history entries are
   saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links
@@ -72,7 +79,9 @@ npm run preview -- --port 5175
 - **Responsive/dark** — mobile header/unit-grid layout and dark palette. On
   mobile the results overview keeps Attacker Profit and drops Defender IPC, and
   casualty tables show all outcome rows with the green/red confidence intervals
-  and percentile chips.
+  and percentile chips. Mobile also keeps Dead zone on the Territory value line
+  with a short “DZ” label (“Territory IPC” on the field); desktop keeps the full
+  labels.
 
 ## Deliberate differences from beta
 
