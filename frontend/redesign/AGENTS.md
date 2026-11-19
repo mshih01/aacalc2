@@ -32,16 +32,36 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 
 - The app always uses the advanced calculator; there is no simple/advanced
   toggle.
+- Exhaustive OOL is opt-in via settings. When enabled, OOL fields are
+  autocomplete inputs whose options are permutations of the legal unit types
+  for that side/mode (up to eight types). Custom OOL arrays are stored on
+  `WaveConfig.attackOol` / `defenseOol`, flow into share/history through
+  `BattleInput.attackOol` / `defenseOol`, and are reset on mode/reset changes.
 - Probability calculation is exact. There is no Monte Carlo/Simulations
   control.
 - Unit icons are original inline SVG. Multi-wave desktop shows one icon per
-  unit row; multi-wave mobile drops the icon column entirely.
+  unit row; multi-wave mobile drops the icon column entirely. Legal unit-count
+  fields use the page surface (white/black); illegal units for the current mode
+  get a grey disabled background.
 - Results always show the green “or better” / red “or worse” confidence
   intervals (plus exact probability on desktop). There is no simple-mode table.
+  A profit histogram and profit distribution table appear above the casualty
+  tables and use the per-wave `profitDistribution[wave]` data. Multi-wave
+  results get a Results wave selector (latest wave by default) that also selects
+  the per-wave `casualtiesInfoArr[wave]` tables; All waves shows cumulative
+  casualties and a note that profit data is per wave. Hide unlikely outcomes
+  filters casualty and profit table rows; profit confidence and percentile chips
+  are recalculated over the visible rows, while the histogram remains full. At Extra
+  large the histogram and profit table share a row; at Large/Extra large the
+  attacker and defender tables sit side by side. The histogram bucket size is
+  selectable (Auto plus fixed 1–50 IPC sizes).
 - Width modes are Small (600), Medium (900), Large (1200) and Extra large
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack
   them and use icon-only reset buttons.
+- Waves 1–3 are available everywhere; 4 waves is offered only when the width
+  setting is Extra large and the viewport is at least 1000px. Reducing the
+  width or viewport clamps an active 4-wave battle to 3 waves.
 - Settings/history use isolated keys (`aacalc2BetaSettings`,
   `aacalc2BetaHistory`), and sharing uses `#/<lz-state>/<title>`.
 - Reference screenshots are in `docs/screenshots/`.

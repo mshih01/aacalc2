@@ -26,6 +26,27 @@ describe('beta-style calculator', () => {
       { timeout: 10000 },
     );
     expect(screen.getByText('Defender IPC')).toBeInTheDocument();
+    expect(screen.getByText('Profit histogram')).toBeInTheDocument();
+    expect(screen.getByText('Profit distribution')).toBeInTheDocument();
+  });
+
+  it('only offers four waves for extra-large desktop layouts', () => {
+    const first = render(<BetaApp />);
+    expect(screen.queryByRole('option', { name: '4 waves' })).not.toBeInTheDocument();
+    first.unmount();
+
+    localStorage.setItem('aacalc2BetaSettings', JSON.stringify({ width: 'xl' }));
+    render(<BetaApp />);
+    expect(screen.getByRole('option', { name: '4 waves' })).toBeInTheDocument();
+  });
+
+  it('uses OOL autocomplete fields when exhaustive OOL is enabled', () => {
+    localStorage.setItem('aacalc2BetaSettings', JSON.stringify({ exhaustiveOOL: true }));
+    render(<BetaApp />);
+
+    const fields = screen.getAllByRole('combobox', { name: 'Order of loss' });
+    expect(fields).toHaveLength(2);
+    expect(fields.every((field) => field.tagName === 'INPUT')).toBe(true);
   });
 
   it('shows all modes and advanced options', () => {

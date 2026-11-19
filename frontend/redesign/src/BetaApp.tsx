@@ -51,7 +51,7 @@ import {
 } from './components/redesign/retreat.ts';
 
 const MAX_COMPLEXITY = 4_000_000;
-const TARGET_MAX_WAVES = 3;
+const TARGET_MAX_WAVES = 4;
 const SETTINGS_KEY = 'aacalc2BetaSettings';
 const HISTORY_KEY = 'aacalc2BetaHistory';
 
@@ -62,6 +62,7 @@ interface BetaSettings {
   darkMode: 'auto' | 'light' | 'dark';
   width: 'sm' | 'md' | 'lg' | 'xl';
   ipcDiffDisplay: 'absolute' | 'roi';
+  exhaustiveOOL: boolean;
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
   historySortOrder: 'title' | 'date';
   showHistoryDetails: boolean;
@@ -72,7 +73,8 @@ const DEFAULT_SETTINGS: BetaSettings = {
   darkMode: 'auto',
   width: 'sm',
   ipcDiffDisplay: 'absolute',
-  hideUnlikely: 'off',
+  exhaustiveOOL: false,
+  hideUnlikely: '0.01',
   historySortOrder: 'title',
   showHistoryDetails: false,
   hideUnnamedHistory: true,
@@ -221,6 +223,7 @@ export default function BetaApp() {
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [page, setPage] = useState<Page>('calculator');
   const [settings, setSettings] = useState<BetaSettings>(loadSettings);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [historySearch, setHistorySearch] = useState('');
   const [toast, setToast] = useState<string | null>(null);
@@ -229,6 +232,9 @@ export default function BetaApp() {
     left: number;
     top: number;
   } | null>(null);
+
+  const allowFourWaves = settings.width === 'xl' && viewportWidth >= 1000;
+  const maxWaves = allowFourWaves ? 4 : 3;
 
   const isLoadingRef = useRef(false);
   const shouldRunBattleRef = useRef(false);
@@ -269,8 +275,8 @@ export default function BetaApp() {
       const defensePreset = defenderOolPresets[mode].find(
         (preset) => preset.id === config?.defenseOolPreset,
       );
-      attackOol[wave] = attackPreset?.ool ?? [];
-      defenseOol[wave] = defensePreset?.ool ?? [];
+      attackOol[wave] = config?.attackOol ?? attackPreset?.ool ?? [];
+      defenseOol[wave] = config?.defenseOol ?? defensePreset?.ool ?? [];
       rounds[wave] = config?.rounds ?? 'all';
       retreatThresholds[wave] = config?.retreatThreshold ?? 0;
       takesTerritory[wave] = config?.takesTerritory ?? 0;
@@ -472,6 +478,8 @@ export default function BetaApp() {
         updateWave(wave, {
           attackOolPreset: attackPreset?.id ?? DEFAULT_WAVE_CONFIG.attackOolPreset,
           defenseOolPreset: defensePreset?.id ?? DEFAULT_WAVE_CONFIG.defenseOolPreset,
+          attackOol: attackPreset ? undefined : attackOol,
+          defenseOol: defensePreset ? undefined : defenseOol,
           rounds: input.rounds?.[wave]?.toString() ?? 'all',
           takesTerritory: input.takesTerritory?.[wave] ?? 0,
           aaLast: input.aaLast?.[wave] ?? false,
@@ -548,6 +556,19 @@ export default function BetaApp() {
   useEffect(() => {
     document.documentElement.style.setProperty('--beta-container-width', WIDTHS[settings.width]);
   }, [settings.width]);
+
+  useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    if (numWaves > maxWaves) {
+      setNumWaves(maxWaves);
+      setResult(null);
+    }
+  }, [maxWaves, numWaves]);
 
   useEffect(() => {
     const fromHash = decodeStateFromHash();
@@ -639,6 +660,8 @@ export default function BetaApp() {
       updateWave(wave, {
         attackOolPreset: attackPresetsForMode[0]?.id ?? DEFAULT_WAVE_CONFIG.attackOolPreset,
         defenseOolPreset: defenderOolPresets[mode][0]?.id ?? DEFAULT_WAVE_CONFIG.defenseOolPreset,
+        attackOol: undefined,
+        defenseOol: undefined,
       });
     }
   }, [mode, amphibious, updateWave, wavePresets]);
@@ -767,7 +790,11 @@ export default function BetaApp() {
     setComplexityWarning(null);
     setTitle('');
     for (let wave = 0; wave < MAX_WAVES; wave++) {
-      updateWave(wave, { ...DEFAULT_WAVE_CONFIG });
+      updateWave(wave, {
+        ...DEFAULT_WAVE_CONFIG,
+        attackOol: undefined,
+        defenseOol: undefined,
+      });
     }
     setToast('Calculator reset');
   }, [emptyWaves, updateWave]);
@@ -925,7 +952,7 @@ export default function BetaApp() {
                       className="field--waves"
                       label="Waves"
                       value={String(numWaves)}
-                      options={Array.from({ length: TARGET_MAX_WAVES }, (_, index) => ({
+                      options={Array.from({ length: maxWaves }, (_, index) => ({
                         value: String(index + 1),
                         label: `${index + 1} wave${index === 0 ? '' : 's'}`,
                       }))}
@@ -990,6 +1017,7 @@ export default function BetaApp() {
                 isDeadzone={isDeadzone}
                 onDeadzone={setIsDeadzone}
                 onUpdateWave={updateWave}
+                exhaustiveOOL={settings.exhaustiveOOL}
                 onRetreatClick={(wave, rect) =>
                   setRetreatPopover({
                     wave,
@@ -1115,8 +1143,18 @@ export default function BetaApp() {
             />
           </SettingRow>
           <SettingRow
+            title="Exhaustive OOL"
+            description="Change the OOL picker to an autocomplete field. Nearly all OOLs will be available, with some restrictions."
+          >
+            <SwitchControl
+              label="Exhaustive OOL"
+              checked={settings.exhaustiveOOL}
+              onChange={(checked) => setSettings((prev) => ({ ...prev, exhaustiveOOL: checked }))}
+            />
+          </SettingRow>
+          <SettingRow
             title="Hide unlikely outcomes"
-            description="Hide low-probability rows in the casualty tables. The 95/68/50 confidence intervals are still shown."
+            description="Hide low-probability rows in the casualty and profit tables. The 95/68/50 confidence intervals are still shown."
           >
             <SelectField
               className="field--outlined"

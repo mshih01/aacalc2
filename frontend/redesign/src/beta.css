@@ -35,6 +35,7 @@
   --beta-text: rgba(0, 0, 0, 0.87);
   --beta-text-secondary: rgba(0, 0, 0, 0.6);
   --beta-text-disabled: rgba(0, 0, 0, 0.38);
+  --beta-disabled-bg: #f5f5f5;
   --beta-divider: #e0e0e0;
   --beta-border: rgba(0, 0, 0, 0.23);
   --beta-border-strong: rgba(0, 0, 0, 0.42);
@@ -63,6 +64,7 @@
   --beta-text: #ffffff;
   --beta-text-secondary: rgba(255, 255, 255, 0.7);
   --beta-text-disabled: rgba(255, 255, 255, 0.38);
+  --beta-disabled-bg: #2a2a2a;
   --beta-divider: rgba(255, 255, 255, 0.12);
   --beta-border: rgba(255, 255, 255, 0.23);
   --beta-border-strong: rgba(255, 255, 255, 0.5);
@@ -697,16 +699,41 @@ button {
   background: var(--beta-success-bg);
 }
 
-/* Hide number spinners */
+/* Hide number spinners by default. Desktop unit counts opt back in below. */
 .field__input[type='number']::-webkit-outer-spin-button,
 .field__input[type='number']::-webkit-inner-spin-button {
   appearance: none;
+  -webkit-appearance: none;
   margin: 0;
 }
 
 .field__input[type='number'] {
   appearance: textfield;
+  -webkit-appearance: textfield;
   -moz-appearance: textfield;
+}
+
+/* Desktop army counts keep the native increment/decrement controls. */
+@media (min-width: 600px) {
+  .unit-row .field__input[type='number'] {
+    appearance: auto;
+    -webkit-appearance: auto;
+    -moz-appearance: auto;
+  }
+
+  .unit-row .field__input[type='number']::-webkit-outer-spin-button,
+  .unit-row .field__input[type='number']::-webkit-inner-spin-button {
+    appearance: auto;
+    -webkit-appearance: auto;
+    opacity: 0;
+    margin: 0;
+    transition: opacity 120ms;
+  }
+
+  .unit-row .field__input[type='number']:hover::-webkit-outer-spin-button,
+  .unit-row .field__input[type='number']:hover::-webkit-inner-spin-button {
+    opacity: 1;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -731,6 +758,17 @@ button {
   display: flex;
   align-items: center;
   min-height: 37px;
+}
+
+.config-inline-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.config-inline-row .field {
+  width: 100%;
 }
 
 .config-row--tall {
@@ -778,6 +816,59 @@ button {
 
 .beta-config-side .field--full {
   width: 100%;
+}
+
+.ool-autocomplete {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.ool-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  right: 0;
+  left: 0;
+  z-index: 60;
+  max-height: 240px;
+  padding: 4px 0;
+  overflow-y: auto;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  box-shadow: var(--beta-shadow);
+}
+
+.ool-option {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--beta-text);
+  font-size: 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ool-option:hover {
+  background: var(--beta-hover);
+}
+
+.ool-dropdown__empty {
+  padding: 8px 10px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.ool-dropdown__more {
+  padding: 6px 10px;
+  border-top: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 11px;
 }
 
 /* ------------------------------------------------------------------ */
@@ -926,16 +1017,12 @@ button {
 }
 
 .unit-row .field {
-  --field-bg: transparent;
+  --field-bg: var(--beta-bg);
   height: 37px;
 }
 
-.unit-group__body--attack .field {
-  --field-bg: var(--beta-attack-bg);
-}
-
-.unit-group__body--defense .field {
-  --field-bg: var(--beta-defense-bg);
+.unit-row .field--disabled {
+  --field-bg: var(--beta-disabled-bg);
 }
 
 .unit-row .field__label {
@@ -1037,6 +1124,232 @@ button {
 
 .results {
   margin-top: 12px;
+}
+
+.results__tables {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.results__tables .casualty-card {
+  margin-top: 0;
+}
+
+.results__profit-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.results__profit-wave {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.profit-wave-select {
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  color: var(--beta-text);
+  font: inherit;
+  font-size: 12px;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] .profit-wave-select {
+  color-scheme: dark;
+}
+
+.results__charts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+@media (min-width: 1000px) {
+  .beta-container--xl .results__charts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
+}
+
+.profit-card {
+  min-width: 0;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  overflow: hidden;
+}
+
+.profit-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--beta-divider);
+  background: var(--beta-table-alt);
+}
+
+.profit-card__title {
+  margin: 0;
+  color: var(--beta-text);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.profit-card__wave {
+  flex: 0 0 auto;
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.profit-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.profit-bucket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.profit-bucket-select {
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  color: var(--beta-text);
+  font: inherit;
+  font-size: 11px;
+  color-scheme: light;
+}
+
+.profit-bucket-select option {
+  background: var(--beta-surface);
+  color: var(--beta-text);
+}
+
+:root[data-theme='dark'] .profit-bucket-select {
+  color-scheme: dark;
+}
+
+.profit-chart {
+  min-width: 0;
+  padding: 6px 6px 0;
+}
+
+.profit-chart__plot {
+  width: 100%;
+  height: 280px;
+  min-width: 0;
+}
+
+.profit-empty {
+  padding: 12px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.profit-table-wrap {
+  overflow-x: auto;
+}
+
+.profit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.profit-table th {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.profit-table th:first-child {
+  text-align: left;
+}
+
+.profit-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--beta-divider);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.profit-table td:first-child {
+  text-align: left;
+}
+
+.profit-table tbody tr:nth-child(even) td {
+  background: var(--beta-table-alt);
+}
+
+.profit-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.profit-row__ipc .chip {
+  margin-left: 6px;
+}
+
+.profit-card__note {
+  padding: 7px 10px;
+  border-top: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.profit-positive {
+  color: var(--beta-success);
+}
+
+.profit-negative {
+  color: var(--beta-error);
+}
+
+@media (min-width: 1000px) {
+  .beta-container--lg .results__tables,
+  .beta-container--xl .results__tables {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+  }
 }
 
 .overview {
@@ -1766,6 +2079,24 @@ button {
 }
 
 @media (max-width: 599.95px) {
+  .profit-card__head {
+    padding: 8px 10px;
+  }
+
+  .profit-table th,
+  .profit-table td {
+    padding: 5px 4px;
+    font-size: 11px;
+  }
+
+  .profit-table th {
+    white-space: normal;
+  }
+
+  .config-inline-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* Mobile always uses the stacked top controls and icon-only reset actions,
      regardless of the selected calculator width. */
   .beta-container--lg .beta-top-controls,
