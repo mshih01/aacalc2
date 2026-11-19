@@ -33,7 +33,9 @@ npm run preview -- --port 5175
 - **Unit grid** — per-wave columns with attack/defense colours, summary stats,
   side swap and wave swap. Single-wave layouts show the unit icon next to the
   input; multi-wave desktop shows the icon once per unit row; multi-wave mobile
-  drops icons entirely so the wave inputs get the full width.
+  drops icons entirely so the wave inputs get the full width. Legal unit-count
+  fields use the page surface (white/black); units that are illegal for the
+  current mode are greyed out with a disabled background.
 - **Results** — rounds, attacker survives/conquers, defender survives,
   attacker/defender IPC, attacker profit, 95/68/50/32/5% confidence chips, and
   full attacker/defender casualty tables. The green “or better” and red “or

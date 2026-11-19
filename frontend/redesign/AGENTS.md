@@ -35,7 +35,9 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - Probability calculation is exact. There is no Monte Carlo/Simulations
   control.
 - Unit icons are original inline SVG. Multi-wave desktop shows one icon per
-  unit row; multi-wave mobile drops the icon column entirely.
+  unit row; multi-wave mobile drops the icon column entirely. Legal unit-count
+  fields use the page surface (white/black); illegal units for the current mode
+  get a grey disabled background.
 - Results always show the green “or better” / red “or worse” confidence
   intervals (plus exact probability on desktop). There is no simple-mode table.
   A profit histogram and profit distribution table appear above the casualty
