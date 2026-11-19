@@ -52,8 +52,8 @@ npm run preview -- --port 5175
   and profit distribution table also share a row.
 - **Drawers** — menu, settings, common battles, history.
 - **Settings** — IPC display (absolute/ROI), hide unlikely outcomes (including
-  `< 5%`), history sort/show/hide-unnamed, width (Small / Medium / Large /
-  Extra large), and dark mode.
+  `< 5%`, defaulting to `< 0.01%`), history sort/show/hide-unnamed, width
+  (Small / Medium / Large / Extra large), and dark mode.
 - **Wide layouts** — at Large and Extra large widths, Amphibious assault,
   Waves and Dice mode merge into the mode row, and Reset All / Reset Units
   become outlined icon+text buttons. Smaller widths keep them stacked and use

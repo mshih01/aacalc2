@@ -72,7 +72,7 @@ const DEFAULT_SETTINGS: BetaSettings = {
   darkMode: 'auto',
   width: 'sm',
   ipcDiffDisplay: 'absolute',
-  hideUnlikely: 'off',
+  hideUnlikely: '0.01',
   historySortOrder: 'title',
   showHistoryDetails: false,
   hideUnnamedHistory: true,

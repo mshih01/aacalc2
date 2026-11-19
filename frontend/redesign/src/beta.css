@@ -1146,6 +1146,7 @@ button {
 
 .profit-card__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -1167,6 +1168,44 @@ button {
   color: var(--beta-text-secondary);
   font-size: 11px;
   white-space: nowrap;
+}
+
+.profit-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.profit-bucket {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.profit-bucket-select {
+  height: 26px;
+  padding: 0 6px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  color: var(--beta-text);
+  font: inherit;
+  font-size: 11px;
+  color-scheme: light;
+}
+
+.profit-bucket-select option {
+  background: var(--beta-surface);
+  color: var(--beta-text);
+}
+
+:root[data-theme='dark'] .profit-bucket-select {
+  color-scheme: dark;
 }
 
 .profit-chart {

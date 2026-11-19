@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Bar, BarChart, CartesianGrid, Cell, Tooltip, XAxis, YAxis } from 'recharts';
 import type { ProfitDistEntry } from '../../types.ts';
 
@@ -79,14 +79,20 @@ function buildRows(dist: ProfitDistribution): ProfitRow[] {
   });
 }
 
-function buildChartData(dist: ProfitDistribution) {
+function getAutoBucketSize(dist: ProfitDistribution) {
+  const sorted = sortDistribution(dist);
+  if (!sorted.length) return 1;
+  const min = sorted[0].ipc;
+  const max = sorted[sorted.length - 1].ipc;
+  return Math.max(1, Math.ceil((max - min) / 40));
+}
+
+function buildChartData(dist: ProfitDistribution, requestedBucket?: number) {
   const sorted = sortDistribution(dist);
   const total = sorted.reduce((sum, entry) => sum + entry.prob, 0);
   if (!total) return [];
 
-  const min = sorted[0].ipc;
-  const max = sorted[sorted.length - 1].ipc;
-  const binSize = Math.max(1, Math.ceil((max - min) / 40));
+  const binSize = requestedBucket ?? getAutoBucketSize(dist);
   const bins = new Map<number, number>();
 
   for (const entry of sorted) {
@@ -109,18 +115,35 @@ function buildChartData(dist: ProfitDistribution) {
     });
 }
 
-function CardHeader({ title, wave, numWaves }: { title: string; wave: number; numWaves: number }) {
+function CardHeader({
+  title,
+  wave,
+  numWaves,
+  right,
+}: {
+  title: string;
+  wave: number;
+  numWaves: number;
+  right?: ReactNode;
+}) {
   const label = waveLabel(wave, numWaves);
   return (
     <header className="profit-card__head">
       <h3 className="profit-card__title">{title}</h3>
-      {label ? <span className="profit-card__wave">{label}</span> : null}
+      <div className="profit-card__meta">
+        {label ? <span className="profit-card__wave">{label}</span> : null}
+        {right}
+      </div>
     </header>
   );
 }
 
 export function ProfitHistogram({ profitDist, wave, numWaves }: ProfitCardProps) {
-  const data = profitDist ? buildChartData(profitDist) : [];
+  const autoBucket = profitDist ? getAutoBucketSize(profitDist) : 1;
+  const [bucketSize, setBucketSize] = useState<number | 'auto'>('auto');
+  const data = profitDist
+    ? buildChartData(profitDist, bucketSize === 'auto' ? undefined : bucketSize)
+    : [];
   const plotRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
 
@@ -150,9 +173,36 @@ export function ProfitHistogram({ profitDist, wave, numWaves }: ProfitCardProps)
     );
   }
 
+  const bucketOptions = [1, 2, 3, 5, 10, 20, 50];
+
   return (
     <section className="profit-card profit-card--chart">
-      <CardHeader title="Profit histogram" wave={wave} numWaves={numWaves} />
+      <CardHeader
+        title="Profit histogram"
+        wave={wave}
+        numWaves={numWaves}
+        right={
+          <label className="profit-bucket">
+            <span>Bucket</span>
+            <select
+              className="profit-bucket-select"
+              aria-label="Histogram bucket size"
+              value={bucketSize === 'auto' ? 'auto' : String(bucketSize)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setBucketSize(value === 'auto' ? 'auto' : Number(value));
+              }}
+            >
+              <option value="auto">Auto ({autoBucket} IPC)</option>
+              {bucketOptions.map((size) => (
+                <option key={`bucket-${size}`} value={size}>
+                  {size} IPC
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+      />
       <div className="profit-chart">
         <div ref={plotRef} className="profit-chart__plot">
           {chartWidth > 0 ? (
