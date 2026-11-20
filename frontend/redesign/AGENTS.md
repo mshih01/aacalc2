@@ -50,15 +50,18 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   results get a Results wave selector (latest wave by default) that also selects
   the per-wave `casualtiesInfoArr[wave]` tables; All waves shows cumulative
   casualties and a note that profit data is per wave. Hide unlikely outcomes
-  filters casualty and profit table rows; profit confidence and percentile chips
-  are recalculated over the visible rows, while the histogram remains full. The
-  profit table mirrors the casualty tables exactly: percentile badges sit in the
-  leftmost column and numeric columns (including the individual-outcome
-  probability) are right aligned; its blue “Profit” pill spans the badge and
-  outcome-probability columns, right-aligned over the probabilities, and a
-  single “Confidence %” heading is centred across the confidence and
-  reverse-confidence columns. On mobile the probability column is dropped,
-  moving the pill into the badge column while the badges keep rendering.
+  only chooses which rows to draw: confidence intervals and percentile badges
+  are always computed from the full distribution, so a hidden row still counts
+  towards the percentages of the rows that remain visible. The two extreme rows
+  are always drawn, so the first row's “or worse” and the last row's “or better”
+  are always exactly 100%. The histogram remains full. The profit table mirrors
+  the casualty tables exactly: percentile badges sit in the leftmost column and
+  numeric columns (including the individual-outcome probability) are right
+  aligned; its blue “Profit” pill spans the badge and outcome-probability
+  columns, right-aligned over the probabilities, and a single “Confidence %”
+  heading is centred across the confidence and reverse-confidence columns. On
+  mobile the probability column is dropped, moving the pill into the badge
+  column while the badges keep rendering.
   Casualty header and body rows share one column grid, so every heading
   lines up with its data column: the Attacker/Defender pill spans the badge and
   outcome-probability columns and is right-aligned over the probabilities, while

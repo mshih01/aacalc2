@@ -289,27 +289,21 @@ export function ProfitDistributionTable({
   ipcDecimals,
 }: ProfitTableProps) {
   const threshold = hideUnlikely === 'off' ? 0 : Number(hideUnlikely);
-  const visible = profitDist
-    ? buildRows(profitDist).filter(
-        (row) => threshold === 0 || row.exact >= threshold || row.percentile !== undefined,
-      )
-    : [];
-  const visibleTotal = visible.reduce((sum, row) => sum + row.prob, 0);
-
-  let cumulativeProb = 0;
-  const rows = visibleTotal
-    ? visible.map((row) => {
-        const previous = cumulativeProb;
-        cumulativeProb += row.prob;
-        const cumulative = (cumulativeProb / visibleTotal) * 100;
-        return {
-          ...row,
-          cumulative,
-          reverse: 100 - (previous / visibleTotal) * 100,
-          percentile: percentileFor((previous / visibleTotal) * 100, cumulative),
-        };
-      })
-    : [];
+  // "Hide unlikely" only chooses which rows to draw; buildRows already computed
+  // the confidence intervals and percentile badges from the full distribution,
+  // so hidden rows still count towards the visible rows' percentages. The two
+  // extreme rows are always drawn so the confidence columns reach 100% at the
+  // ends of the table.
+  const built = profitDist ? buildRows(profitDist) : [];
+  const lastIdx = built.length - 1;
+  const rows = built.filter(
+    (row, idx) =>
+      threshold === 0 ||
+      row.exact >= threshold ||
+      row.percentile !== undefined ||
+      idx === 0 ||
+      idx === lastIdx,
+  );
 
   return (
     <section className="profit-card profit-card--table">

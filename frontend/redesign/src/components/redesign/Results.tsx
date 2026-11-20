@@ -206,8 +206,20 @@ function CasualtyTable({
     return { outcome, entry, exact, cumulative, reverse, percentile };
   });
 
+  // "Hide unlikely" only chooses which rows to draw: the confidence intervals
+  // and percentile badges always come from the full distribution, so a hidden
+  // row's probability still counts towards the rows that remain visible. The
+  // two extreme rows are always drawn so the "or worse" column reaches 100% on
+  // the first row and "or better" reaches 100% on the last row.
+  const firstIdx = allRows.findIndex((row) => (row.entry.amount ?? 0) > 0);
+  const lastIdx = allRows.findLastIndex((row) => (row.entry.amount ?? 0) > 0);
   const rows = allRows.filter(
-    (row) => threshold === 0 || row.exact >= threshold || row.percentile !== null,
+    (row, idx) =>
+      threshold === 0 ||
+      row.exact >= threshold ||
+      row.percentile !== null ||
+      idx === firstIdx ||
+      idx === lastIdx,
   );
 
   const fullSide = side === 'attack' ? 'Attacker' : 'Defender';

@@ -1629,7 +1629,7 @@ export default function BetaApp() {
           </SettingRow>
           <SettingRow
             title="Hide unlikely outcomes"
-            description="Hide low-probability rows in the casualty and profit tables. The 95/68/50 confidence intervals are still shown."
+            description="Hide low-probability rows in the casualty and profit tables. Percentile rows and the two extreme rows are still shown, and confidence always includes every outcome."
           >
             <SelectField
               className="field--outlined"
