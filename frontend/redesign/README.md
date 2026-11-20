@@ -49,18 +49,35 @@ npm run preview -- --port 5175
   casualty tables with a note that profit data is per wave. Hide unlikely
   outcomes filters both casualty and profit table rows; profit confidence and
   percentile chips are recalculated over the visible rows, while the histogram
-  continues to show the full distribution. At Large and Extra large widths, the attacker
-  and defender casualty tables sit side by side; at Extra large the histogram
-  and profit distribution table also share a row.
+  continues to show the full distribution. The profit table mirrors the casualty
+  tables: percentile badges sit in the leftmost column and the numeric columns
+  (including the individual-outcome probability) are right aligned; on mobile
+  the probability column is dropped while the badges keep rendering. At Large
+  and Extra large widths, the attacker and defender casualty tables sit side by
+  side; at Extra large the histogram and profit distribution table also share a
+  row.
 - **Drawers** — menu, settings, common battles, history.
 - **Settings** — IPC display (absolute/ROI), exhaustive OOL autocomplete, hide
   unlikely outcomes (including `< 5%`, defaulting to `< 0.01%`), history
-  sort/show/hide-unnamed, width (Small / Medium / Large / Extra large), and dark
-  mode.
+  sort/show/hide-unnamed, width (Small / Medium / Large / Extra large), dark
+  mode, and **Advanced options**: probability/IPC decimal places, verbose level,
+  prune and report-prune thresholds, complexity threshold, sort mode, and the
+  three experimental switches. Changing probability decimals also resets both
+  prune thresholds.
 - **Wide layouts** — at Large and Extra large widths, Amphibious assault,
   Waves and Dice mode merge into the mode row, and Reset All / Reset Units
   become outlined icon+text buttons. Smaller widths keep them stacked and use
-  icon-only reset buttons.
+  icon-only reset buttons. Per-wave checkbox rows (Submerge subs, Destroyer
+  last, Crash fighters, AA 2nd last) draw their label once above a row of
+  checkboxes when the wave columns are narrow (multi-wave below 500px viewport,
+  or three or more waves below 700px / with the Small width); otherwise every
+  checkbox keeps its own label.
+- **Multi-wave options** — every wave has its own order of loss, rounds, retreat,
+  and side options. Waves after the first get a **Prev wave attackers** checkbox
+  in the defender column (land and sea): checked means the wave’s defenders are
+  the previous wave’s surviving attackers, unchecked (default) means they are
+  the previous wave’s surviving defenders. Wave 1 has no slot because there is
+  no earlier wave to carry survivors over from.
 - **Persistence** — settings and history in `localStorage`; history entries are
   saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links
@@ -68,7 +85,9 @@ npm run preview -- --port 5175
 - **Responsive/dark** — mobile header/unit-grid layout and dark palette. On
   mobile the results overview keeps Attacker Profit and drops Defender IPC, and
   casualty tables show all outcome rows with the green/red confidence intervals
-  and percentile chips.
+  and percentile chips. Mobile also keeps Dead zone on the Territory value line
+  with a short “DZ” label (“Territory IPC” on the field); desktop keeps the full
+  labels.
 
 ## Deliberate differences from beta
 

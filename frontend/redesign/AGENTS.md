@@ -51,14 +51,43 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   the per-wave `casualtiesInfoArr[wave]` tables; All waves shows cumulative
   casualties and a note that profit data is per wave. Hide unlikely outcomes
   filters casualty and profit table rows; profit confidence and percentile chips
-  are recalculated over the visible rows, while the histogram remains full. At Extra
-  large the histogram and profit table share a row; at Large/Extra large the
-  attacker and defender tables sit side by side. The histogram bucket size is
-  selectable (Auto plus fixed 1–50 IPC sizes).
+  are recalculated over the visible rows, while the histogram remains full. The
+  profit table mirrors the casualty tables: percentile badges sit in the
+  leftmost column, numeric columns (including the individual-outcome
+  probability) are right aligned, and on mobile the probability column is
+  dropped while the badges keep rendering. At Extra large the histogram and
+  profit table share a row; at Large/Extra large the attacker and defender
+  tables sit side by side. The histogram bucket size is selectable (Auto plus
+  fixed 1–50 IPC sizes).
 - Width modes are Small (600), Medium (900), Large (1200) and Extra large
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack
   them and use icon-only reset buttons.
+- Per-wave checkbox rows (Submerge subs, Destroyer last, Crash fighters, AA 2nd
+  last) follow the reference: when the wave columns are too narrow, the label is
+  drawn once above a row of checkboxes centred under each wave column. That
+  happens for any multi-wave battle below a 500px viewport, and for three or
+  more waves below a 700px viewport or with the Small width setting. Otherwise
+  every checkbox keeps its own label beside it.
+- Waves after the first get a **Prev wave attackers** checkbox in the defender
+  column (land and sea). Checked means the current wave’s defenders are the
+  previous wave’s surviving attackers; unchecked (the default) means they are
+  the previous wave’s surviving defenders. Wave 1’s slot stays empty because
+  there is no earlier wave to carry units over from.
+- On mobile the Dead zone checkbox shares the Territory value line, using the
+  short “DZ” label (the field label shortens to “Territory IPC”); desktop keeps
+  “Dead zone” and “Territory value (IPC)”.
+- Settings → Advanced options holds the display and engine controls:
+  probability/IPC decimal places, verbose level, prune and report-prune
+  thresholds, complexity threshold, sort mode, and the three experimental
+  switches. They persist in `aacalc2BetaSettings`; changing probability
+  decimals resets both prune thresholds via `computeThreshold`. Probability
+  decimals drive the overview, casualty tables, profit distribution and
+  histogram tooltip; IPC decimals drive the overview and profit distribution
+  IPC/profit values. Mobile casualty percentages keep their compact rounded
+  format. Advanced options are app settings: loading a share link or history
+  entry keeps the viewer’s current values rather than restoring the encoded
+  ones.
 - Waves 1–3 are available everywhere; 4 waves is offered only when the width
   setting is Extra large and the viewport is at least 1000px. Reducing the
   width or viewport clamps an active 4-wave battle to 3 waves.

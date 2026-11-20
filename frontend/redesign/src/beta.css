@@ -546,6 +546,11 @@ button {
   padding: 8.5px 32px 8.5px 14px;
 }
 
+.field--compact .field__input {
+  padding: 8.5px 10px;
+  text-align: center;
+}
+
 .field--ool {
   height: 44px;
 }
@@ -816,6 +821,42 @@ button {
 
 .beta-config-side .field--full {
   width: 100%;
+}
+
+/* Stacked per-wave checkbox row: one label centered over the wave columns,
+   one checkbox centred under each wave column. */
+.wave-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wave-checkbox-group__label {
+  color: var(--beta-text);
+  font-size: 13.7143px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.wave-checkbox-group__boxes {
+  display: grid;
+  grid-template-columns: repeat(var(--wave-count, 1), minmax(0, 1fr));
+  gap: 4.8px;
+  min-width: 0;
+}
+
+.wave-checkbox-group__boxes .checkbox {
+  justify-content: center;
+}
+
+.checkbox-placeholder {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.wave-checkbox-group__boxes .checkbox__label-text:empty {
+  display: none;
 }
 
 .ool-autocomplete {
@@ -1299,8 +1340,14 @@ button {
   white-space: nowrap;
 }
 
-.profit-table th:first-child {
-  text-align: left;
+/* Percentile badges sit in the leftmost column, matching the casualty
+   tables, with every numeric column right aligned. */
+.profit-table th:first-child,
+.profit-table td:first-child {
+  width: 50px;
+  padding-right: 4px;
+  padding-left: 4px;
+  text-align: center;
 }
 
 .profit-table td {
@@ -1310,20 +1357,12 @@ button {
   white-space: nowrap;
 }
 
-.profit-table td:first-child {
-  text-align: left;
-}
-
 .profit-table tbody tr:nth-child(even) td {
   background: var(--beta-table-alt);
 }
 
 .profit-table tbody tr:last-child td {
   border-bottom: 0;
-}
-
-.profit-row__ipc .chip {
-  margin-left: 6px;
 }
 
 .profit-card__note {
@@ -1746,6 +1785,36 @@ button {
   border-top: 1px solid var(--beta-divider);
 }
 
+.settings-section__heading {
+  padding: 10px 16px 2px;
+}
+
+.settings-section__title {
+  color: var(--beta-text);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-section__desc {
+  margin-top: 2px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.settings-subheading {
+  margin-top: 4px;
+  padding: 8px 16px 0;
+  border-top: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .setting {
   display: flex;
   align-items: flex-start;
@@ -2093,8 +2162,35 @@ button {
     white-space: normal;
   }
 
+  /* Matches the casualty tables on mobile: the individual outcome
+     probability is omitted, but the percentile badge still renders. */
+  .profit-table__prob,
+  .profit-row__prob {
+    display: none;
+  }
+
+  .profit-table th:first-child,
+  .profit-table td:first-child {
+    width: 38px;
+    padding-right: 2px;
+    padding-left: 4px;
+  }
+
+  /* Keep the Dead zone checkbox on the Territory value line; its label
+     shrinks to "DZ" so the field keeps most of the width. */
   .config-inline-row {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .config-inline-row .checkbox {
+    gap: 6px;
+  }
+
+  /* Reclaim right-side label padding so "Territory IPC" stays unclipped
+     beside the compact DZ checkbox. */
+  .config-inline-row .field__label {
+    max-width: calc(100% - 24px);
   }
 
   /* Mobile always uses the stacked top controls and icon-only reset actions,
