@@ -398,10 +398,41 @@ button {
 
 .beta-header {
   display: grid;
-  grid-template-columns: 37px minmax(0, 1fr) auto;
+  grid-template-columns: 37px minmax(0, 1fr) 128px auto;
   gap: 8px;
   align-items: center;
   padding: 16px 0;
+}
+
+.beta-header__group {
+  min-width: 0;
+}
+
+.beta-group {
+  width: 100%;
+  height: 47px;
+  padding: 8.5px 10px;
+  border: 1px solid var(--beta-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--beta-text);
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 120ms;
+}
+
+.beta-group::placeholder {
+  color: var(--beta-text-secondary);
+}
+
+.beta-group:hover {
+  border-color: var(--beta-text);
+}
+
+.beta-group:focus {
+  border-color: var(--beta-primary);
+  box-shadow: 0 0 0 1px var(--beta-primary);
 }
 
 .beta-header__actions {
@@ -421,6 +452,11 @@ button {
   .beta-header__title {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+
+  .beta-header__group {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 
   .beta-header__actions {
@@ -472,6 +508,13 @@ button {
   text-align: center;
   outline: none;
   transition: border-color 120ms;
+}
+
+/* The 600px container leaves the title only 220px beside the Group field;
+   shrink it so the full placeholder/name stays readable. */
+.beta-container--sm .beta-title {
+  padding-inline: 10px;
+  font-size: 17px;
 }
 
 .beta-title::placeholder {
@@ -2018,7 +2061,7 @@ button {
 }
 
 .drawer-panel--history {
-  width: 259px;
+  width: 320px;
   max-width: 100vw;
 }
 
@@ -2336,6 +2379,166 @@ button {
   font-size: 13.7143px;
 }
 
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px 8px 16px;
+}
+
+.history-toolbar__count {
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.history-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.history-toolbar__button {
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--beta-primary);
+  padding: 4px 5px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-toolbar__button:hover {
+  background: var(--beta-primary-hover);
+}
+
+.history-toolbar__button--danger {
+  color: var(--beta-error);
+}
+
+.history-toolbar__button--danger:hover {
+  background: rgba(211, 47, 47, 0.08);
+}
+
+.history-groups {
+  padding-bottom: 8px;
+}
+
+.history-group {
+  border-bottom: 1px solid var(--beta-divider);
+}
+
+.history-group__header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px 4px 8px;
+  background: var(--beta-muted-bg);
+}
+
+.history-group__toggle {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 5px 3px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--beta-text);
+  text-align: left;
+}
+
+.history-group__toggle:hover {
+  background: var(--beta-hover);
+}
+
+.history-group__chevron {
+  flex: 0 0 auto;
+  color: var(--beta-text-secondary);
+  transition: transform 120ms;
+}
+
+.history-group__chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+.history-group__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.history-group__count {
+  color: var(--beta-text-secondary);
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.history-group__actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.history-group__action {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--beta-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-group__action:hover:not(:disabled) {
+  background: var(--beta-hover);
+  color: var(--beta-text);
+}
+
+.history-group__action:disabled {
+  color: var(--beta-text-disabled);
+  cursor: default;
+  background: transparent;
+}
+
+.history-group__rename {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 5px 7px;
+  border: 1px solid var(--beta-primary);
+  border-radius: 3px;
+  background: var(--beta-surface);
+  color: var(--beta-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.history-group__progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px;
+  background: var(--beta-primary-hover);
+  color: var(--beta-primary);
+  font-size: 10.5px;
+}
+
+.history-group .history-entry {
+  padding-left: 24px;
+}
+
 .search-field {
   position: relative;
   width: 100%;
@@ -2469,6 +2672,249 @@ button {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Batch run                                                           */
+/* ------------------------------------------------------------------ */
+
+.batch-run {
+  margin-top: 10px;
+}
+
+.batch-run__intro {
+  margin-bottom: 10px;
+}
+
+.batch-run__title {
+  margin: 0;
+  color: var(--beta-text);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.batch-run__desc {
+  margin: 4px 0 0;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.batch-run__empty {
+  padding: 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.batch-run__controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.batch-run__group {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.batch-run__button {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 150px;
+  height: 37px;
+  margin-top: 0;
+  padding: 0 16px;
+}
+
+.batch-progress {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+}
+
+.batch-progress__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--beta-text);
+  font-size: 12px;
+}
+
+.batch-progress__bar {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: var(--beta-divider);
+  overflow: hidden;
+}
+
+.batch-progress__bar span {
+  display: block;
+  height: 100%;
+  background: var(--beta-primary);
+  transition: width 150ms;
+}
+
+.batch-results {
+  margin-top: 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  overflow: hidden;
+}
+
+.batch-results__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--beta-divider);
+}
+
+.batch-results__heading {
+  min-width: 0;
+}
+
+.batch-results__title {
+  margin: 0;
+  color: var(--beta-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.batch-results__meta,
+.batch-results__armies,
+.batch-results__cancelled {
+  margin: 3px 0 0;
+  color: var(--beta-text-secondary);
+  font-size: 11.5px;
+}
+
+.batch-results__cancelled {
+  color: var(--beta-warning);
+}
+
+.batch-results__actions {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.batch-results__table-wrap {
+  overflow-x: auto;
+}
+
+.batch-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.batch-table th {
+  padding: 8px;
+  border-bottom: 1px solid var(--beta-divider);
+  color: var(--beta-text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.batch-table th:first-child,
+.batch-table td:first-child {
+  text-align: left;
+}
+
+.batch-table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--beta-divider);
+  text-align: right;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.batch-table tbody tr:nth-child(even) {
+  background: var(--beta-table-alt);
+}
+
+.batch-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.batch-table__setting {
+  min-width: 150px;
+  max-width: 230px;
+  white-space: normal;
+}
+
+.batch-table__name {
+  display: block;
+  color: var(--beta-text);
+}
+
+.batch-table__note {
+  display: block;
+  margin-top: 2px;
+  color: var(--beta-text-secondary);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+.batch-table__number {
+  color: var(--beta-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.batch-table__number--positive {
+  color: var(--beta-success);
+}
+
+.batch-table__number--negative {
+  color: var(--beta-error);
+}
+
+.batch-table__empty {
+  padding: 16px 12px !important;
+  color: var(--beta-text-secondary);
+  text-align: center !important;
+}
+
+.batch-status {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.batch-status--skipped {
+  background: var(--beta-muted-bg);
+  color: var(--beta-text-secondary);
+}
+
+.batch-status--error {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--beta-error);
+}
+
+.batch-row--skipped td,
+.batch-row--error td {
+  color: var(--beta-text-secondary);
 }
 
 @media (max-width: 599.95px) {
@@ -2739,5 +3185,23 @@ button {
 
   .drawer-header {
     padding: 12px;
+  }
+
+  .batch-run__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .batch-run__button {
+    width: 100%;
+  }
+
+  .batch-results__head {
+    flex-direction: column;
+  }
+
+  .batch-results__actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }

@@ -19,13 +19,22 @@ import {
   computeSbrBattle,
   validateArmySizes,
 } from './engine.ts';
-import { decodeStateFromHash, decodeStateFromUrl, encodeStateToHash } from './utils/format.ts';
+import {
+  decodeStateFromHash,
+  decodeStateFromUrl,
+  encodeStateToHash,
+  getUnitString,
+} from './utils/format.ts';
 import {
   DEFAULT_GROUP,
+  groupHistory,
   normalizeHistory,
   removeHistoryEntry,
+  removeHistoryGroup,
+  renameHistoryGroup,
   upsertHistoryEntry,
 } from './utils/history.ts';
+import { formatBatchTable, runBatch, type BatchAppSettings } from './utils/batchEval.ts';
 import {
   attackerAmphibOolPresets,
   attackerOolPresets,
@@ -38,6 +47,8 @@ import { Drawer } from './components/redesign/Drawer.tsx';
 import { ConfigSection } from './components/redesign/ConfigSection.tsx';
 import { UnitGrid } from './components/redesign/UnitGrid.tsx';
 import { Results } from './components/redesign/Results.tsx';
+import { HistoryDrawer } from './components/redesign/HistoryDrawer.tsx';
+import { BatchRunPanel, type BatchSnapshot } from './components/redesign/BatchResults.tsx';
 import { ArmyOptimizerCard } from './components/redesign/ArmyOptimizerCard.tsx';
 import { ArmyRecommendationResults } from './components/redesign/ArmyRecommendationResults.tsx';
 import { useArmyRecommendation } from './hooks/useArmyRecommendation.ts';
@@ -70,9 +81,11 @@ if (ANALYTICS_ENABLED) {
   ReactGA.initialize('G-XFRR47N18Q');
 }
 const HISTORY_KEY = 'aacalc2BetaHistory';
+const COLLAPSED_GROUPS_KEY = 'aacalc2BetaHistoryGroupsCollapsed';
 
 type DrawerState = null | 'menu' | 'settings' | 'common' | 'history';
 type Page = 'calculator' | 'overview' | 'faq' | 'about';
+type Task = 'battle' | 'optimize' | 'batch';
 
 interface BetaSettings {
   darkMode: 'auto' | 'light' | 'dark';
@@ -174,6 +187,25 @@ function loadHistory(): HistoryEntry[] {
     console.warn('Failed to load history', err);
     return [];
   }
+}
+
+function loadCollapsedGroups(): Record<string, boolean> {
+  try {
+    const stored = localStorage.getItem(COLLAPSED_GROUPS_KEY);
+    if (!stored) return {};
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, boolean>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Compact per-wave description of one side, used in the batch snapshot header. */
+function describeArmies(side: Record<number, Record<string, number>>, numWaves: number): string {
+  return Array.from(
+    { length: numWaves },
+    (_, wave) => getUnitString(side[wave] ?? {}) || 'none',
+  ).join(' | ');
 }
 
 function basePresetInput(
@@ -280,12 +312,19 @@ export default function BetaApp() {
   } | null>(null);
 
   const [title, setTitle] = useState('');
+  const [historyGroup, setHistoryGroup] = useState(DEFAULT_GROUP);
   const [drawer, setDrawer] = useState<DrawerState>(null);
   const [page, setPage] = useState<Page>('calculator');
   const [settings, setSettings] = useState<BetaSettings>(loadSettings);
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   const [history, setHistory] = useState<HistoryEntry[]>(loadHistory);
   const [historySearch, setHistorySearch] = useState('');
+  const [collapsedGroups, setCollapsedGroups] =
+    useState<Record<string, boolean>>(loadCollapsedGroups);
+  const [batch, setBatch] = useState<BatchSnapshot | null>(null);
+  const [batchGroup, setBatchGroup] = useState<string | null>(null);
+  const [batchRunningGroup, setBatchRunningGroup] = useState<string | null>(null);
+  const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [retreatPopover, setRetreatPopover] = useState<{
     wave: number;
@@ -293,7 +332,7 @@ export default function BetaApp() {
     top: number;
   } | null>(null);
 
-  const [task, setTask] = useState<'battle' | 'optimize'>('battle');
+  const [task, setTask] = useState<Task>('battle');
   const effectiveTask = mode === 'sbr' ? 'battle' : task;
   const [armyMinEnabled, setArmyMinEnabled] = useState(false);
   const [armyMinArmy, setArmyMinArmy] = useState<Record<string, number>>({});
@@ -314,8 +353,7 @@ export default function BetaApp() {
   const inlineTwoWaveCheckboxes = viewportWidth >= 500;
   const inlineThreeWaveCheckboxes = viewportWidth >= 700 && settings.width !== 'sm';
   const stackedCheckboxes =
-    (numWaves > 1 && !inlineTwoWaveCheckboxes) ||
-    (numWaves > 2 && !inlineThreeWaveCheckboxes);
+    (numWaves > 1 && !inlineTwoWaveCheckboxes) || (numWaves > 2 && !inlineThreeWaveCheckboxes);
 
   const armyParams = useMemo<ArmyOptimizerParams>(
     () => ({
@@ -336,12 +374,12 @@ export default function BetaApp() {
   const armySide = optimizerSide(armyParams);
   const armyOpponentSide = armySide === 'attacker' ? 'defender' : 'attacker';
   const armyMaxUnits = armySide === 'attacker' ? (attack[0] ?? {}) : (defense[0] ?? {});
-  const armyOpponentUnits =
-    armySide === 'attacker' ? (defense[0] ?? {}) : (attack[0] ?? {});
+  const armyOpponentUnits = armySide === 'attacker' ? (defense[0] ?? {}) : (attack[0] ?? {});
 
   const isLoadingRef = useRef(false);
   const shouldRunBattleRef = useRef(false);
   const lastInputRef = useRef<BattleInput | null>(null);
+  const batchCancelRef = useRef(false);
 
   const wavePresets = useCallback(
     (forMode: BattleMode, amphibiousMode: boolean) =>
@@ -480,17 +518,20 @@ export default function BetaApp() {
     }
   }, []);
 
-  const saveHistoryEntry = useCallback((input: BattleInput, nextTitle: string) => {
-    const trimmed = nextTitle.trim();
-    if (!trimmed) return;
-    const entry: HistoryEntry = {
-      group: DEFAULT_GROUP,
-      name: trimmed,
-      timestamp: Date.now(),
-      input,
-    };
-    setHistory((prev) => upsertHistoryEntry(prev, entry));
-  }, []);
+  const saveHistoryEntry = useCallback(
+    (input: BattleInput, nextTitle: string) => {
+      const trimmed = nextTitle.trim();
+      if (!trimmed) return;
+      const entry: HistoryEntry = {
+        group: historyGroup.trim() || DEFAULT_GROUP,
+        name: trimmed,
+        timestamp: Date.now(),
+        input,
+      };
+      setHistory((prev) => upsertHistoryEntry(prev, entry));
+    },
+    [historyGroup],
+  );
 
   const runBattle = useCallback(
     (options?: { saveToHistory?: boolean }) => {
@@ -661,8 +702,11 @@ export default function BetaApp() {
   const loadHistoryEntry = useCallback(
     (entry: HistoryEntry) => {
       setTitle(entry.name);
+      setHistoryGroup(entry.group);
+      setBatchGroup(entry.group);
       loadFromHistoryInput(entry.input);
       shouldRunBattleRef.current = true;
+      setTask('battle');
       setDrawer(null);
       setPage('calculator');
     },
@@ -674,6 +718,7 @@ export default function BetaApp() {
       setTitle(preset.name);
       loadFromHistoryInput(preset.input);
       shouldRunBattleRef.current = true;
+      setTask('battle');
       setDrawer(null);
       setPage('calculator');
     },
@@ -690,6 +735,10 @@ export default function BetaApp() {
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(collapsedGroups));
+  }, [collapsedGroups]);
 
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -847,8 +896,7 @@ export default function BetaApp() {
     [attack, defense, numWaves],
   );
   const canCalculate = validation.valid;
-  const canRecommendArmy =
-    hasPositiveUnits(armyMaxUnits) && hasPositiveUnits(armyOpponentUnits);
+  const canRecommendArmy = hasPositiveUnits(armyMaxUnits) && hasPositiveUnits(armyOpponentUnits);
 
   const setUnit = useCallback(
     (side: 'attack' | 'defense', wave: number, unit: string, count: number) => {
@@ -938,6 +986,8 @@ export default function BetaApp() {
     setError(null);
     setComplexityWarning(null);
     setTitle('');
+    setHistoryGroup(DEFAULT_GROUP);
+    setTask('battle');
     for (let wave = 0; wave < MAX_WAVES; wave++) {
       updateWave(wave, {
         ...DEFAULT_WAVE_CONFIG,
@@ -958,18 +1008,172 @@ export default function BetaApp() {
     [retreatPopover, updateWave],
   );
 
-  const visibleHistory = useMemo(() => {
-    const search = historySearch.trim().toLowerCase();
-    const list = history.filter((entry) => {
-      if (settings.hideUnnamedHistory && !entry.name.trim()) return false;
-      if (!search) return true;
-      return entry.name.toLowerCase().includes(search);
+  const historyGroups = useMemo(() => groupHistory(history), [history]);
+  const batchGroups = useMemo(
+    () => historyGroups.map(({ group, entries }) => ({ group, count: entries.length })),
+    [historyGroups],
+  );
+  const selectedBatchGroup =
+    batchGroup && historyGroups.some((group) => group.group === batchGroup)
+      ? batchGroup
+      : (historyGroups[0]?.group ?? '');
+
+  const batchAppSettings = useMemo<BatchAppSettings>(
+    () => ({
+      verboseLevel: settings.verboseLevel,
+      pruneThreshold: settings.pruneThreshold,
+      reportPruneThreshold: settings.reportPruneThreshold,
+      sortMode: settings.sortMode,
+      experimentalConvolution: settings.experimentalConvolution,
+      evFutureWave: settings.evFutureWave,
+      retreatZeroRound: settings.retreatZeroRound,
+    }),
+    [
+      settings.verboseLevel,
+      settings.pruneThreshold,
+      settings.reportPruneThreshold,
+      settings.sortMode,
+      settings.experimentalConvolution,
+      settings.evFutureWave,
+      settings.retreatZeroRound,
+    ],
+  );
+
+  const handleRemoveGroup = useCallback((group: string) => {
+    setHistory((prev) => removeHistoryGroup(prev, group));
+    setCollapsedGroups((prev) => {
+      if (!(group in prev)) return prev;
+      const next = { ...prev };
+      delete next[group];
+      return next;
     });
-    if (settings.historySortOrder === 'date') {
-      return [...list].sort((a, b) => b.timestamp - a.timestamp);
+    setHistoryGroup((prev) => (prev === group ? DEFAULT_GROUP : prev));
+    setBatchGroup((prev) => (prev === group ? null : prev));
+    setBatch((prev) => (prev && prev.group === group ? null : prev));
+  }, []);
+
+  const handleRenameGroup = useCallback((from: string, to: string) => {
+    const target = to.trim();
+    if (!target || target === from) return;
+
+    setHistory((prev) => renameHistoryGroup(prev, from, target));
+    setCollapsedGroups((prev) => {
+      if (!(from in prev)) return prev;
+      const next = { ...prev };
+      if (!(target in next)) next[target] = next[from];
+      delete next[from];
+      return next;
+    });
+    setHistoryGroup((prev) => (prev === from ? target : prev));
+    setBatchGroup((prev) => (prev === from ? target : prev));
+    setBatch((prev) => (prev && prev.group === from ? { ...prev, group: target } : prev));
+  }, []);
+
+  const handleToggleGroup = useCallback((group: string) => {
+    setCollapsedGroups((prev) => ({ ...prev, [group]: !prev[group] }));
+  }, []);
+
+  const handleSetAllCollapsed = useCallback(
+    (collapsed: boolean) => {
+      const next: Record<string, boolean> = {};
+      for (const { group } of historyGroups) next[group] = collapsed;
+      setCollapsedGroups(next);
+    },
+    [historyGroups],
+  );
+
+  const handleCancelBatch = useCallback(() => {
+    batchCancelRef.current = true;
+  }, []);
+
+  const runGroupBatch = useCallback(
+    async (group: string) => {
+      if (batchRunningGroup !== null) return;
+      if (mode === 'sbr') {
+        setToast('Batch run is available in land and sea mode');
+        return;
+      }
+
+      const entries = historyGroups.find((item) => item.group === group)?.entries ?? [];
+      if (entries.length === 0) return;
+
+      const armyValidation = validateArmySizes(attack, defense, numWaves);
+      if (!armyValidation.valid) {
+        setError(armyValidation.error || 'Invalid army configuration');
+        setToast('Set the current armies before evaluating a group');
+        return;
+      }
+
+      const armies = { attack, defense, mode, numWaves };
+      const attackString = describeArmies(attack, numWaves);
+      const defenseString = describeArmies(defense, numWaves);
+
+      batchCancelRef.current = false;
+      setBatchGroup(group);
+      setTask('batch');
+      setDrawer(null);
+      setError(null);
+      setBatchRunningGroup(group);
+      setBatchProgress({ done: 0, total: entries.length });
+
+      try {
+        const rows = await runBatch(entries, armies, {
+          complexityThreshold: settings.complexityThreshold,
+          appSettings: batchAppSettings,
+          shouldCancel: () => batchCancelRef.current,
+          onProgress: (done, total) => setBatchProgress({ done, total }),
+        });
+
+        setBatch({
+          group,
+          rows,
+          attackString,
+          defenseString,
+          mode,
+          numWaves,
+          cancelled: batchCancelRef.current,
+          completedAt: Date.now(),
+        });
+        setToast(
+          `Evaluated ${rows.length} ${rows.length === 1 ? 'setting' : 'settings'} in "${group}"`,
+        );
+        if (ANALYTICS_ENABLED) {
+          ReactGA.event({
+            category: 'battle',
+            action: 'batch_evaluate',
+            label: group,
+          });
+        }
+      } catch (err) {
+        setToast(`Batch failed: ${(err as Error).message ?? 'unknown error'}`);
+      } finally {
+        setBatchRunningGroup(null);
+        setBatchProgress(null);
+      }
+    },
+    [
+      attack,
+      defense,
+      mode,
+      numWaves,
+      historyGroups,
+      batchRunningGroup,
+      settings.complexityThreshold,
+      batchAppSettings,
+    ],
+  );
+
+  const copyBatchReport = useCallback(() => {
+    if (!batch) return;
+    const write = navigator.clipboard?.writeText(formatBatchTable(batch.rows));
+    if (write) {
+      write
+        .then(() => setToast('Batch results copied to clipboard'))
+        .catch(() => setToast('Unable to copy batch results'));
+    } else {
+      setToast('Unable to copy batch results');
     }
-    return [...list].sort((a, b) => a.name.localeCompare(b.name));
-  }, [history, historySearch, settings.hideUnnamedHistory, settings.historySortOrder]);
+  }, [batch]);
 
   const onModeChange = (next: BattleMode) => {
     setMode(next);
@@ -1017,6 +1221,26 @@ export default function BetaApp() {
               aria-label="Battle title"
               onChange={(event) => setTitle(event.target.value)}
             />
+          </div>
+          <div className="beta-header__group">
+            <input
+              className="beta-group"
+              list="history-group-options"
+              value={historyGroup}
+              maxLength={50}
+              placeholder="Group"
+              aria-label="History group"
+              title="New calculations are saved to this history group"
+              onChange={(event) => setHistoryGroup(event.target.value)}
+              onBlur={() => {
+                if (!historyGroup.trim()) setHistoryGroup(DEFAULT_GROUP);
+              }}
+            />
+            <datalist id="history-group-options">
+              {historyGroups.map(({ group }) => (
+                <option key={group} value={group} />
+              ))}
+            </datalist>
           </div>
           <div className="beta-header__actions">
             <button
@@ -1209,6 +1433,15 @@ export default function BetaApp() {
                 >
                   Army optimization
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={effectiveTask === 'batch'}
+                  className={`beta-task-tab${effectiveTask === 'batch' ? ' beta-task-tab--active' : ''}`}
+                  onClick={() => setTask('batch')}
+                >
+                  Batch run
+                </button>
               </div>
             ) : null}
 
@@ -1257,6 +1490,23 @@ export default function BetaApp() {
                   onCancel={cancelArmyRecommendation}
                 />
               </>
+            ) : effectiveTask === 'batch' ? (
+              <BatchRunPanel
+                groups={batchGroups}
+                selectedGroup={selectedBatchGroup}
+                onSelectGroup={setBatchGroup}
+                onRun={() => {
+                  if (selectedBatchGroup) void runGroupBatch(selectedBatchGroup);
+                }}
+                running={batchRunningGroup !== null}
+                progress={batchProgress}
+                onCancel={handleCancelBatch}
+                batch={batch}
+                onClear={() => setBatch(null)}
+                onCopy={copyBatchReport}
+                ipcDecimals={settings.ipcDecimals}
+                probabilityDecimals={settings.probabilityDecimals}
+              />
             ) : (
               <>
                 <button
@@ -1415,7 +1665,7 @@ export default function BetaApp() {
           </SettingRow>
           <SettingRow
             title="History sort order"
-            description="Configure the sort order for entries in the History drawer."
+            description="Configure the sort order for entries within each History group."
           >
             <SelectField
               className="field--outlined"
@@ -1436,7 +1686,7 @@ export default function BetaApp() {
           </SettingRow>
           <SettingRow
             title="Show History details"
-            description="Show survive %, conquer % and IPC difference in the History drawer."
+            description="Show the mode, wave count and save date for entries in the History drawer."
           >
             <SwitchControl
               label="Show History details"
@@ -1678,7 +1928,9 @@ export default function BetaApp() {
             <SwitchControl
               label="Allow retreat on round zero"
               checked={settings.retreatZeroRound}
-              onChange={(checked) => setSettings((prev) => ({ ...prev, retreatZeroRound: checked }))}
+              onChange={(checked) =>
+                setSettings((prev) => ({ ...prev, retreatZeroRound: checked }))
+              }
             />
           </SettingRow>
         </div>
@@ -1688,6 +1940,10 @@ export default function BetaApp() {
             className="beta-text-button"
             onClick={() => {
               setHistory([]);
+              setCollapsedGroups({});
+              setBatch(null);
+              setBatchGroup(null);
+              setHistoryGroup(DEFAULT_GROUP);
               setToast('History cleared');
             }}
           >
@@ -1738,53 +1994,34 @@ export default function BetaApp() {
         onClose={() => setDrawer(null)}
         className="drawer-panel--history"
       >
-        <div className="history-search">
-          <div className="search-field">
-            <Icon name="search" />
-            <input
-              value={historySearch}
-              placeholder="Search"
-              aria-label="Search history"
-              onChange={(event) => setHistorySearch(event.target.value)}
-            />
-          </div>
-        </div>
-        {visibleHistory.length === 0 ? (
-          <div className="history-empty">No saved battles yet.</div>
-        ) : (
-          <div>
-            {visibleHistory.map((entry) => (
-              <div className="history-entry" key={`${entry.group}/${entry.name}`}>
-                <button
-                  type="button"
-                  className="history-entry__main"
-                  onClick={() => loadHistoryEntry(entry)}
-                >
-                  <span className="history-entry__name">{entry.name}</span>
-                  {settings.showHistoryDetails ? (
-                    <span className="history-entry__meta">
-                      {entry.input.mode ?? 'land'} · {entry.input.numWaves ?? 1} wave
-                      {(entry.input.numWaves ?? 1) === 1 ? '' : 's'} ·{' '}
-                      {new Date(entry.timestamp).toLocaleDateString()}
-                    </span>
-                  ) : null}
-                </button>
-                <button
-                  type="button"
-                  className="icon-button history-entry__delete"
-                  onClick={() => {
-                    setHistory((prev) => removeHistoryEntry(prev, entry.group, entry.name));
-                    setToast('History entry removed');
-                  }}
-                  aria-label={`Delete ${entry.name}`}
-                  title="Delete"
-                >
-                  <Icon name="delete" size={18} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+        <HistoryDrawer
+          history={history}
+          search={historySearch}
+          onSearchChange={setHistorySearch}
+          collapsedGroups={collapsedGroups}
+          onToggleGroup={handleToggleGroup}
+          onSetAllCollapsed={handleSetAllCollapsed}
+          onLoad={loadHistoryEntry}
+          onDelete={(group, name) => {
+            setHistory((prev) => removeHistoryEntry(prev, group, name));
+            setToast('History entry removed');
+          }}
+          onRenameGroup={handleRenameGroup}
+          onRemoveGroup={(group) => {
+            handleRemoveGroup(group);
+            setToast(`Group "${group}" removed`);
+          }}
+          onEvaluateGroup={(group) => {
+            void runGroupBatch(group);
+          }}
+          onCancelBatch={handleCancelBatch}
+          runningGroup={batchRunningGroup}
+          progress={batchProgress}
+          showDetails={settings.showHistoryDetails}
+          hideUnnamed={settings.hideUnnamedHistory}
+          sortOrder={settings.historySortOrder}
+          canEvaluate={mode !== 'sbr'}
+        />
       </Drawer>
 
       {retreatPopover ? (

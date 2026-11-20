@@ -1,11 +1,15 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BetaApp from './BetaApp.tsx';
 
 describe('beta-style calculator', () => {
   beforeEach(() => {
     localStorage.clear();
     window.history.replaceState(null, '', '/');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('renders the calculator and produces results', async () => {
@@ -223,6 +227,7 @@ describe('beta-style calculator', () => {
     render(<BetaApp />);
     fireEvent.click(screen.getByLabelText('SBR'));
     expect(screen.queryByRole('tab', { name: 'Army optimization' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Batch run' })).not.toBeInTheDocument();
   });
 
   it('blocks battles above the complexity threshold setting', async () => {
@@ -265,5 +270,146 @@ describe('beta-style calculator', () => {
     expect(screen.getByLabelText('SBR')).toBeInTheDocument();
     expect(screen.getByText('Amphibious assault')).toBeInTheDocument();
     expect(screen.getAllByText('Order of loss').length).toBeGreaterThan(0);
+  });
+
+  it('saves a titled battle into the selected history group', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '2' } });
+    fireEvent.change(infantry[1], { target: { value: '1' } });
+    fireEvent.change(screen.getByLabelText('Battle title'), {
+      target: { value: 'Group save test' },
+    });
+    fireEvent.change(screen.getByLabelText('History group'), {
+      target: { value: 'Moscow' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate' }));
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+
+    expect(await screen.findByTitle('Moscow (1)')).toBeInTheDocument();
+    expect(screen.getByText('Group save test')).toBeInTheDocument();
+  });
+
+  it('evaluates every saved setting in a history group', async () => {
+    const makeEntry = (name: string, timestamp: number) => ({
+      group: 'Moscow',
+      name,
+      timestamp,
+      input: {
+        attack: { 0: { inf: 3 } },
+        defense: { 0: { inf: 2 } },
+        mode: 'land',
+        numWaves: 1,
+        retreatModes: { 0: 'unitCount' },
+      },
+    });
+    localStorage.setItem(
+      'aacalc2BetaHistory',
+      JSON.stringify([makeEntry('base', 2), makeEntry('conservative', 1)]),
+    );
+
+    render(<BetaApp />);
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '3' } });
+    fireEvent.change(infantry[1], { target: { value: '2' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    fireEvent.click(screen.getByLabelText('Evaluate group Moscow'));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Batch results — Moscow')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+
+    expect(
+      within(screen.getByRole('table', { name: 'Batch results for Moscow' })).getByText('base'),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('table', { name: 'Batch results for Moscow' })).getByText(
+        'conservative',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Armies fixed:/)).toBeInTheDocument();
+  });
+
+  const seedGroup = (group: string) => {
+    const makeEntry = (name: string, timestamp: number) => ({
+      group,
+      name,
+      timestamp,
+      input: {
+        attack: { 0: { inf: 3 } },
+        defense: { 0: { inf: 2 } },
+        mode: 'land',
+        numWaves: 1,
+        retreatModes: { 0: 'unitCount' },
+      },
+    });
+    localStorage.setItem(
+      'aacalc2BetaHistory',
+      JSON.stringify([makeEntry('base', 2), makeEntry('variant', 1)]),
+    );
+  };
+
+  const fillArmies = () => {
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '3' } });
+    fireEvent.change(infantry[1], { target: { value: '2' } });
+  };
+
+  it('follows a renamed group in the save field and the batch snapshot', async () => {
+    seedGroup('Moscow');
+    render(<BetaApp />);
+    fillArmies();
+    fireEvent.change(screen.getByLabelText('History group'), { target: { value: 'Moscow' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    fireEvent.click(screen.getByLabelText('Evaluate group Moscow'));
+    await waitFor(
+      () => {
+        expect(screen.getByText('Batch results — Moscow')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    fireEvent.click(screen.getByLabelText('Rename group Moscow'));
+    const nameInput = screen.getByLabelText('Group name');
+    fireEvent.change(nameInput, { target: { value: 'Stalingrad' } });
+    fireEvent.keyDown(nameInput, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(screen.getByText('Batch results — Stalingrad')).toBeInTheDocument();
+    });
+    expect((screen.getByLabelText('History group') as HTMLInputElement).value).toBe('Stalingrad');
+    expect((screen.getByLabelText('Group') as HTMLSelectElement).value).toBe('Stalingrad');
+  });
+
+  it('clears the batch snapshot when its history group is removed', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    seedGroup('Moscow');
+    render(<BetaApp />);
+    fillArmies();
+
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    fireEvent.click(screen.getByLabelText('Evaluate group Moscow'));
+    await waitFor(
+      () => {
+        expect(screen.getByText('Batch results — Moscow')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+
+    // The batch run closes the drawer.
+    fireEvent.click(screen.getByRole('button', { name: 'History' }));
+    fireEvent.click(screen.getByLabelText('Remove group Moscow'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('Batch results — Moscow')).not.toBeInTheDocument();
+    });
+    expect((screen.getByLabelText('History group') as HTMLInputElement).value).toBe('Default');
   });
 });

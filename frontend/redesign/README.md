@@ -56,7 +56,24 @@ npm run preview -- --port 5175
   and Extra large widths, the attacker and defender casualty tables sit side by
   side; at Extra large the histogram and profit distribution table also share a
   row.
-- **Drawers** — menu, settings, common battles, history.
+- **Drawers** — menu, settings, common battles, and a grouped history drawer.
+- **Grouped history** — each saved calculation is keyed by `group / name`. The
+  **Group** field beside the title chooses the destination for new saves (the
+  title is the entry name), and loading an entry restores its group. History
+  groups are collapsible, searchable, renameable (merging into an existing
+  group asks first), removable, and can be expanded/collapsed together. The
+  collapsed state persists in `localStorage`.
+- **Batch run** — a third task tab next to **Battle results** and **Army
+  optimization** (land and sea only). It re-evaluates every saved setting in a
+  selected history group against the current armies, holding the armies, mode
+  and wave count fixed while replaying each entry’s OOL, rounds, retreat and
+  other scenario settings. Current Advanced/engine options override the values
+  stored with an entry. Rows report profit, losses, survivors, conquest odds,
+  rounds and runtime; entries saved for another mode or above the complexity
+  threshold are marked skipped, and engine errors do not abort the run. The
+  history group headers and the Batch run tab both start a run, with progress,
+  cancellation, a copyable report, and a snapshot of the armies used. Removing a
+  group also clears that group’s batch snapshot.
 - **Settings** — IPC display (absolute/ROI), exhaustive OOL autocomplete, hide
   unlikely outcomes (including `< 5%`, defaulting to `< 0.01%`), history
   sort/show/hide-unnamed, width (Small / Medium / Large / Extra large), dark
@@ -86,8 +103,8 @@ npm run preview -- --port 5175
   in a Web Worker and can be cancelled; **Use as attacker/defender** applies a
   recommendation to wave 1 and returns to the battle results. Optimizer
   parameters persist in `aacalc2BetaSettings`; recommendations are transient.
-- **Persistence** — settings and history in `localStorage`; history entries are
-  saved when a titled battle is calculated.
+- **Persistence** — settings, grouped history, and collapsed history groups in
+  `localStorage`; history entries are saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links
   restore the full battle state and title.
 - **Responsive/dark** — mobile header/unit-grid layout and dark palette. On
@@ -110,8 +127,9 @@ npm run preview -- --port 5175
 - **Menu pages** (Overview / FAQ / About) are simplified placeholders.
 - Settings are a focused subset of the target's drawer (no exhaustive-OOL,
   simulation-size, calculation-mode or log-level controls).
-- Analysis/history features from the existing frontend (army recommendation,
-  batch evaluation, profit histograms) are not part of this beta-style UI.
+- History groups and batch run are ported from the existing frontend rather than
+  the beta target; they follow this app's rule that Advanced/engine options are
+  viewer settings rather than saved state.
 
 ## Tests
 
@@ -121,5 +139,8 @@ npm run build
 ```
 
 The existing engine/history tests continue to pass, and
-`src/BetaApp.test.tsx` covers the new calculator rendering and advanced-mode
-controls.
+`src/BetaApp.test.tsx` covers the calculator rendering, grouped saving and a
+batch run. `src/components/redesign/HistoryDrawer.test.tsx` covers group
+management and
+`src/utils/batchEval.test.ts` covers batch merging, skipping, cancellation and
+report formatting.
