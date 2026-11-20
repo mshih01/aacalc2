@@ -52,10 +52,23 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   casualties and a note that profit data is per wave. Hide unlikely outcomes
   filters casualty and profit table rows; profit confidence and percentile chips
   are recalculated over the visible rows, while the histogram remains full. The
-  profit table mirrors the casualty tables: percentile badges sit in the
-  leftmost column, numeric columns (including the individual-outcome
-  probability) are right aligned, and on mobile the probability column is
-  dropped while the badges keep rendering. At Extra large the histogram and
+  profit table mirrors the casualty tables exactly: percentile badges sit in the
+  leftmost column and numeric columns (including the individual-outcome
+  probability) are right aligned; its blue “Profit” pill spans the badge and
+  outcome-probability columns, right-aligned over the probabilities, and a
+  single “Confidence %” heading is centred across the confidence and
+  reverse-confidence columns. On mobile the probability column is dropped,
+  moving the pill into the badge column while the badges keep rendering.
+  Casualty header and body rows share one column grid, so every heading
+  lines up with its data column: the Attacker/Defender pill spans the badge and
+  outcome-probability columns and is right-aligned over the probabilities, while
+  a single “Confidence %” heading is centred across the two confidence columns.
+  The outcome-probability column is sized to the probability decimal setting
+  (`--probability-column` on the results root) so the percentages sit right next
+  to the badges and the remaining columns spread across the table.
+  Casualty tables gain a Retreating column before Surviving (after the
+  confidence columns) when that side’s outcomes include retreated units; it is
+  omitted when nothing retreats. At Extra large the histogram and
   profit table share a row; at Large/Extra large the attacker and defender
   tables sit side by side. The histogram bucket size is selectable (Auto plus
   fixed 1–50 IPC sizes).

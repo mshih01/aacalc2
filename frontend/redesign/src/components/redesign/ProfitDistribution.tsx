@@ -19,7 +19,8 @@ interface ProfitHistogramProps extends ProfitCardProps {
   probabilityDecimals: number;
 }
 
-interface ProfitTableProps extends ProfitCardProps {
+interface ProfitTableProps {
+  profitDist: ProfitDistribution | undefined;
   hideUnlikely: HideUnlikely;
   probabilityDecimals: number;
   ipcDecimals: number;
@@ -254,7 +255,10 @@ export function ProfitHistogram({
                 }}
                 labelStyle={{ color: 'var(--beta-text)' }}
                 itemStyle={{ color: 'var(--beta-text)' }}
-                formatter={(value) => [formatPercent(Number(value), probabilityDecimals), 'Probability']}
+                formatter={(value) => [
+                  formatPercent(Number(value), probabilityDecimals),
+                  'Probability',
+                ]}
                 labelFormatter={(label) => `IPC ${label}`}
               />
               <Bar
@@ -280,8 +284,6 @@ export function ProfitHistogram({
 
 export function ProfitDistributionTable({
   profitDist,
-  wave,
-  numWaves,
   hideUnlikely,
   probabilityDecimals,
   ipcDecimals,
@@ -311,58 +313,50 @@ export function ProfitDistributionTable({
 
   return (
     <section className="profit-card profit-card--table">
-      <CardHeader title="Profit distribution" wave={wave} numWaves={numWaves} />
+      <div className="profit-head">
+        <div className="profit-side-cell">
+          <span className="profit-side">Profit</span>
+        </div>
+        <div className="profit-head__label profit-head__label--confidence">Confidence %</div>
+        <div className="profit-head__label profit-head__label--ipc">
+          <span className="desktop-only">IPC profit</span>
+          <span className="mobile-only">IPC</span>
+        </div>
+      </div>
       {rows.length ? (
-        <div className="profit-table-wrap">
-          <table className="profit-table">
-            <thead>
-              <tr>
-                <th scope="col">
-                  <span className="beta-sr-only">Confidence percentile</span>
-                </th>
-                <th scope="col" className="profit-table__prob">
-                  Probability %
-                </th>
-                <th scope="col">Confidence %</th>
-                <th scope="col">Reverse confidence %</th>
-                <th scope="col">IPC profit</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={`profit-row-${row.ipc}`}>
-                  <td className="profit-row__badge">
-                    {row.percentile ? (
-                      <span
-                        className={`chip chip--${chipTone(row.percentile)}`}
-                        title={`${row.percentile}% confidence`}
-                      >
-                        {row.percentile}%
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="profit-row__prob">{formatPercent(row.exact, probabilityDecimals)}</td>
-                  <td>{formatPercent(row.cumulative, probabilityDecimals)}</td>
-                  <td>{formatPercent(row.reverse, probabilityDecimals)}</td>
-                  <td className="profit-row__ipc">
-                    <span className={row.ipc < 0 ? 'profit-negative' : 'profit-positive'}>
-                      {formatFixed(row.ipc, ipcDecimals)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div role="table" aria-label="Profit distribution">
+          {rows.map((row) => (
+            <div className="profit-row" role="row" key={`profit-row-${row.ipc}`}>
+              <div className="profit-row__badge" role="cell">
+                {row.percentile ? (
+                  <span
+                    className={`chip chip--${chipTone(row.percentile)}`}
+                    title={`${row.percentile}% confidence`}
+                  >
+                    {row.percentile}%
+                  </span>
+                ) : null}
+              </div>
+              <div className="profit-row__prob" role="cell">
+                {formatPercent(row.exact, probabilityDecimals)}
+              </div>
+              <div className="profit-row__confidence" role="cell">
+                {formatPercent(row.cumulative, probabilityDecimals)}
+              </div>
+              <div className="profit-row__reverse" role="cell">
+                {formatPercent(row.reverse, probabilityDecimals)}
+              </div>
+              <div className="profit-row__ipc" role="cell">
+                <span className={row.ipc < 0 ? 'profit-negative' : 'profit-positive'}>
+                  {formatFixed(row.ipc, ipcDecimals)}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="profit-empty">No profit distribution data.</div>
       )}
-      {threshold > 0 ? (
-        <div className="profit-card__note">
-          Rows below {hideUnlikely}% are hidden except percentile rows; confidence is recalculated
-          from the visible rows. The histogram shows the full distribution.
-        </div>
-      ) : null}
     </section>
   );
 }

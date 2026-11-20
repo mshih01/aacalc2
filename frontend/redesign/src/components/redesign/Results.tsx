@@ -212,15 +212,31 @@ function CasualtyTable({
 
   const fullSide = side === 'attack' ? 'Attacker' : 'Defender';
   const shortSide = side === 'attack' ? 'Att.' : 'Def.';
+  // Retreated units are reported separately from survivors, but only some
+  // outcomes have any (and only when the battle allows retreating), so the
+  // column is dropped when the side never retreats.
+  const showRetreaters = sorted.some(([, entry]) => Boolean(entry.retreaters?.trim()));
 
   return (
-    <div className="casualty-card casualty-card--advanced">
+    <div
+      className={`casualty-card casualty-card--advanced${
+        showRetreaters ? ' casualty-card--retreaters' : ''
+      }`}
+    >
       <div className="casualty-head">
-        <div className={`casualty-side casualty-side--${side}`}>
-          <span className="desktop-only">{fullSide}</span>
-          <span className="mobile-only">{shortSide}</span>
+        <div className="casualty-side-cell">
+          <span className={`casualty-side casualty-side--${side}`}>
+            <span className="desktop-only">{fullSide}</span>
+            <span className="mobile-only">{shortSide}</span>
+          </span>
         </div>
         <div className="casualty-head__label casualty-head__label--confidence">Confidence %</div>
+        {showRetreaters ? (
+          <div className="casualty-head__label casualty-head__label--retreaters">
+            <span className="desktop-only">Retreating</span>
+            <span className="mobile-only">Retr.</span>
+          </div>
+        ) : null}
         <div className="casualty-head__label casualty-head__label--surviving">
           <span className="desktop-only">Surviving</span>
           <span className="mobile-only">Surv.</span>
@@ -254,6 +270,11 @@ function CasualtyTable({
             <div className="casualty-row__confidence casualty-row__confidence--worse" role="cell">
               <PercentValue value={row.reverse} decimals={settings.probabilityDecimals} />
             </div>
+            {showRetreaters ? (
+              <div className="casualty-row__retreaters" role="cell">
+                {row.entry.retreaters || '-'}
+              </div>
+            ) : null}
             <div className="casualty-row__surviving" role="cell">
               {row.entry.survivors || '-'}
             </div>
@@ -321,7 +342,12 @@ export function Results({
       : (result.casualtiesInfoArr?.[detailWave] ?? result.casualtiesInfo);
 
   return (
-    <div className="results">
+    <div
+      className="results"
+      style={{
+        ['--probability-column' as string]: `${48 + settings.probabilityDecimals * 7}px`,
+      }}
+    >
       <Overview result={result} numWaves={numWaves} settings={settings} />
       {waveCount > 1 ? (
         <div className="results__profit-wave">
@@ -362,8 +388,6 @@ export function Results({
           />
           <ProfitDistributionTable
             profitDist={profitDistribution}
-            wave={detailWave}
-            numWaves={waveCount}
             hideUnlikely={settings.hideUnlikely}
             probabilityDecimals={settings.probabilityDecimals}
             ipcDecimals={settings.ipcDecimals}

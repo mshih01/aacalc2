@@ -27,7 +27,9 @@ describe('beta-style calculator', () => {
     );
     expect(screen.getByText('Defender IPC')).toBeInTheDocument();
     expect(screen.getByText('Profit histogram')).toBeInTheDocument();
-    expect(screen.getByText('Profit distribution')).toBeInTheDocument();
+    expect(screen.getByText('Profit')).toBeInTheDocument();
+    // No units retreat when retreating is disabled.
+    expect(screen.queryByText('Retreating')).not.toBeInTheDocument();
   });
 
   it('renders profit percentile badges in the leftmost column', async () => {
@@ -40,19 +42,63 @@ describe('beta-style calculator', () => {
 
     await waitFor(
       () => {
-        expect(screen.getByText('Profit distribution')).toBeInTheDocument();
+        expect(screen.getByText('Profit')).toBeInTheDocument();
       },
       { timeout: 10000 },
     );
 
-    const section = screen.getByText('Profit distribution').closest('section');
-    const table = section?.querySelector('table');
+    const section = screen.getByText('Profit').closest('section');
+    const table = section?.querySelector('[role="table"]');
     expect(table).not.toBeNull();
     const chip = within(table as HTMLElement).getByText('50%');
-    const row = chip.closest('tr');
-    expect(row?.cells[0]).toContainElement(chip);
+    const row = chip.closest('[role="row"]');
+    const cells = within(row as HTMLElement).getAllByRole('cell');
+    expect(cells[0]).toContainElement(chip);
     // The individual outcome probability is the cell right after the badge.
-    expect(row?.cells[1]?.textContent).toMatch(/%$/);
+    expect(cells[1]?.textContent).toMatch(/%$/);
+  });
+
+  it('does not describe the hide-unlikely behaviour below the profit table', async () => {
+    localStorage.setItem('aacalc2BetaSettings', JSON.stringify({ hideUnlikely: '1' }));
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '10' } });
+    fireEvent.change(infantry[1], { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Profit')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    expect(screen.queryByText(/Rows below/i)).not.toBeInTheDocument();
+  });
+
+  it('shows retreated units in a separate casualty column', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '1' } });
+    fireEvent.change(infantry[1], { target: { value: '10' } });
+
+    fireEvent.click(screen.getByLabelText('Retreat when'));
+    fireEvent.change(screen.getByLabelText('Threshold'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'OK' }));
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Retreating')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+
+    const table = screen.getByRole('table', { name: 'attack casualty table' });
+    const retreatCells = table.querySelectorAll('.casualty-row__retreaters');
+    expect(retreatCells.length).toBeGreaterThan(0);
+    expect(Array.from(retreatCells).some((cell) => cell.textContent?.includes('Inf'))).toBe(true);
   });
 
   it('draws the per-wave checkbox label once when the wave columns are narrow', () => {
@@ -176,9 +222,7 @@ describe('beta-style calculator', () => {
   it('hides army optimization in SBR mode', () => {
     render(<BetaApp />);
     fireEvent.click(screen.getByLabelText('SBR'));
-    expect(
-      screen.queryByRole('tab', { name: 'Army optimization' }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Army optimization' })).not.toBeInTheDocument();
   });
 
   it('blocks battles above the complexity threshold setting', async () => {
