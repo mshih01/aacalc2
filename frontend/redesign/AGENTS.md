@@ -77,6 +77,16 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - On mobile the Dead zone checkbox shares the Territory value line, using the
   short “DZ” label (the field label shortens to “Territory IPC”); desktop keeps
   “Dead zone” and “Territory value (IPC)”.
+- Army optimization is a task tab on the calculator page (`Battle results` /
+  `Army optimization`), shown for land and sea only. It optimizes wave 1 with
+  the selected side’s current units as the maximum army and the other side as
+  the opponent. The parameters (mode, side, target, recommendation count, pwin
+  mode) persist in `aacalc2BetaSettings`; the minimal army is transient.
+  `armyRecommend` runs in `armyRecommend.worker.ts` through
+  `useArmyRecommendation` (tests use the in-process fallback); changing any
+  battle input or optimizer parameter cancels the run and clears the results.
+  “Use as attacker/defender” replaces wave 1’s units and returns to Battle
+  results.
 - Settings → Advanced options holds the display and engine controls:
   probability/IPC decimal places, verbose level, prune and report-prune
   thresholds, complexity threshold, sort mode, and the three experimental

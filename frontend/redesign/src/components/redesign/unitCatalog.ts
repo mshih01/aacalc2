@@ -20,8 +20,32 @@ const UNIT_LABELS: Record<string, string> = {
   arm_a: 'Tank (Amphibious)',
 };
 
+const UNIT_SHORT_LABELS: Record<string, string> = {
+  aa: 'AA',
+  inf: 'Inf',
+  art: 'Art',
+  arm: 'Tank',
+  fig: 'Ftr',
+  bom: 'Bom',
+  sub: 'Sub',
+  tra: 'Trn',
+  des: 'Des',
+  cru: 'Cru',
+  acc: 'Carrier',
+  bat: 'BB',
+  dbat: 'BB*',
+  ic: 'IC',
+  inf_a: 'Inf*',
+  art_a: 'Art*',
+  arm_a: 'Tank*',
+};
+
 export function unitLabel(unit: string) {
   return UNIT_LABELS[unit] ?? unit;
+}
+
+export function unitShortLabel(unit: string) {
+  return UNIT_SHORT_LABELS[unit] ?? unit.toUpperCase();
 }
 
 export function unitsForMode(mode: BattleMode, amphibious: boolean): string[] {

@@ -78,6 +78,14 @@ npm run preview -- --port 5175
   the previous wave’s surviving attackers, unchecked (default) means they are
   the previous wave’s surviving defenders. Wave 1 has no slot because there is
   no earlier wave to carry survivors over from.
+- **Army optimization** — a **Battle results / Army optimization** task switch
+  sits below the unit grid (hidden in SBR mode). The optimizer reuses the wave-1
+  setup: the selected side is the maximum army and the other side is the
+  opponent. It supports target-win and max-profit modes, takes/destroys win
+  conditions, an optional minimum army, and one or more recommendations. It runs
+  in a Web Worker and can be cancelled; **Use as attacker/defender** applies a
+  recommendation to wave 1 and returns to the battle results. Optimizer
+  parameters persist in `aacalc2BetaSettings`; recommendations are transient.
 - **Persistence** — settings and history in `localStorage`; history entries are
   saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links
