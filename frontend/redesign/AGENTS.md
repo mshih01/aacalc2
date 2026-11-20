@@ -22,7 +22,7 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - `src/beta.css` — hand-written Material-like styling. **No MUI/Emotion**;
   keep new UI primitives in `src/components/redesign/primitives.tsx`.
 - `src/components/redesign/` — header/drawers, advanced config, unit grid,
-  results tables, icons, retreat popover.
+  results tables, grouped history drawer, batch results, icons, retreat popover.
 - `src/{engine,types}.ts`, `src/utils/`, `src/hooks/`, `src/data/` — copied
   from the main frontend to keep this app isolated. Engine changes belong in
   the root library, not here.
@@ -75,7 +75,8 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - Width modes are Small (600), Medium (900), Large (1200) and Extra large
   (1536). At Large and Extra large, Amphibious/Waves/Dice merge into the mode
   row and Reset All/Reset Units become icon+text buttons; smaller layouts stack
-  them and use icon-only reset buttons.
+  them and use icon-only reset buttons. At Small the title font shrinks so the
+  Group field beside it does not clip the default title.
 - Per-wave checkbox rows (Submerge subs, Destroyer last, Crash fighters, AA 2nd
   last) follow the reference: when the wave columns are too narrow, the label is
   drawn once above a row of checkboxes centred under each wave column. That
@@ -91,15 +92,31 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   short “DZ” label (the field label shortens to “Territory IPC”); desktop keeps
   “Dead zone” and “Territory value (IPC)”.
 - Army optimization is a task tab on the calculator page (`Battle results` /
-  `Army optimization`), shown for land and sea only. It optimizes wave 1 with
-  the selected side’s current units as the maximum army and the other side as
-  the opponent. The parameters (mode, side, target, recommendation count, pwin
-  mode) persist in `aacalc2BetaSettings`; the minimal army is transient.
-  `armyRecommend` runs in `armyRecommend.worker.ts` through
-  `useArmyRecommendation` (tests use the in-process fallback); changing any
-  battle input or optimizer parameter cancels the run and clears the results.
-  “Use as attacker/defender” replaces wave 1’s units and returns to Battle
-  results.
+  `Army optimization` / `Batch run` for land and sea), shown for land and sea
+  only. It optimizes wave 1 with the selected side’s current units as the
+  maximum army and the other side as the opponent. The parameters (mode, side,
+  target, recommendation count, pwin mode) persist in `aacalc2BetaSettings`; the
+  minimal army is transient. `armyRecommend` runs in
+  `armyRecommend.worker.ts` through `useArmyRecommendation` (tests use the
+  in-process fallback); changing any battle input or optimizer parameter
+  cancels the run and clears the results. “Use as attacker/defender” replaces
+  wave 1’s units and returns to Battle results.
+- History entries are keyed by `group / name`. The **Group** field beside the
+  title chooses the destination for new saves; the title is the entry name, and
+  loading an entry restores its group. The History drawer groups entries into
+  collapsible sections with counts, rename (merging asks first), remove,
+  search, and Expand/Collapse all. `aacalc2BetaHistoryGroupsCollapsed` persists
+  the collapsed state. Existing flat entries migrate into `Default`.
+- **Batch run** (third task tab, land and sea only) re-evaluates every saved
+  setting in a selected group against the current armies. `utils/batchEval.ts`
+  holds the armies, mode and wave count fixed while replaying each entry’s
+  scenario settings; the current Advanced/engine options override the values
+  stored on the entry. Entries saved for another mode or above the complexity
+  threshold are skipped, errors become rows and do not abort the run, and
+  cancellation keeps partial rows. The history group header and the Batch run
+  tab both start a run. Results show final-wave metrics and a copyable report;
+  the snapshot records the armies and group used, and removing that group
+  clears the snapshot.
 - Settings → Advanced options holds the display and engine controls:
   probability/IPC decimal places, verbose level, prune and report-prune
   thresholds, complexity threshold, sort mode, and the three experimental
@@ -115,5 +132,6 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   setting is Extra large and the viewport is at least 1000px. Reducing the
   width or viewport clamps an active 4-wave battle to 3 waves.
 - Settings/history use isolated keys (`aacalc2BetaSettings`,
-  `aacalc2BetaHistory`), and sharing uses `#/<lz-state>/<title>`.
+  `aacalc2BetaHistory`, `aacalc2BetaHistoryGroupsCollapsed`), and sharing uses
+  `#/<lz-state>/<title>`.
 - Reference screenshots are in `docs/screenshots/`.
