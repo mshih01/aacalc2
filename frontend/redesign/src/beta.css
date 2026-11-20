@@ -1570,58 +1570,96 @@ button {
   font-size: 12px;
 }
 
-.profit-table-wrap {
-  overflow-x: auto;
+/* The profit table mirrors the casualty tables: the header and body share one
+   grid, the blue Profit pill spans the badge and outcome-probability columns
+   (right-aligned over the probabilities), and the confidence heading is centred
+   across its two data columns. */
+.profit-card--table {
+  --profit-columns: 50px var(--probability-column, 62px) minmax(0, 1.1fr) minmax(0, 1.1fr)
+    minmax(56px, 0.9fr);
 }
 
-.profit-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.profit-table th {
-  padding: 7px 10px;
+.profit-head {
+  display: grid;
+  grid-template-columns: var(--profit-columns);
+  align-items: stretch;
   border-bottom: 1px solid var(--beta-divider);
-  color: var(--beta-text-secondary);
-  font-size: 11px;
-  font-weight: 500;
-  text-align: right;
-  white-space: nowrap;
-}
-
-/* Percentile badges sit in the leftmost column, matching the casualty
-   tables, with every numeric column right aligned. */
-.profit-table th:first-child,
-.profit-table td:first-child {
-  width: 50px;
-  padding-right: 4px;
-  padding-left: 4px;
-  text-align: center;
-}
-
-.profit-table td {
-  padding: 5px 10px;
-  border-bottom: 1px solid var(--beta-divider);
-  text-align: right;
-  white-space: nowrap;
-}
-
-.profit-table tbody tr:nth-child(even) td {
   background: var(--beta-table-alt);
 }
 
-.profit-table tbody tr:last-child td {
+.profit-side-cell {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 6px;
+}
+
+.profit-side {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: var(--beta-primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.profit-head__label {
+  padding: 7px 6px;
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* One heading centred across the confidence and reverse-confidence columns. */
+.profit-head__label--confidence {
+  grid-column: span 2;
+  text-align: center;
+}
+
+.profit-head__label--ipc {
+  text-align: right;
+}
+
+.profit-row {
+  display: grid;
+  grid-template-columns: var(--profit-columns);
+  align-items: stretch;
+  border-bottom: 1px solid var(--beta-divider);
+  font-size: 12px;
+  line-height: 1.35;
+  background: var(--beta-surface);
+}
+
+.profit-row:nth-child(even) {
+  background: var(--beta-table-alt);
+}
+
+.profit-row:last-child {
   border-bottom: 0;
 }
 
-.profit-card__note {
-  padding: 7px 10px;
-  border-top: 1px solid var(--beta-divider);
-  color: var(--beta-text-secondary);
-  font-size: 11px;
-  line-height: 1.4;
+.profit-row__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.profit-row__prob,
+.profit-row__confidence,
+.profit-row__reverse,
+.profit-row__ipc {
+  padding: 4px 6px;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .profit-positive {
@@ -1721,26 +1759,49 @@ button {
   background: var(--beta-surface);
 }
 
+/* The header row and body rows share one grid template, so every heading sits
+   exactly over its data column. The percentile column has no heading of its
+   own: the Attacker/Defender chip spans it plus the outcome-probability column,
+   right-aligned over the probabilities like the reference UI. */
+.casualty-card--advanced {
+  --casualty-columns: 50px var(--probability-column, 62px) minmax(0, 1.1fr) minmax(0, 1.1fr)
+    minmax(0, 1.4fr) minmax(0, 0.95fr) 46px;
+}
+
+.casualty-card--advanced.casualty-card--retreaters {
+  --casualty-columns: 50px var(--probability-column, 62px) minmax(0, 1.1fr) minmax(0, 1.1fr)
+    minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 0.9fr) 46px;
+}
+
 .casualty-head {
   display: grid;
-  grid-template-columns:
-    76px minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1.2fr)
-    minmax(0, 1.5fr) minmax(0, 1fr) 46px;
+  grid-template-columns: var(--casualty-columns);
   align-items: stretch;
   padding: 0;
   border-bottom: 1px solid var(--beta-divider);
   background: var(--beta-table-alt);
 }
 
-.casualty-side {
+.casualty-side-cell {
+  grid-column: span 2;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  padding: 4px 6px;
+}
+
+.casualty-side {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding: 7px 12px;
+  height: 20px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #fff;
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  color: #fff;
+  white-space: nowrap;
 }
 
 .casualty-side--attack {
@@ -1752,18 +1813,25 @@ button {
 }
 
 .casualty-head__label {
-  padding: 7px 12px;
+  padding: 7px 6px;
   color: var(--beta-text-secondary);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
 
+/* One heading centred across the "or better" and "or worse" data columns. */
 .casualty-head__label--confidence {
-  grid-column: span 3;
+  grid-column: span 2;
   text-align: center;
 }
 
+.casualty-head__label--retreaters,
+.casualty-head__label--surviving {
+  text-align: left;
+}
+
+.casualty-head__label--casualties,
 .casualty-head__label--ipc {
   text-align: right;
 }
@@ -1774,9 +1842,7 @@ button {
 
 .casualty-row {
   display: grid;
-  grid-template-columns:
-    50px minmax(0, 1.1fr) minmax(0, 1.1fr) minmax(0, 1.1fr)
-    minmax(0, 1.4fr) minmax(0, 0.95fr) 46px;
+  grid-template-columns: var(--casualty-columns);
   align-items: stretch;
   border-bottom: 1px solid var(--beta-divider);
   font-size: 12px;
@@ -1842,13 +1908,20 @@ button {
 }
 
 .casualty-row__surviving,
+.casualty-row__retreaters {
+  padding: 4px 6px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
 .casualty-row__casualties {
   padding: 4px 6px;
+  text-align: right;
   overflow-wrap: anywhere;
 }
 
 .casualty-row__ipc {
-  padding: 4px 8px;
+  padding: 4px 6px;
   text-align: right;
   white-space: nowrap;
 }
@@ -2403,28 +2476,34 @@ button {
     padding: 8px 10px;
   }
 
-  .profit-table th,
-  .profit-table td {
-    padding: 5px 4px;
-    font-size: 11px;
-  }
-
-  .profit-table th {
-    white-space: normal;
-  }
-
   /* Matches the casualty tables on mobile: the individual outcome
      probability is omitted, but the percentile badge still renders. */
-  .profit-table__prob,
-  .profit-row__prob {
-    display: none;
+  .profit-card--table {
+    --profit-columns: 56px minmax(0, 1fr) minmax(0, 1fr) minmax(56px, 0.9fr);
   }
 
-  .profit-table th:first-child,
-  .profit-table td:first-child {
-    width: 38px;
-    padding-right: 2px;
-    padding-left: 4px;
+  .profit-head__label {
+    padding: 5px 6px;
+    font-size: 10px;
+  }
+
+  .profit-side-cell {
+    grid-column: span 1;
+    padding: 3px 6px;
+  }
+
+  .profit-side {
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  .profit-row {
+    font-size: 11.5px;
+  }
+
+  .profit-row__prob {
+    display: none;
   }
 
   /* Keep the Dead zone checkbox on the Territory value line; its label
@@ -2548,14 +2627,18 @@ button {
     display: inline;
   }
 
+  .casualty-side-cell {
+    padding: 3px 6px;
+  }
+
   .casualty-side {
-    padding: 6px 8px;
+    height: 18px;
+    padding: 0 8px;
     font-size: 10px;
   }
 
-  .casualty-head__label--surviving,
-  .casualty-head__label--ipc {
-    padding: 6px 8px;
+  .casualty-head__label {
+    padding: 5px 6px;
     font-size: 10px;
   }
 
@@ -2565,30 +2648,29 @@ button {
 
   /* Advanced mobile: confidence interval rows only, two colored
      confidence columns, no exact outcome column. */
-  .casualty-card--advanced .casualty-head {
-    grid-template-columns: 79px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.96fr) 61px;
+  .casualty-card--advanced {
+    --casualty-columns: 79px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.96fr) 61px;
   }
 
-  .casualty-card--advanced .casualty-head__label--confidence {
-    grid-column: span 2;
+  .casualty-card--advanced.casualty-card--retreaters {
+    --casualty-columns: 72px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 0.96fr) 56px;
   }
 
   .casualty-card--advanced .casualty-head__label--casualties {
     display: none;
   }
 
-  .casualty-card--advanced .casualty-side {
+  .casualty-card--advanced .casualty-side-cell {
     grid-column: span 1;
-  }
-
-  .casualty-card--advanced .casualty-row {
-    grid-template-columns: 79px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.96fr) 61px;
   }
 
   .casualty-card--advanced .casualty-row__confidence--exact,
   .casualty-card--advanced .casualty-row__casualties {
     display: none;
   }
+
+  /* Keep the retreaters column on mobile; it carries information that no
+     other visible column shows. */
 
   /* Single-wave mobile keeps a compact icon column. */
   .unit-columns--single .unit-row {
