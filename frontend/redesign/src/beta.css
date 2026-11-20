@@ -139,6 +139,257 @@ button {
   padding: 0 24px;
 }
 
+/* ------------------------------------------------------------------ */
+/* Army optimization                                                   */
+/* ------------------------------------------------------------------ */
+
+.beta-task-tabs {
+  display: flex;
+  margin-top: 8px;
+  border-bottom: 1px solid var(--beta-divider);
+}
+
+.beta-task-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 10px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--beta-text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 120ms,
+    background-color 120ms,
+    border-color 120ms;
+}
+
+.beta-task-tab:hover {
+  color: var(--beta-text);
+  background: var(--beta-hover);
+}
+
+.beta-task-tab--active {
+  color: var(--beta-primary);
+  border-bottom-color: var(--beta-primary);
+}
+
+.army-optimizer {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+}
+
+.army-optimizer__head {
+  margin-bottom: 10px;
+}
+
+.army-optimizer__title {
+  margin: 0;
+  color: var(--beta-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.army-optimizer__hint {
+  margin: 2px 0 0;
+  color: var(--beta-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.army-optimizer__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.army-optimizer__note {
+  grid-column: 1 / -1;
+  color: var(--beta-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.army-optimizer__note--warning {
+  margin-top: 8px;
+  color: var(--beta-warning);
+}
+
+.army-optimizer__min-toggle {
+  margin-top: 10px;
+}
+
+.army-min-army {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.army-min-army__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.army-min-army__unit .field {
+  width: 100%;
+  height: 32px;
+}
+
+.army-min-army__unit .field__input {
+  padding: 4px 6px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.army-min-army__label {
+  color: var(--beta-text-secondary);
+  font-size: 10px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.army-results {
+  margin-top: 12px;
+  border: 1px solid var(--beta-divider);
+  border-radius: 4px;
+  background: var(--beta-surface);
+  overflow: hidden;
+}
+
+.army-results__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--beta-divider);
+}
+
+.army-results__title {
+  margin: 0;
+  color: var(--beta-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.army-results__meta {
+  color: var(--beta-text-secondary);
+  font-size: 11.5px;
+  text-align: right;
+}
+
+.army-results__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  color: var(--beta-text);
+  font-size: 13px;
+}
+
+.army-results__empty {
+  padding: 12px;
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.army-rec {
+  padding: 12px;
+  border-bottom: 1px solid var(--beta-divider);
+}
+
+.army-rec:last-child {
+  border-bottom: 0;
+}
+
+.army-rec__title {
+  margin-bottom: 8px;
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.army-rec__units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.army-rec__unit {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  background: var(--beta-table-alt);
+}
+
+.army-rec__count {
+  color: var(--beta-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.army-rec__name {
+  color: var(--beta-text-secondary);
+  font-size: 11px;
+}
+
+.army-rec__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.army-rec__cost {
+  color: var(--beta-text-secondary);
+  font-size: 12px;
+}
+
+.army-rec__cost strong {
+  color: var(--beta-text);
+  font-size: 14px;
+}
+
+@media (max-width: 599.95px) {
+  .beta-task-tab {
+    padding: 9px 6px;
+    font-size: 11px;
+  }
+
+  .army-optimizer__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .army-results__head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .army-results__meta {
+    text-align: left;
+  }
+}
+
 @media (max-width: 599.95px) {
   .beta-container {
     padding: 0 16px;

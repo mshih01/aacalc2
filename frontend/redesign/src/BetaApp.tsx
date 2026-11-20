@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { multiwaveComplexityFastV2, type MultiwaveOutput } from 'aacalc2';
+import { multiwaveComplexityFastV2, type Army, type MultiwaveOutput } from 'aacalc2';
 import ReactGA from 'react-ga4';
 import './beta.css';
 import {
@@ -38,6 +38,16 @@ import { Drawer } from './components/redesign/Drawer.tsx';
 import { ConfigSection } from './components/redesign/ConfigSection.tsx';
 import { UnitGrid } from './components/redesign/UnitGrid.tsx';
 import { Results } from './components/redesign/Results.tsx';
+import { ArmyOptimizerCard } from './components/redesign/ArmyOptimizerCard.tsx';
+import { ArmyRecommendationResults } from './components/redesign/ArmyRecommendationResults.tsx';
+import { useArmyRecommendation } from './hooks/useArmyRecommendation.ts';
+import {
+  DEFAULT_ARMY_OPTIMIZER_PARAMS,
+  buildArmyRecommendInput,
+  hasPositiveUnits,
+  optimizerSide,
+  type ArmyOptimizerParams,
+} from './utils/armyOptimizer.ts';
 import {
   CheckboxControl,
   SelectField,
@@ -72,6 +82,11 @@ interface BetaSettings {
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
   probabilityDecimals: number;
   ipcDecimals: number;
+  armyOptimizeMode: 'targetWinPercentage' | 'maxProfit';
+  armyOptimizeFor: 'attacker' | 'defender';
+  armyTargetPercentage: number;
+  armyNumRecommendations: number;
+  armyPwinMode: 'takes' | 'destroys';
   verboseLevel: number;
   pruneThreshold: number;
   reportPruneThreshold: number;
@@ -93,6 +108,11 @@ const DEFAULT_SETTINGS: BetaSettings = {
   hideUnlikely: '0.01',
   probabilityDecimals: 2,
   ipcDecimals: 2,
+  armyOptimizeMode: DEFAULT_ARMY_OPTIMIZER_PARAMS.optimizeMode,
+  armyOptimizeFor: DEFAULT_ARMY_OPTIMIZER_PARAMS.optimizeFor,
+  armyTargetPercentage: DEFAULT_ARMY_OPTIMIZER_PARAMS.targetPercentage,
+  armyNumRecommendations: DEFAULT_ARMY_OPTIMIZER_PARAMS.numRecommendations,
+  armyPwinMode: DEFAULT_ARMY_OPTIMIZER_PARAMS.pwinMode,
   verboseLevel: 0,
   pruneThreshold: computeThreshold(2),
   reportPruneThreshold: computeThreshold(2),
@@ -273,6 +293,19 @@ export default function BetaApp() {
     top: number;
   } | null>(null);
 
+  const [task, setTask] = useState<'battle' | 'optimize'>('battle');
+  const effectiveTask = mode === 'sbr' ? 'battle' : task;
+  const [armyMinEnabled, setArmyMinEnabled] = useState(false);
+  const [armyMinArmy, setArmyMinArmy] = useState<Record<string, number>>({});
+  const {
+    loading: armyLoading,
+    recommendations: armyRecommendations,
+    error: armyError,
+    run: runArmyRecommendation,
+    cancel: cancelArmyRecommendation,
+    clear: clearArmyRecommendations,
+  } = useArmyRecommendation();
+
   const allowFourWaves = settings.width === 'xl' && viewportWidth >= 1000;
   const maxWaves = allowFourWaves ? 4 : 3;
 
@@ -283,6 +316,28 @@ export default function BetaApp() {
   const stackedCheckboxes =
     (numWaves > 1 && !inlineTwoWaveCheckboxes) ||
     (numWaves > 2 && !inlineThreeWaveCheckboxes);
+
+  const armyParams = useMemo<ArmyOptimizerParams>(
+    () => ({
+      optimizeMode: settings.armyOptimizeMode,
+      optimizeFor: settings.armyOptimizeFor,
+      targetPercentage: settings.armyTargetPercentage,
+      numRecommendations: settings.armyNumRecommendations,
+      pwinMode: settings.armyPwinMode,
+    }),
+    [
+      settings.armyOptimizeMode,
+      settings.armyOptimizeFor,
+      settings.armyTargetPercentage,
+      settings.armyNumRecommendations,
+      settings.armyPwinMode,
+    ],
+  );
+  const armySide = optimizerSide(armyParams);
+  const armyOpponentSide = armySide === 'attacker' ? 'defender' : 'attacker';
+  const armyMaxUnits = armySide === 'attacker' ? (attack[0] ?? {}) : (defense[0] ?? {});
+  const armyOpponentUnits =
+    armySide === 'attacker' ? (defense[0] ?? {}) : (attack[0] ?? {});
 
   const isLoadingRef = useRef(false);
   const shouldRunBattleRef = useRef(false);
@@ -396,6 +451,25 @@ export default function BetaApp() {
     wavePresets,
   ]);
 
+  const armyOptimizerSignature = useMemo(() => {
+    const input = buildCurrentInput();
+    return JSON.stringify({
+      input,
+      params: armyParams,
+      minArmy: armyMinEnabled ? armyMinArmy : null,
+    });
+  }, [buildCurrentInput, armyParams, armyMinEnabled, armyMinArmy]);
+
+  // Recommendations are transient: changing any input or parameter cancels a
+  // running solve and clears the previous output.
+  useEffect(() => {
+    clearArmyRecommendations();
+  }, [armyOptimizerSignature, clearArmyRecommendations]);
+
+  useEffect(() => {
+    if (mode === 'sbr' && task === 'optimize') setTask('battle');
+  }, [mode, task]);
+
   const updateHash = useCallback((input: BattleInput, nextTitle: string) => {
     try {
       const hash = encodeStateToHash(input, nextTitle);
@@ -470,6 +544,33 @@ export default function BetaApp() {
       saveHistoryEntry,
       settings.complexityThreshold,
     ],
+  );
+
+  const handleArmyRecommend = useCallback(() => {
+    const input = buildCurrentInput();
+    runArmyRecommendation(
+      buildArmyRecommendInput(input, armyParams, armyMinEnabled ? armyMinArmy : undefined),
+    );
+  }, [buildCurrentInput, runArmyRecommendation, armyParams, armyMinEnabled, armyMinArmy]);
+
+  const applyArmyRecommendation = useCallback(
+    (army: Army) => {
+      const units: Record<string, number> = {};
+      for (const [unit, count] of Object.entries(army)) {
+        if (count !== undefined && count > 0) units[unit] = count;
+      }
+      if (armySide === 'attacker') {
+        setAttack((prev) => ({ ...prev, 0: units }));
+      } else {
+        setDefense((prev) => ({ ...prev, 0: units }));
+      }
+      setResult(null);
+      setError(null);
+      setComplexityWarning(null);
+      setTask('battle');
+      setToast(`Recommended army applied to the ${armySide}`);
+    },
+    [armySide],
   );
 
   const loadFromHistoryInput = useCallback(
@@ -746,6 +847,8 @@ export default function BetaApp() {
     [attack, defense, numWaves],
   );
   const canCalculate = validation.valid;
+  const canRecommendArmy =
+    hasPositiveUnits(armyMaxUnits) && hasPositiveUnits(armyOpponentUnits);
 
   const setUnit = useCallback(
     (side: 'attack' | 'defense', wave: number, unit: string, count: number) => {
@@ -1086,39 +1189,111 @@ export default function BetaApp() {
               onSwapWave={swapWave}
             />
 
-            <button
-              type="button"
-              className="beta-calculate"
-              disabled={!canCalculate}
-              onClick={() => {
-                setRetreatPopover(null);
-                runBattle({ saveToHistory: true });
-              }}
-            >
-              Calculate
-            </button>
-
-            {error ? <div className="results__error">{error}</div> : null}
-            {complexityWarning ? (
-              <div className="results__warning">
-                This battle is too complex to evaluate exactly. Try fewer units, fewer waves, a
-                simpler order of loss, or raise the complexity threshold in Settings → Advanced
-                options.
+            {mode !== 'sbr' ? (
+              <div className="beta-task-tabs" role="tablist" aria-label="Calculator task">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={effectiveTask === 'battle'}
+                  className={`beta-task-tab${effectiveTask === 'battle' ? ' beta-task-tab--active' : ''}`}
+                  onClick={() => setTask('battle')}
+                >
+                  Battle results
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={effectiveTask === 'optimize'}
+                  className={`beta-task-tab${effectiveTask === 'optimize' ? ' beta-task-tab--active' : ''}`}
+                  onClick={() => setTask('optimize')}
+                >
+                  Army optimization
+                </button>
               </div>
             ) : null}
 
-            {result ? (
-              <Results
-                result={result}
-                numWaves={numWaves}
-                settings={{
-                  ipcDiffDisplay: settings.ipcDiffDisplay,
-                  hideUnlikely: settings.hideUnlikely,
-                  probabilityDecimals: settings.probabilityDecimals,
-                  ipcDecimals: settings.ipcDecimals,
-                }}
-              />
-            ) : null}
+            {effectiveTask === 'optimize' ? (
+              <>
+                <ArmyOptimizerCard
+                  params={armyParams}
+                  onChange={(next) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      armyOptimizeMode: next.optimizeMode,
+                      armyOptimizeFor: next.optimizeFor,
+                      armyTargetPercentage: next.targetPercentage,
+                      armyNumRecommendations: next.numRecommendations,
+                      armyPwinMode: next.pwinMode,
+                    }))
+                  }
+                  side={armySide}
+                  opponentSide={armyOpponentSide}
+                  maxUnits={armyMaxUnits}
+                  opponentUnits={armyOpponentUnits}
+                  showMinArmy={armyMinEnabled}
+                  onShowMinArmyChange={setArmyMinEnabled}
+                  minArmy={armyMinArmy}
+                  onMinArmyChange={(unit, count) =>
+                    setArmyMinArmy((prev) => ({ ...prev, [unit]: count }))
+                  }
+                />
+                <button
+                  type="button"
+                  className="beta-calculate"
+                  disabled={!canRecommendArmy || armyLoading}
+                  onClick={handleArmyRecommend}
+                >
+                  {armyLoading ? 'Computing recommendation…' : 'Recommend army'}
+                </button>
+                <ArmyRecommendationResults
+                  loading={armyLoading}
+                  error={armyError}
+                  recommendations={armyRecommendations}
+                  optimizeMode={armyParams.optimizeMode}
+                  side={armySide}
+                  targetPercentage={armyParams.targetPercentage}
+                  ipcDecimals={settings.ipcDecimals}
+                  onUseArmy={applyArmyRecommendation}
+                  onCancel={cancelArmyRecommendation}
+                />
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="beta-calculate"
+                  disabled={!canCalculate}
+                  onClick={() => {
+                    setRetreatPopover(null);
+                    runBattle({ saveToHistory: true });
+                  }}
+                >
+                  Calculate
+                </button>
+
+                {error ? <div className="results__error">{error}</div> : null}
+                {complexityWarning ? (
+                  <div className="results__warning">
+                    This battle is too complex to evaluate exactly. Try fewer units, fewer waves, a
+                    simpler order of loss, or raise the complexity threshold in Settings → Advanced
+                    options.
+                  </div>
+                ) : null}
+
+                {result ? (
+                  <Results
+                    result={result}
+                    numWaves={numWaves}
+                    settings={{
+                      ipcDiffDisplay: settings.ipcDiffDisplay,
+                      hideUnlikely: settings.hideUnlikely,
+                      probabilityDecimals: settings.probabilityDecimals,
+                      ipcDecimals: settings.ipcDecimals,
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
           </>
         ) : (
           <StaticPage page={page} onBack={() => setPage('calculator')} version="2.2.4" />

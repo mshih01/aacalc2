@@ -138,6 +138,49 @@ describe('beta-style calculator', () => {
     expect(screen.getByLabelText('Allow retreat on round zero')).toBeInTheDocument();
   });
 
+  it('runs army optimization and applies a recommendation', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '4' } });
+    fireEvent.change(infantry[1], { target: { value: '2' } });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Army optimization' }));
+    const recommend = screen.getByRole('button', { name: 'Recommend army' });
+    expect(recommend).not.toBeDisabled();
+    fireEvent.click(recommend);
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Recommended armies')).toBeInTheDocument();
+      },
+      { timeout: 20000 },
+    );
+
+    const useButtons = screen.getAllByRole('button', { name: /Use as attacker/i });
+    expect(useButtons.length).toBeGreaterThan(0);
+    fireEvent.click(useButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Recommended army applied to the attacker/i)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Calculate' })).toBeInTheDocument();
+  });
+
+  it('requires both armies before recommending', () => {
+    render(<BetaApp />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Army optimization' }));
+    expect(screen.getByRole('button', { name: 'Recommend army' })).toBeDisabled();
+  });
+
+  it('hides army optimization in SBR mode', () => {
+    render(<BetaApp />);
+    fireEvent.click(screen.getByLabelText('SBR'));
+    expect(
+      screen.queryByRole('tab', { name: 'Army optimization' }),
+    ).not.toBeInTheDocument();
+  });
+
   it('blocks battles above the complexity threshold setting', async () => {
     localStorage.setItem('aacalc2BetaSettings', JSON.stringify({ complexityThreshold: 1 }));
     render(<BetaApp />);
