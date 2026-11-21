@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BetaApp from './BetaApp.tsx';
+import type { BattleInput } from './types.ts';
+import { encodeStateToHash } from './utils/format.ts';
 
 describe('beta-style calculator', () => {
   beforeEach(() => {
@@ -186,6 +188,28 @@ describe('beta-style calculator', () => {
     expect(screen.getByLabelText('Fix defender profit via convolution')).toBeInTheDocument();
     expect(screen.getByLabelText('Future-wave-aware EV retreat')).toBeInTheDocument();
     expect(screen.getByLabelText('Allow retreat on round zero')).toBeInTheDocument();
+  });
+
+  it('restores the experimental engine flags from a share link', async () => {
+    const sharedInput: BattleInput = {
+      attack: { 0: { inf: 3 } },
+      defense: { 0: { inf: 2 } },
+      retreatModes: { 0: 'unitCount' },
+      experimentalConvolution: true,
+      evFutureWave: true,
+      retreatZeroRound: true,
+    };
+    window.history.replaceState(null, '', encodeStateToHash(sharedInput, 'Flags test'));
+    render(<BetaApp />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Battle title')).toHaveValue('Flags test');
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(screen.getByLabelText('Fix defender profit via convolution')).toBeChecked();
+    expect(screen.getByLabelText('Future-wave-aware EV retreat')).toBeChecked();
+    expect(screen.getByLabelText('Allow retreat on round zero')).toBeChecked();
   });
 
   it('runs army optimization and applies a recommendation', async () => {

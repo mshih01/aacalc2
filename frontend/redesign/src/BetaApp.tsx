@@ -643,6 +643,15 @@ export default function BetaApp() {
       setTerritoryValue(input.territoryValue ?? 0);
       setIsDeadzone(input.isDeadzone ?? false);
       setInProgress(input.inProgress ?? false);
+      // The experimental engine flags are part of the battle state (they change
+      // the computed results), so a share link or history entry restores them.
+      // Other Advanced options stay viewer settings.
+      setSettings((prev) => ({
+        ...prev,
+        experimentalConvolution: input.experimentalConvolution ?? false,
+        evFutureWave: input.evFutureWave ?? false,
+        retreatZeroRound: input.retreatZeroRound ?? false,
+      }));
 
       for (let wave = 0; wave < nextWaves; wave++) {
         const attackOol = input.attackOol?.[wave];

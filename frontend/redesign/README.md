@@ -106,7 +106,9 @@ npm run preview -- --port 5175
 - **Persistence** — settings, grouped history, and collapsed history groups in
   `localStorage`; history entries are saved when a titled battle is calculated.
 - **Sharing** — the URL hash updates automatically and can be copied; links
-  restore the full battle state and title.
+  restore the full battle state and title, including the three experimental
+  engine switches (they change the computed results). Display and tuning
+  settings such as width, dark mode and decimal places stay per viewer.
 - **Responsive/dark** — mobile header/unit-grid layout and dark palette. On
   mobile the results overview keeps Attacker Profit and drops Defender IPC, and
   casualty tables show all outcome rows with the green/red confidence intervals
