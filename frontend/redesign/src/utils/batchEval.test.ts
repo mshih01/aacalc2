@@ -251,6 +251,25 @@ describe('runBatch', () => {
     expect(rows[0].attSurv).toBeLessThanOrEqual(1);
   });
 
+  it('propagates sweep factor labels onto the row', async () => {
+    const evaluate = vi.fn(() => ({ output: makeOutput(1), runtimeMs: 1 }));
+    const entry = {
+      ...makeEntry('sbr a', makeInput({ mode: 'sbr' })),
+      factors: { OOL: 'inf first', Retreat: 'none' },
+    };
+
+    const rows = await runBatch(
+      [entry],
+      { ...ARMIES, mode: 'sbr' },
+      {
+        complexityThreshold: 200000,
+        evaluate,
+      },
+    );
+
+    expect(rows[0].factors).toEqual({ OOL: 'inf first', Retreat: 'none' });
+  });
+
   it('returns partial rows when cancelled', async () => {
     let done = 0;
     const rows = await runBatch(
@@ -358,5 +377,29 @@ describe('formatBatchTable', () => {
     const line = formatBatchTable([row]).split('\n')[1];
     expect(line.startsWith('0.000')).toBe(true);
     expect(line).not.toContain('-0.000');
+  });
+
+  it('adds sweep factor columns before the description', () => {
+    const row: BatchRow = {
+      group: 'sweep',
+      name: 'case',
+      status: 'ok',
+      profit: 10,
+      defLoss: 20,
+      attLoss: 10,
+      defSurv: 0.5,
+      attSurv: 0.5,
+      takes: 0.5,
+      rounds: 3,
+      runtimeMs: 12,
+      factors: { OOL: 'AA first', Retreat: 'EV retreat' },
+    };
+
+    const lines = formatBatchTable([row]).split('\n');
+    const headers = lines[0].split(/\s{2,}/);
+    expect(headers.slice(-3)).toEqual(['OOL', 'Retreat', 'description']);
+    expect(lines[1]).toContain('AA first');
+    expect(lines[1]).toContain('EV retreat');
+    expect(lines[1]).toMatch(/case$/);
   });
 });

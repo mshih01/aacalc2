@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import * as LZString from 'lz-string'
 import { getNegativeUnitString, getOolString, getUnitChar, getUnitString, getUnitName, decodeStateFromHash, encodeStateToHash } from './format.ts'
+import type { BattleInput } from '../types.ts'
 
 describe('getUnitChar', () => {
   it('maps a unit id to its single character', () => {
@@ -116,5 +118,33 @@ describe('share hash', () => {
 
     window.history.replaceState(null, '', reencoded)
     expect(decodeStateFromHash()?.input.useAttackersFromPreviousWave?.[1]).toBe(true)
+  })
+
+  it('skips an unregistered field instead of writing an "undefined" key', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const input: Record<string, unknown> = {
+      attack: { 0: { inf: 3 } },
+      defense: { 0: { art: 2 } },
+      attackOol: { 0: ['inf'] },
+      defenseOol: { 0: ['art'] },
+      rounds: { 0: 'all' },
+      retreatModes: { 0: 'unitCount' },
+      mode: 'land',
+      numWaves: 1,
+    }
+    input.mysteryField = 42
+
+    const hash = encodeStateToHash(input as unknown as BattleInput)
+    const encoded = hash.slice(2).split('/')[0]
+    const compact = JSON.parse(
+      LZString.decompressFromEncodedURIComponent(encoded) as string,
+    )
+
+    expect(compact).not.toHaveProperty('undefined')
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('"mysteryField"'),
+    )
+    warn.mockRestore()
   })
 })

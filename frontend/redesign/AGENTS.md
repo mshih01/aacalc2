@@ -22,10 +22,11 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - `src/beta.css` — hand-written Material-like styling. **No MUI/Emotion**;
   keep new UI primitives in `src/components/redesign/primitives.tsx`.
 - `src/components/redesign/` — header/drawers, advanced config, unit grid,
-  results tables, grouped history drawer, batch results, icons, retreat popover.
+  results tables, grouped history drawer, batch results, sweep matrix, icons,
+  retreat popover.
 - `src/{engine,types}.ts`, `src/utils/`, `src/hooks/`, `src/data/` — copied
   from the main frontend to keep this app isolated. Engine changes belong in
-  the root library, not here.
+  the root library, not here. `utils/sweep.ts` holds the two-group sweep logic.
 - `src/BetaApp.test.tsx` covers the new app; shared utils keep their tests.
 
 ## Behaviour notes
@@ -50,15 +51,18 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   results get a Results wave selector (latest wave by default) that also selects
   the per-wave `casualtiesInfoArr[wave]` tables; All waves shows cumulative
   casualties and a note that profit data is per wave. Hide unlikely outcomes
-  filters casualty and profit table rows; profit confidence and percentile chips
-  are recalculated over the visible rows, while the histogram remains full. The
-  profit table mirrors the casualty tables exactly: percentile badges sit in the
-  leftmost column and numeric columns (including the individual-outcome
-  probability) are right aligned; its blue “Profit” pill spans the badge and
-  outcome-probability columns, right-aligned over the probabilities, and a
-  single “Confidence %” heading is centred across the confidence and
-  reverse-confidence columns. On mobile the probability column is dropped,
-  moving the pill into the badge column while the badges keep rendering.
+  only chooses which rows to draw: confidence intervals and percentile badges
+  are always computed from the full distribution, so a hidden row still counts
+  towards the percentages of the rows that remain visible. The two extreme rows
+  are always drawn, so the first row's “or worse” and the last row's “or better”
+  are always exactly 100%. The histogram remains full. The profit table mirrors
+  the casualty tables exactly: percentile badges sit in the leftmost column and
+  numeric columns (including the individual-outcome probability) are right
+  aligned; its blue “Profit” pill spans the badge and outcome-probability
+  columns, right-aligned over the probabilities, and a single “Confidence %”
+  heading is centred across the confidence and reverse-confidence columns. On
+  mobile the probability column is dropped, moving the pill into the badge
+  column while the badges keep rendering.
   Casualty header and body rows share one column grid, so every heading
   lines up with its data column: the Attacker/Defender pill spans the badge and
   outcome-probability columns and is right-aligned over the probabilities, while
@@ -117,6 +121,14 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   tab both start a run. Results show final-wave metrics and a copyable report;
   the snapshot records the armies and group used, and removing that group
   clears the snapshot.
+- **Two-group sweep** is a mode inside Batch run. Each axis is a saved history
+  group; every level is diffed against the current battle (`utils/sweep.ts`),
+  and all combinations run with the current armies, mode and wave count. The
+  preview lists each level's changed fields and blocks when both axes set the
+  same field/wave to different values (equal values are fine), when modes or
+  wave counts differ, or above 500 combinations. Results add an axis-by-axis
+  metric matrix and factor columns in the report. Sweep definitions are not
+  persisted; the snapshot is tied to its two groups.
 - Settings → Advanced options holds the display and engine controls:
   probability/IPC decimal places, verbose level, prune and report-prune
   thresholds, complexity threshold, sort mode, and the three experimental
@@ -135,3 +147,42 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   `aacalc2BetaHistory`, `aacalc2BetaHistoryGroupsCollapsed`), and sharing uses
   `#/<lz-state>/<title>`.
 - Reference screenshots are in `docs/screenshots/`.
+
+## Share URL encoding
+
+Sharing uses `#/<lz-state>/<title>`; `src/utils/format.ts` holds the codec.
+
+- The encoded payload is a compacted `BattleInput`: fields equal to their
+  default are omitted, keys are aliased through `KEY_MAP`, then the JSON is
+  LZ-compressed. Decode also accepts the legacy `?state=` query format.
+- `KEY_MAP` is declared
+  `as const satisfies Record<keyof BattleInput, string>`, so adding a
+  `BattleInput` field without an alias fails `npm run build`. Keep that
+  annotation; do not widen it back to `Record<string, string>`.
+- Aliases are append-only. Never rename one or reuse it for a different
+  field: old links carry the old alias and would silently decode into the
+  new field.
+- Defaults are part of an old link's meaning. Old links omit fields that
+  matched the default at save time, so changing a default changes how those
+  links replay.
+- Decode is permissive, not validating: a missing field stays absent and an
+  unknown key is kept as-is, so links from older versions still load. Only
+  per-wave fields registered in `RECORD_KEYS` with a non-`undefined` default
+  are backfilled, for each wave index found under `attack`.
+- Only `BattleInput` is encoded. Advanced/settings values (decimal places,
+  width, worker options, etc.) are intentionally not included.
+
+### Adding a BattleInput field
+
+1. Add the field to `src/types.ts`.
+2. Add its alias to `KEY_MAP` in `src/utils/format.ts`.
+3. Scalar: add its default to `FIELD_DEFAULTS`. Per-wave
+   `Record<number, T>`: add it to `RECORD_KEYS` and `RECORD_DEFAULTS`.
+4. Fill it in `buildCurrentInput` in `src/BetaApp.tsx`.
+5. Restore it in `loadFromHistoryInput`: `??` fallback for a scalar, or
+   merge it into the `updateWave` call for a per-wave field.
+6. Run `npm run build` (the `satisfies` check runs in `tsc`) and
+   `npm run test`.
+
+If a field is only UI state (not on `BattleInput`), it needs no registration
+and will not survive a share link.

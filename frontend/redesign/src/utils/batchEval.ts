@@ -44,6 +44,13 @@ export interface BatchRow extends Partial<BatchMetrics> {
   status: BatchRowStatus;
   note?: string;
   runtimeMs?: number;
+  /** Sweep axis label -> level label. Present only for sweep cases. */
+  factors?: Record<string, string>;
+}
+
+/** A batch case, optionally carrying sweep factor labels for result rendering. */
+export interface BatchCase extends HistoryEntry {
+  factors?: Record<string, string>;
 }
 
 export interface BatchEvaluation {
@@ -111,12 +118,16 @@ export function evaluateBattle(input: BattleInput): BatchEvaluation {
 }
 
 function evaluateEntry(
-  entry: HistoryEntry,
+  entry: BatchCase,
   armies: BatchArmies,
   options: BatchOptions,
   evaluate: (input: BattleInput) => BatchEvaluation,
 ): BatchRow {
-  const base = { group: entry.group, name: entry.name };
+  const base = {
+    group: entry.group,
+    name: entry.name,
+    ...(entry.factors ? { factors: entry.factors } : {}),
+  };
   const savedMode = entry.input.mode ?? 'land';
 
   // Armies are mode-bound, so a settings variant saved for another mode cannot
@@ -166,7 +177,7 @@ function yieldToUi(): Promise<void> {
  * the rows completed so far.
  */
 export async function runBatch(
-  entries: HistoryEntry[],
+  entries: BatchCase[],
   armies: BatchArmies,
   options: BatchOptions,
 ): Promise<BatchRow[]> {
@@ -215,6 +226,17 @@ function describeRow(row: BatchRow): string {
 
 /** Render the batch rows as a fixed-width text table with left-aligned columns. */
 export function formatBatchTable(rows: BatchRow[], decimals = 3): string {
+  const factorKeys: string[] = [];
+  for (const row of rows) {
+    for (const key of Object.keys(row.factors ?? {})) {
+      if (!factorKeys.includes(key)) factorKeys.push(key);
+    }
+  }
+
+  const metricColumns = BATCH_COLUMNS.slice(0, -1);
+  const descriptionColumn = BATCH_COLUMNS[BATCH_COLUMNS.length - 1];
+  const headers: readonly string[] = [...metricColumns, ...factorKeys, descriptionColumn];
+
   const cells: string[][] = rows.map((row) => [
     formatNumber(row.profit, decimals),
     formatNumber(row.defLoss, decimals),
@@ -224,10 +246,10 @@ export function formatBatchTable(rows: BatchRow[], decimals = 3): string {
     formatNumber(row.takes, decimals),
     formatNumber(row.rounds, decimals),
     formatNumber(row.runtimeMs, decimals),
+    ...factorKeys.map((key) => row.factors?.[key] ?? ''),
     describeRow(row),
   ]);
 
-  const headers: readonly string[] = BATCH_COLUMNS;
   const widths = headers.map((header, idx) =>
     Math.max(header.length, ...cells.map((row) => row[idx].length)),
   );

@@ -412,4 +412,73 @@ describe('beta-style calculator', () => {
     });
     expect((screen.getByLabelText('History group') as HTMLInputElement).value).toBe('Default');
   });
+
+  it('sweeps two history groups and renders the combination matrix', async () => {
+    const template = {
+      attack: { 0: {} },
+      defense: { 0: {} },
+      attackOol: { 0: ['inf', 'art'] },
+      defenseOol: { 0: ['inf'] },
+      rounds: { 0: 'all' },
+      retreatModes: { 0: 'unitCount' },
+      diceMode: 'standard',
+      mode: 'land',
+      numWaves: 1,
+    };
+    const entries = [
+      { group: 'OOL', name: 'standard', input: { ...template, diceMode: 'standard' } },
+      { group: 'OOL', name: 'lowluck', input: { ...template, diceMode: 'lowluck' } },
+      { group: 'Retreat', name: 'one round', input: { ...template, rounds: { 0: 1 } } },
+      { group: 'Retreat', name: 'three rounds', input: { ...template, rounds: { 0: 3 } } },
+    ].map((entry, idx) => ({ ...entry, timestamp: 1000 + idx }));
+    localStorage.setItem('aacalc2BetaHistory', JSON.stringify(entries));
+
+    render(<BetaApp />);
+    fillArmies();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Batch run' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Two-group sweep' }));
+
+    expect(screen.getByLabelText('Rows')).toHaveValue('OOL');
+    expect(screen.getByLabelText('Columns')).toHaveValue('Retreat');
+    expect(screen.getByText('4', { selector: '.sweep-summary__count strong' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Run 4 battles' }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Sweep results — OOL × Retreat')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    expect(screen.getByRole('table', { name: 'Sweep matrix' })).toBeInTheDocument();
+    expect(screen.getByText('Combination matrix')).toBeInTheDocument();
+    expect(screen.getByText('OOL ↓ / Retreat →')).toBeInTheDocument();
+    expect(
+      screen.getByRole('table', { name: 'Sweep results for OOL × Retreat' }),
+    ).toBeInTheDocument();
+  });
+
+  it('blocks a sweep whose axes set the same field differently', () => {
+    const template = {
+      attack: { 0: {} },
+      defense: { 0: {} },
+      retreatModes: { 0: 'unitCount' },
+      mode: 'land',
+      numWaves: 1,
+    };
+    const entries = [
+      { group: 'First', name: 'one round', input: { ...template, rounds: { 0: 1 } } },
+      { group: 'Second', name: 'three rounds', input: { ...template, rounds: { 0: 3 } } },
+    ].map((entry, idx) => ({ ...entry, timestamp: 1000 + idx }));
+    localStorage.setItem('aacalc2BetaHistory', JSON.stringify(entries));
+
+    render(<BetaApp />);
+    fillArmies();
+    fireEvent.click(screen.getByRole('tab', { name: 'Batch run' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Two-group sweep' }));
+
+    expect(screen.getByText('Fields set by both axes')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Run 1 battle' })).toBeDisabled();
+  });
 });
