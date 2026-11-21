@@ -138,3 +138,42 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   `aacalc2BetaHistory`, `aacalc2BetaHistoryGroupsCollapsed`), and sharing uses
   `#/<lz-state>/<title>`.
 - Reference screenshots are in `docs/screenshots/`.
+
+## Share URL encoding
+
+Sharing uses `#/<lz-state>/<title>`; `src/utils/format.ts` holds the codec.
+
+- The encoded payload is a compacted `BattleInput`: fields equal to their
+  default are omitted, keys are aliased through `KEY_MAP`, then the JSON is
+  LZ-compressed. Decode also accepts the legacy `?state=` query format.
+- `KEY_MAP` is declared
+  `as const satisfies Record<keyof BattleInput, string>`, so adding a
+  `BattleInput` field without an alias fails `npm run build`. Keep that
+  annotation; do not widen it back to `Record<string, string>`.
+- Aliases are append-only. Never rename one or reuse it for a different
+  field: old links carry the old alias and would silently decode into the
+  new field.
+- Defaults are part of an old link's meaning. Old links omit fields that
+  matched the default at save time, so changing a default changes how those
+  links replay.
+- Decode is permissive, not validating: a missing field stays absent and an
+  unknown key is kept as-is, so links from older versions still load. Only
+  per-wave fields registered in `RECORD_KEYS` with a non-`undefined` default
+  are backfilled, for each wave index found under `attack`.
+- Only `BattleInput` is encoded. Advanced/settings values (decimal places,
+  width, worker options, etc.) are intentionally not included.
+
+### Adding a BattleInput field
+
+1. Add the field to `src/types.ts`.
+2. Add its alias to `KEY_MAP` in `src/utils/format.ts`.
+3. Scalar: add its default to `FIELD_DEFAULTS`. Per-wave
+   `Record<number, T>`: add it to `RECORD_KEYS` and `RECORD_DEFAULTS`.
+4. Fill it in `buildCurrentInput` in `src/BetaApp.tsx`.
+5. Restore it in `loadFromHistoryInput`: `??` fallback for a scalar, or
+   merge it into the `updateWave` call for a per-wave field.
+6. Run `npm run build` (the `satisfies` check runs in `tsc`) and
+   `npm run test`.
+
+If a field is only UI state (not on `BattleInput`), it needs no registration
+and will not survive a share link.

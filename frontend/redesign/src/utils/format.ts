@@ -20,7 +20,11 @@ const unitNameMap: Record<string, string> = {
   arm_a: 'Tanks (Amphibious)',
 }
 
-const KEY_MAP: Record<string, string> = {
+// `satisfies` makes `tsc` fail when a new `BattleInput` field is added without
+// an alias here. Forgetting this map is the only registration mistake that
+// corrupts a share link: the field would otherwise be written under the
+// literal key "undefined" and could clobber another unregistered field.
+const KEY_MAP = {
   attack: 'a',
   defense: 'd',
   attackOol: 'ao',
@@ -56,7 +60,11 @@ const KEY_MAP: Record<string, string> = {
   retreatZeroRound: 'rz',
   evDeadzone: 'ed',
   evTerritoryValue: 'et',
-}
+} as const satisfies Record<keyof BattleInput, string>
+
+// Permissive view for runtime lookups: keys come from `Object.entries(input)`,
+// which TypeScript types as plain `string`.
+const KEY_LOOKUP: Record<string, string | undefined> = KEY_MAP
 
 const REVERSE_KEY_MAP: Record<string, string> = {}
 for (const [k, v] of Object.entries(KEY_MAP)) {
@@ -115,6 +123,17 @@ export function encodeStateToUrl(input: BattleInput): string {
   for (const [key, value] of Object.entries(input)) {
     if (value === undefined) continue
 
+    const alias = KEY_LOOKUP[key]
+    if (alias === undefined) {
+      // A BattleInput field with no KEY_MAP entry. `satisfies` above should
+      // make this unreachable for fields declared on BattleInput; skip rather
+      // than write the value under the literal key "undefined".
+      console.warn(
+        `Unregistered BattleInput field "${key}" was not saved in the share URL`,
+      )
+      continue
+    }
+
     if (RECORD_KEYS.has(key)) {
       const record = value as Record<string, unknown>
       const defaultVal = RECORD_DEFAULTS[key]
@@ -129,11 +148,11 @@ export function encodeStateToUrl(input: BattleInput): string {
       }
 
       if (!hasNonDefault) continue
-      compact[KEY_MAP[key]] = filtered
+      compact[alias] = filtered
     } else {
       const defaultVal = FIELD_DEFAULTS[key]
       if (value === defaultVal) continue
-      compact[KEY_MAP[key]] = value
+      compact[alias] = value
     }
   }
 
