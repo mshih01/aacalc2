@@ -90,6 +90,20 @@ not part of the share state.
 
 [army-optimization]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygdgDTgE4BcoAmbMHAWygGZsUEBzIgX2wEZ5mRD3tL2OATeCDjRwESC2zI0kShzbQOXRTz4kA9kJEBtENJAl8B3BRr1jAI3UUAugM2ide1MbARDBQ6ZC0G2K7Yc5FpQIACmAB4ADmEAxnhh-ACSUbEACjjqtARBYSGQMBwAbgA2UDDYUQQSYQC0LBUgOFFQLHUN2ADOFJB6qQD6seqdniB4RUTY-ABeUHg4AK5h2GEy80uMQA/blacktide_3i%2C_aa
 
+### Batch run: sweeping two history groups
+
+History entries are keyed by `group / name`, and a group can sweep one
+dimension of a battle. In this example one group varies the defender order of
+loss (`bomber first`, `aa first`, `inf-aa`, `aa 2nd last`), while another varies
+the retreat rule (no retreat, EV retreat, 1, 2, or 3 rounds). **Batch run →
+Two-group sweep** replays every combination against the current armies — 20
+battles here — with each level supplying only the settings it changes, and adds
+an axis-by-axis profit matrix.
+
+![Grouped history and the two-group sweep setup](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/discord/batch-run-groups.webp)
+
+![Sweep results profit matrix](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/discord/batch-run-sweep.webp)
+
 ## Overview:
 
 Axis and Allies odds calculator with advanced features.
