@@ -56,6 +56,40 @@ on load.
 [dead-zone]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygFgDTgE4BcoAmbMHAWygEYBfa7AE3hDmhGTUgFYT8iSJINOuAD2TFgG02qEDwI8K2FAgDmskACMRFALrD6Y1pPARs7daXm5Fm7euVq92cuKggApgA8ADu4DGeO70AJLefgAKOCLKBMI47q6QALSEwgBuADZQMNjeBILuSZTEIDjeVIXF2ADOFJBsYQD6fiLVVnhpfCD0AF5QeDgAru7UQA/Take_or_skip_the_dead_zone
 [sbr]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaAjA9gWygZgL6YDQgCbwhzTgSQCMeAlgMZQXZ5hJEkDaIyaAurga1IcyIGvT540kEAGcEAJ1EgAbgBsoMPAAcALgwCmAWgoAmPPK0HjZ2VJDUttAPq0kMvXh3KNmIA/Strategic_bombing_run
 
+## Feature examples:
+
+### Take-and-hold with future-wave EV retreat
+
+Three waves: a German attack/take, a Russian counter/strafe, and a German
+counter/hold. **Prev wave attackers** makes each wave defend with the previous
+wave's surviving attackers. **Future-wave-aware EV retreat** lets the Russian
+retreat decision in wave 2 account for the German counterattack in wave 3, so it
+optimizes profit across the whole sequence. Each wave's results are shown from
+that wave's attacker's point of view; the All-waves row is from wave 1's side.
+
+[![Three-wave take-and-hold battle with future-wave-aware EV retreat](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/discord/german-tank-rush.webp)][tank-rush]
+
+[Open this battle in the redesign][tank-rush].
+
+[tank-rush]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygdgDTgE4FsoBWAX2wEZ4Rk1IyAmbMHAFygdwMgGZsUEBzNqRB1K1KD1ytajfFDIxeAosK7xiwgCaU40KqjazpZWZ0lgItYRT0X52cVeyjblsqvXCwAex1QA2vpoRiCmoSB8gtgARt4EALrkAUHhTKxhSlEgsQnOyeIhGRHKMXEg8Vq+erqBdg4GhRzhOeGR5UmQtRD1wVKpcqUEme0iyXUpjUxD2WXDFdgArgAOlDbMOAsApnmQ61vCcno2IJsAHkubAMbMm5oAkkuXAAo43nysB5urUDDCAG4AGx+2CWxk2AFoFNgcCtaBCoSAAM6cKiPAD6l28iPSIGYf2BICQAHcJNhNjQ9ptiEA/german_tank_rush_(G1%2C_R2_counter%2Fstrafe%2C_G2_counter)
+
+### Army optimization
+
+The optimizer can recommend only part of the attacking army. With the territory
+treated as a dead zone and an expected-profit retreat, the maximum-profit
+recommendation for 7 inf, 2 art, 3 tanks, 2 fighters vs 1 AA + 3 inf is
+**4 inf + 2 art** at 3.91 IPC, ahead of 3 inf + 2 art at 3.85 and
+3 inf + 1 art + 1 fighter at 3.50.
+
+[![Army optimization recommendations for the blacktide battle](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/discord/army-optimization.webp)][army-optimization]
+
+[Open this battle in the redesign][army-optimization], then choose **Army
+optimization → Max profit (IPC)** with win condition **Destroys** and three
+recommendations. The link restores the battle, but the optimizer settings are
+not part of the share state.
+
+[army-optimization]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygdgDTgE4BcoAmbMHAWygGZsUEBzIgX2wEZ5mRD3tL2OATeCDjRwESC2zI0kShzbQOXRTz4kA9kJEBtENJAl8B3BRr1jAI3UUAugM2ide1MbARDBQ6ZC0G2K7Yc5FpQIACmAB4ADmEAxnhh-ACSUbEACjjqtARBYSGQMBwAbgA2UDDYUQQSYQC0LBUgOFFQLHUN2ADOFJB6qQD6seqdniB4RUTY-ABeUHg4AK5h2GEy80uMQA/blacktide_3i%2C_aa
+
 ## Overview:
 
 Axis and Allies odds calculator with advanced features.
