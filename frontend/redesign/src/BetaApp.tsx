@@ -34,7 +34,13 @@ import {
   renameHistoryGroup,
   upsertHistoryEntry,
 } from './utils/history.ts';
-import { formatBatchTable, runBatch, type BatchAppSettings } from './utils/batchEval.ts';
+import {
+  formatBatchTable,
+  runBatch,
+  type BatchAppSettings,
+  type BatchCase,
+} from './utils/batchEval.ts';
+import { type SweepPlan } from './utils/sweep.ts';
 import {
   attackerAmphibOolPresets,
   attackerOolPresets,
@@ -48,7 +54,11 @@ import { ConfigSection } from './components/redesign/ConfigSection.tsx';
 import { UnitGrid } from './components/redesign/UnitGrid.tsx';
 import { Results } from './components/redesign/Results.tsx';
 import { HistoryDrawer } from './components/redesign/HistoryDrawer.tsx';
-import { BatchRunPanel, type BatchSnapshot } from './components/redesign/BatchResults.tsx';
+import {
+  BatchRunPanel,
+  type BatchMode,
+  type BatchSnapshot,
+} from './components/redesign/BatchResults.tsx';
 import { ArmyOptimizerCard } from './components/redesign/ArmyOptimizerCard.tsx';
 import { ArmyRecommendationResults } from './components/redesign/ArmyRecommendationResults.tsx';
 import { useArmyRecommendation } from './hooks/useArmyRecommendation.ts';
@@ -323,6 +333,9 @@ export default function BetaApp() {
     useState<Record<string, boolean>>(loadCollapsedGroups);
   const [batch, setBatch] = useState<BatchSnapshot | null>(null);
   const [batchGroup, setBatchGroup] = useState<string | null>(null);
+  const [batchMode, setBatchMode] = useState<BatchMode>('single');
+  const [sweepRows, setSweepRows] = useState<string | null>(null);
+  const [sweepColumns, setSweepColumns] = useState<string | null>(null);
   const [batchRunningGroup, setBatchRunningGroup] = useState<string | null>(null);
   const [batchProgress, setBatchProgress] = useState<{ done: number; total: number } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -488,6 +501,8 @@ export default function BetaApp() {
     amphibious,
     wavePresets,
   ]);
+
+  const currentInput = useMemo(() => buildCurrentInput(), [buildCurrentInput]);
 
   const armyOptimizerSignature = useMemo(() => {
     const input = buildCurrentInput();
@@ -1009,14 +1024,18 @@ export default function BetaApp() {
   );
 
   const historyGroups = useMemo(() => groupHistory(history), [history]);
-  const batchGroups = useMemo(
-    () => historyGroups.map(({ group, entries }) => ({ group, count: entries.length })),
-    [historyGroups],
-  );
   const selectedBatchGroup =
     batchGroup && historyGroups.some((group) => group.group === batchGroup)
       ? batchGroup
       : (historyGroups[0]?.group ?? '');
+  const selectedSweepRows =
+    sweepRows && historyGroups.some((group) => group.group === sweepRows)
+      ? sweepRows
+      : (historyGroups[0]?.group ?? '');
+  const selectedSweepColumns =
+    sweepColumns && historyGroups.some((group) => group.group === sweepColumns)
+      ? sweepColumns
+      : (historyGroups.find((group) => group.group !== selectedSweepRows)?.group ?? '');
 
   const batchAppSettings = useMemo<BatchAppSettings>(
     () => ({
@@ -1049,7 +1068,14 @@ export default function BetaApp() {
     });
     setHistoryGroup((prev) => (prev === group ? DEFAULT_GROUP : prev));
     setBatchGroup((prev) => (prev === group ? null : prev));
-    setBatch((prev) => (prev && prev.group === group ? null : prev));
+    setSweepRows((prev) => (prev === group ? null : prev));
+    setSweepColumns((prev) => (prev === group ? null : prev));
+    setBatch((prev) => {
+      if (!prev) return prev;
+      if (prev.kind === 'group') return prev.group === group ? null : prev;
+      if (!prev.axes) return prev;
+      return prev.axes.rows === group || prev.axes.columns === group ? null : prev;
+    });
   }, []);
 
   const handleRenameGroup = useCallback((from: string, to: string) => {
@@ -1066,7 +1092,19 @@ export default function BetaApp() {
     });
     setHistoryGroup((prev) => (prev === from ? target : prev));
     setBatchGroup((prev) => (prev === from ? target : prev));
-    setBatch((prev) => (prev && prev.group === from ? { ...prev, group: target } : prev));
+    setSweepRows((prev) => (prev === from ? target : prev));
+    setSweepColumns((prev) => (prev === from ? target : prev));
+    setBatch((prev) => {
+      if (!prev) return prev;
+      if (prev.kind === 'group') {
+        return prev.group === from ? { ...prev, group: target } : prev;
+      }
+      if (!prev.axes) return prev;
+      const rows = prev.axes.rows === from ? target : prev.axes.rows;
+      const columns = prev.axes.columns === from ? target : prev.axes.columns;
+      if (rows === prev.axes.rows && columns === prev.axes.columns) return prev;
+      return { ...prev, axes: { rows, columns }, group: `${rows} × ${columns}` };
+    });
   }, []);
 
   const handleToggleGroup = useCallback((group: string) => {
@@ -1110,6 +1148,7 @@ export default function BetaApp() {
 
       batchCancelRef.current = false;
       setBatchGroup(group);
+      setBatchMode('single');
       setTask('batch');
       setDrawer(null);
       setError(null);
@@ -1125,6 +1164,7 @@ export default function BetaApp() {
         });
 
         setBatch({
+          kind: 'group',
           group,
           rows,
           attackString,
@@ -1163,15 +1203,101 @@ export default function BetaApp() {
     ],
   );
 
+  const runSweep = useCallback(
+    async (plan: SweepPlan) => {
+      if (batchRunningGroup !== null || !plan.runnable) return;
+      if (mode === 'sbr') {
+        setToast('Batch run is available in land and sea mode');
+        return;
+      }
+
+      const armyValidation = validateArmySizes(attack, defense, numWaves);
+      if (!armyValidation.valid) {
+        setError(armyValidation.error || 'Invalid army configuration');
+        setToast('Set the current armies before running a sweep');
+        return;
+      }
+
+      const rowsGroup = plan.axes[0]?.label ?? 'Rows';
+      const columnsGroup = plan.axes[1]?.label ?? 'Columns';
+      const label = `${rowsGroup} × ${columnsGroup}`;
+      const cases: BatchCase[] = plan.cases.map((sweepCase) => ({
+        group: label,
+        name: sweepCase.label,
+        timestamp: Date.now(),
+        input: sweepCase.input,
+        factors: sweepCase.factors,
+      }));
+      const armies = { attack, defense, mode, numWaves };
+      const attackString = describeArmies(attack, numWaves);
+      const defenseString = describeArmies(defense, numWaves);
+
+      batchCancelRef.current = false;
+      setBatchMode('sweep');
+      setTask('batch');
+      setDrawer(null);
+      setError(null);
+      setBatchRunningGroup(label);
+      setBatchProgress({ done: 0, total: cases.length });
+
+      try {
+        const rows = await runBatch(cases, armies, {
+          complexityThreshold: settings.complexityThreshold,
+          appSettings: batchAppSettings,
+          shouldCancel: () => batchCancelRef.current,
+          onProgress: (done, total) => setBatchProgress({ done, total }),
+        });
+
+        setBatch({
+          kind: 'sweep',
+          group: label,
+          axes: { rows: rowsGroup, columns: columnsGroup },
+          rows,
+          attackString,
+          defenseString,
+          mode,
+          numWaves,
+          cancelled: batchCancelRef.current,
+          completedAt: Date.now(),
+        });
+        setToast(
+          `Evaluated ${rows.length} ${rows.length === 1 ? 'combination' : 'combinations'} for "${label}"`,
+        );
+        if (ANALYTICS_ENABLED) {
+          ReactGA.event({
+            category: 'battle',
+            action: 'sweep_evaluate',
+            label,
+          });
+        }
+      } catch (err) {
+        setToast(`Sweep failed: ${(err as Error).message ?? 'unknown error'}`);
+      } finally {
+        setBatchRunningGroup(null);
+        setBatchProgress(null);
+      }
+    },
+    [
+      attack,
+      defense,
+      mode,
+      numWaves,
+      batchRunningGroup,
+      settings.complexityThreshold,
+      batchAppSettings,
+    ],
+  );
+
   const copyBatchReport = useCallback(() => {
     if (!batch) return;
+    const label = batch.kind === 'sweep' ? 'Sweep results' : 'Batch results';
     const write = navigator.clipboard?.writeText(formatBatchTable(batch.rows));
     if (write) {
       write
-        .then(() => setToast('Batch results copied to clipboard'))
-        .catch(() => setToast('Unable to copy batch results'));
+        .then(() => setToast(`${label} copied to clipboard`))
+        .catch(() => setToast(`Unable to copy ${label.toLowerCase()}`));
     } else {
-      setToast('Unable to copy batch results');
+      setToast(`Unable to copy ${label.toLowerCase()}`);
     }
   }, [batch]);
 
@@ -1492,11 +1618,21 @@ export default function BetaApp() {
               </>
             ) : effectiveTask === 'batch' ? (
               <BatchRunPanel
-                groups={batchGroups}
+                groups={historyGroups}
                 selectedGroup={selectedBatchGroup}
                 onSelectGroup={setBatchGroup}
+                mode={batchMode}
+                onModeChange={setBatchMode}
+                sweepRows={selectedSweepRows}
+                sweepColumns={selectedSweepColumns}
+                onSweepRowsChange={setSweepRows}
+                onSweepColumnsChange={setSweepColumns}
+                baseInput={currentInput}
                 onRun={() => {
                   if (selectedBatchGroup) void runGroupBatch(selectedBatchGroup);
+                }}
+                onRunSweep={(plan) => {
+                  void runSweep(plan);
                 }}
                 running={batchRunningGroup !== null}
                 progress={batchProgress}

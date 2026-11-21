@@ -22,10 +22,11 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - `src/beta.css` — hand-written Material-like styling. **No MUI/Emotion**;
   keep new UI primitives in `src/components/redesign/primitives.tsx`.
 - `src/components/redesign/` — header/drawers, advanced config, unit grid,
-  results tables, grouped history drawer, batch results, icons, retreat popover.
+  results tables, grouped history drawer, batch results, sweep matrix, icons,
+  retreat popover.
 - `src/{engine,types}.ts`, `src/utils/`, `src/hooks/`, `src/data/` — copied
   from the main frontend to keep this app isolated. Engine changes belong in
-  the root library, not here.
+  the root library, not here. `utils/sweep.ts` holds the two-group sweep logic.
 - `src/BetaApp.test.tsx` covers the new app; shared utils keep their tests.
 
 ## Behaviour notes
@@ -120,6 +121,14 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   tab both start a run. Results show final-wave metrics and a copyable report;
   the snapshot records the armies and group used, and removing that group
   clears the snapshot.
+- **Two-group sweep** is a mode inside Batch run. Each axis is a saved history
+  group; every level is diffed against the current battle (`utils/sweep.ts`),
+  and all combinations run with the current armies, mode and wave count. The
+  preview lists each level's changed fields and blocks when both axes set the
+  same field/wave to different values (equal values are fine), when modes or
+  wave counts differ, or above 500 combinations. Results add an axis-by-axis
+  metric matrix and factor columns in the report. Sweep definitions are not
+  persisted; the snapshot is tied to its two groups.
 - Settings → Advanced options holds the display and engine controls:
   probability/IPC decimal places, verbose level, prune and report-prune
   thresholds, complexity threshold, sort mode, and the three experimental
