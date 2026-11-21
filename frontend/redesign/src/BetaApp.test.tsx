@@ -296,6 +296,24 @@ describe('beta-style calculator', () => {
     expect(screen.getAllByText('Order of loss').length).toBeGreaterThan(0);
   });
 
+  it('links to GitHub and Discord from About', () => {
+    render(<BetaApp />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'About' }));
+
+    const github = screen.getByRole('link', { name: 'GitHub' });
+    expect(github).toHaveAttribute('href', 'https://github.com/mshih01/aacalc2');
+    expect(github).toHaveAttribute('target', '_blank');
+
+    const discord = screen.getByRole('link', { name: 'Discord' });
+    expect(discord).toHaveAttribute(
+      'href',
+      'https://discord.com/channels/606254910438375434/1573788316044623912',
+    );
+    expect(discord).toHaveAttribute('target', '_blank');
+  });
+
   it('saves a titled battle into the selected history group', async () => {
     render(<BetaApp />);
 

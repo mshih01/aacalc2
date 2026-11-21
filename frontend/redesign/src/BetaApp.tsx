@@ -92,6 +92,8 @@ if (ANALYTICS_ENABLED) {
 }
 const HISTORY_KEY = 'aacalc2BetaHistory';
 const COLLAPSED_GROUPS_KEY = 'aacalc2BetaHistoryGroupsCollapsed';
+const GITHUB_URL = 'https://github.com/mshih01/aacalc2';
+const DISCORD_URL = 'https://discord.com/channels/606254910438375434/1573788316044623912';
 
 type DrawerState = null | 'menu' | 'settings' | 'common' | 'history';
 type Page = 'calculator' | 'overview' | 'faq' | 'about';
@@ -2349,6 +2351,17 @@ function StaticPage({
           <p>
             The interface is a behavioral reimplementation inspired by beta.aa1942calc.com. Unit
             artwork is original SVG line art rather than copied game assets.
+          </p>
+          <p>
+            Source code, issues and releases:{' '}
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            . Feedback and questions:{' '}
+            <a href={DISCORD_URL} target="_blank" rel="noreferrer">
+              Discord
+            </a>
+            .
           </p>
         </>
       )}
