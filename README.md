@@ -1,7 +1,60 @@
 # Axis and Allies 1942 Online probability calculator engine
 
 **Links:**
--- [Discord Server](https://discord.com/channels/606254910438375434/1497710431714803863)
+
+- [Live calculator](https://mshih01.github.io/aacalc2/) — the classic frontend.
+- [Redesigned UI](https://mshih01.github.io/aacalc2/redesign/) — the new
+  interface shown below.
+- [Discord Server](https://discord.com/channels/606254910438375434/1573788316044623912)
+
+## Screenshots:
+
+The redesigned UI at desktop and mobile widths:
+
+**Desktop** — battle results, and a three-wave battle:
+
+![Battle results with profit histogram, confidence intervals, and casualty tables](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/desktop-battle-results.png)
+
+![Three-wave battle with per-wave orders of loss and results](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/desktop-three-waves.png)
+
+**Mobile** — battle setup and results:
+
+<img src="https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/mobile-battle-setup.png" alt="Battle setup on a phone" width="300"> <img src="https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/mobile-results.png" alt="Profit distribution and casualty tables on a phone" width="300">
+
+**Dark mode** — naval battle:
+
+![Naval battle in dark mode](https://raw.githubusercontent.com/mshih01/aacalc2/main/docs/screenshots/desktop-naval-dark.png)
+
+More screenshots — four waves, army optimization, advanced options, exhaustive
+order of loss, and settings — are in
+[`frontend/redesign/docs/screenshots`](https://github.com/mshih01/aacalc2/tree/main/frontend/redesign/docs/screenshots).
+
+## Example battles:
+
+Each link below opens the redesigned UI with the battle restored — armies,
+order of loss, rounds, retreat rules, and engine options — and recalculates it
+on load.
+
+- [Barbarossa breakthrough][barbarossa] — 3 inf, 2 art, 3 tanks, 2 fighters
+  vs 6 inf, 1 art, 1 AA; standard dice and a 4 IPC territory.
+- [North Sea showdown][north-sea] — 3 subs, 1 destroyer, 1 cruiser,
+  1 battleship, 2 fighters vs 1 carrier, 1 battleship, 2 destroyers, 1 sub,
+  2 fighters; subs may submerge, destroyers fire last.
+- [Eastern Front, three waves][eastern-front] — infantry and artillery, then
+  armor and fighters, then a bomber wave; each wave has its own order of loss.
+- [Amphibious assault with planned retreat][amphibious] — two rounds of
+  amphibious attack, then a follow-up wave.
+- [Take or skip the dead zone][dead-zone] — expected-profit retreat on a
+  dead-zone territory; the attacker retreats below −2 IPC expected profit.
+- [Strategic bombing run][sbr] — three bombers vs AA fire and an industrial
+  complex.
+
+[barbarossa]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygZgDTgE4BcoAmbMHAWw2xQQHMiBfe7AE3hDmhGTUgDYT8UAIwkIkIYxIB7NhwDaXVCAEEBFKrWUgARlIoBdJiGYzO88BGzctpVbnU69W6nUPYAbgBsoMbAAcCcQBTAFohYhAcP2FQ8OwAZwpILj8AYwB9VKl4uzx3KAAWeiA/Barbarossa_breakthrough
+[north-sea]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBnArgIygZgDQgCYFMEoBGbAYwCcljsUwAXakAMwEsBzKAJgF9vsd4IONHClSjWg0glcBLtmRpp2Vh0g8+4APaDhAbRCKQ-OWUrGQki6osotAWxABdTTh0j9h1BfyEzVbDAxW3prdlsHZ00wQg8oOko8aIE4yASkJP4U2HjEzUdIQzwIbAA3ABsoGGwABykiPABaIk5schriJpaFApAWGtIAfVItBAZsOlKq7iA/North_Sea_showdown
+[eastern-front]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygFgDTgE4BcoAmAX2wEZ5cBbKAZmxQQHMjSRDKAjAexshLYATSnGghkaSAFZsYfFDKyIkMmwpiJdWfP5sOG1ESULibMNxFQA2uMPaC2mg2YhsPGgF1y16q5CMWbE17EC92H3dQoQsxURswCCC7XAdfN14-ANDvSHjE2zQQxz9I5xYw-Ty-TQ82ADcAGygYbAAHAhUAUwBaMkJsHFaFHr7sAGc+cVaAYwB9ae4x1Lw6rRAkAHc6YiA/Eastern_Front_three_waves
+[amphibious]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMwPoUgZgDTgE4AuGUAjHmPgLYmTkgoIDmUATAL56nwjLqasKRWvUYs67TiAAmPONF6ooAFiGEyFTKSncFfKLgLqJUsAHs5UANqL+INSSE0IeMfZAAjM1RABdLta2jkbBbr5S0hYK8jZgLrbulOpO7l4+rsx+AZCx8fpqidSp3u5hUviWkBx4RJXaeABuADZQMHgADsakAKYAtKSCIPjtZH0DeADOPpC87QDGaHNmE8kghA2teEgA7mwU04T4AK7d7EA/Amphibious_assault_with_planned_retreat
+[dead-zone]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygFgDTgE4BcoAmbMHAWygEYBfa7AE3hDmhGTUgFYT8iSJINOuAD2TFgG02qEDwI8K2FAgDmskACMRFALrD6Y1pPARs7daXm5Fm7euVq92cuKggApgA8ADu4DGeO70AJLefgAKOCLKBMI47q6QALSEwgBuADZQMNjeBILuSZTEIDjeVIXF2ADOFJBsYQD6fiLVVnhpfCD0AF5QeDgAru7UQA/Take_or_skip_the_dead_zone
+[sbr]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaAjA9gWygZgL6YDQgCbwhzTgSQCMeAlgMZQXZ5hJEkDaIyaAurga1IcyIGvT540kEAGcEAJ1EgAbgBsoMPAAcALgwCmAWgoAmPPK0HjZ2VJDUttAPq0kMvXh3KNmIA/Strategic_bombing_run
 
 ## Overview:
 
@@ -217,15 +270,19 @@ the state is either 0 or the final probability that we end in this state.
 
 ### Frontends and complexity thresholds.
 
-The library is consumed by two frontends:
+The library is consumed by three frontends:
 
 - aa1942calc.com (external, maintained by popovitsj), which is migrating to this
   engine for calculation. `multiwaveTooComplex()` is primarily for that
   integration: it lets his calculator fall back to Monte Carlo above 250,000.
-- `frontend/` in this repo, a small React app for local development. It does
-  not call `multiwaveTooComplex()`; it calls `multiwaveComplexityFastV2()`
-  directly and applies its own `MAX_COMPLEXITY` in `frontend/src/App.tsx`
-  (currently 4,000,000; previously 400,000).
+- `frontend/` in this repo, deployed at
+  [mshih01.github.io/aacalc2](https://mshih01.github.io/aacalc2/). It does not
+  call `multiwaveTooComplex()`; it calls `multiwaveComplexityFastV2()` directly
+  and applies its own `MAX_COMPLEXITY` in `frontend/src/App.tsx` (currently
+  4,000,000; previously 400,000).
+- `frontend/redesign/`, the redesigned UI deployed at
+  [mshih01.github.io/aacalc2/redesign](https://mshih01.github.io/aacalc2/redesign/),
+  using the same engine.
 
 The thresholds are independent. Changing `multiwaveTooComplex()` affects
-aa1942calc.com, not the bundled frontend.
+aa1942calc.com, not the bundled frontends.
