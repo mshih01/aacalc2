@@ -137,9 +137,11 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   decimals drive the overview, casualty tables, profit distribution and
   histogram tooltip; IPC decimals drive the overview and profit distribution
   IPC/profit values. Mobile casualty percentages keep their compact rounded
-  format. Advanced options are app settings: loading a share link or history
-  entry keeps the viewer’s current values rather than restoring the encoded
-  ones.
+  format. The three experimental engine switches are part of the battle
+  state: they are encoded in the share link and restored from a share link or
+  history entry because they change the computed results. The remaining
+  Advanced options are app settings: loading a share link or history entry
+  keeps the viewer’s current values rather than restoring the encoded ones.
 - Waves 1–3 are available everywhere; 4 waves is offered only when the width
   setting is Extra large and the viewport is at least 1000px. Reducing the
   width or viewport clamps an active 4-wave battle to 3 waves.
