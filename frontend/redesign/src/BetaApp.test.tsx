@@ -130,6 +130,19 @@ describe('beta-style calculator', () => {
     expect(screen.getByLabelText('Dead zone')).toBeInTheDocument();
   });
 
+  it('accepts a negative territory value', () => {
+    render(<BetaApp />);
+
+    const field = screen.getByLabelText('Territory value (IPC)');
+    expect(field).not.toHaveAttribute('min');
+
+    fireEvent.change(field, { target: { value: '-' } });
+    expect(field).toHaveValue('-');
+
+    fireEvent.change(field, { target: { value: '-3' } });
+    expect(field).toHaveValue('-3');
+  });
+
   it('applies the decimal-place settings to results', async () => {
     render(<BetaApp />);
 

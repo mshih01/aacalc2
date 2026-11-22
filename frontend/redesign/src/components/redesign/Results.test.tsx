@@ -48,6 +48,99 @@ function output(): MultiwaveOutput {
   };
 }
 
+function withProbabilities(
+  attackSurvives: number,
+  attackConquers: number,
+  defenseSurvives: number,
+): MultiwaveOutput {
+  const result = output();
+  result.attack = { ...result.attack, survives: [attackSurvives] };
+  result.defense = { ...result.defense, survives: [defenseSurvives] };
+  result.takesTerritory = [attackConquers];
+  return result;
+}
+
+function cellIn(container: HTMLElement, cell: string) {
+  return container.querySelector(`.overview__value .${cell}`);
+}
+
+describe('overview cell highlights', () => {
+  it('highlights attacker survival and conquest cells at or above 75%', () => {
+    const { container } = render(
+      <Results result={withProbabilities(0.75, 0.8, 0.5)} numWaves={1} settings={settings} />,
+    );
+
+    expect(cellIn(container, 'overview__cell--attack-survives')).toHaveClass(
+      'overview__cell--positive',
+    );
+    expect(cellIn(container, 'overview__cell--attack-conquers')).toHaveClass(
+      'overview__cell--positive',
+    );
+    expect(cellIn(container, 'overview__cell--defense-survives')).not.toHaveClass(
+      'overview__cell--warning',
+    );
+  });
+
+  it('highlights the defender survival cell at or above 75%', () => {
+    const { container } = render(
+      <Results result={withProbabilities(0.5, 0.5, 0.75)} numWaves={1} settings={settings} />,
+    );
+
+    expect(cellIn(container, 'overview__cell--defense-survives')).toHaveClass(
+      'overview__cell--warning',
+    );
+    expect(cellIn(container, 'overview__cell--attack-survives')).not.toHaveClass(
+      'overview__cell--positive',
+    );
+    expect(cellIn(container, 'overview__cell--attack-conquers')).not.toHaveClass(
+      'overview__cell--positive',
+    );
+  });
+
+  it('leaves probabilities below 75% unhighlighted', () => {
+    const { container } = render(
+      <Results result={withProbabilities(0.74, 0.74, 0.74)} numWaves={1} settings={settings} />,
+    );
+
+    expect(cellIn(container, 'overview__cell--attack-survives')).not.toHaveClass(
+      'overview__cell--positive',
+    );
+    expect(cellIn(container, 'overview__cell--attack-conquers')).not.toHaveClass(
+      'overview__cell--positive',
+    );
+    expect(cellIn(container, 'overview__cell--defense-survives')).not.toHaveClass(
+      'overview__cell--warning',
+    );
+  });
+
+  it('highlights the profit cell green for profit and orange for loss', () => {
+    const positive = render(
+      <Results result={withProbabilities(0.5, 0.5, 0.5)} numWaves={1} settings={settings} />,
+    );
+    expect(cellIn(positive.container, 'overview__cell--profit')).toHaveClass(
+      'overview__cell--positive',
+    );
+
+    const negativeResult = output();
+    negativeResult.attack = {
+      ...negativeResult.attack,
+      ipcLoss: [50],
+      incrementalLoss: [50],
+      cumulativeIpcLoss: [50],
+    };
+    negativeResult.defense = {
+      ...negativeResult.defense,
+      ipcLoss: [10],
+      incrementalLoss: [10],
+      cumulativeIpcLoss: [10],
+    };
+    const negative = render(<Results result={negativeResult} numWaves={1} settings={settings} />);
+    expect(cellIn(negative.container, 'overview__cell--profit')).toHaveClass(
+      'overview__cell--warning',
+    );
+  });
+});
+
 describe('casualty confidence columns', () => {
   it('keeps confidence based on the full distribution and always draws the extremes', () => {
     render(<Results result={output()} numWaves={1} settings={settings} />);

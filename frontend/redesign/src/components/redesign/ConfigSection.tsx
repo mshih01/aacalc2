@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { BattleMode, UnitId, WaveConfig } from '../../types.ts';
 import {
   attackerAmphibOolPresets,
@@ -131,6 +131,9 @@ export function ConfigSection({
   stackedCheckboxes: boolean;
 }) {
   const style = { '--wave-count': numWaves } as CSSProperties;
+  // Keep the raw text while the user is typing so a lone "-" survives until a
+  // digit follows; the parsed number is pushed to the parent on every change.
+  const [territoryDraft, setTerritoryDraft] = useState<string | null>(null);
   const attackPresets =
     amphibious && mode === 'land' ? attackerAmphibOolPresets : attackerOolPresets;
   const attackOolOptions = attackPresets[mode].map((preset) => ({
@@ -314,11 +317,20 @@ export function ConfigSection({
                   </>
                 }
                 ariaLabel="Territory value (IPC)"
-                type="number"
-                min={0}
-                step={1}
-                value={territoryValue ? String(territoryValue) : ''}
-                onChange={(value) => onTerritoryValue(Math.max(0, Number(value) || 0))}
+                type="text"
+                inputMode="text"
+                value={territoryDraft ?? (territoryValue ? String(territoryValue) : '')}
+                onChange={(value) => {
+                  setTerritoryDraft(value);
+                  const trimmed = value.trim();
+                  if (trimmed === '' || trimmed === '-') {
+                    if (trimmed === '') onTerritoryValue(0);
+                    return;
+                  }
+                  const parsed = Number(trimmed);
+                  if (Number.isFinite(parsed)) onTerritoryValue(parsed);
+                }}
+                onBlur={() => setTerritoryDraft(null)}
               />
               <CheckboxControl
                 label={
@@ -375,9 +387,7 @@ export function ConfigSection({
             waves={waves}
             stacked={stackedCheckboxes}
             checked={(wave) => waveConfigs[wave]?.useAttackersFromPreviousWave ?? false}
-            onChange={(wave, value) =>
-              onUpdateWave(wave, { useAttackersFromPreviousWave: value })
-            }
+            onChange={(wave, value) => onUpdateWave(wave, { useAttackersFromPreviousWave: value })}
             style={style}
             skipWaves={[0]}
           />

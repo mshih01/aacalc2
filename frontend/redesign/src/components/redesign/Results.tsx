@@ -26,6 +26,13 @@ type CasualtyData = Record<string, CasualtyEntry>;
 
 const percentileRows = [5, 32, 50, 68, 95];
 
+/** Probabilities at or above this share are emphasised in the overview. */
+const HIGHLIGHT_PROBABILITY = 0.75;
+
+function highProbabilityClass(value: number, tone: 'positive' | 'warning') {
+  return value >= HIGHLIGHT_PROBABILITY ? ` overview__cell--${tone}` : '';
+}
+
 function fmtPercentMobile(value: number) {
   if (!Number.isFinite(value)) return '-';
   if (value > 0 && value < 1) return '<1%';
@@ -140,28 +147,41 @@ function Overview({
         >
           {multi ? <div className="overview__cell overview__wave">{row.label}</div> : null}
           <div className="overview__cell overview__cell--rounds">{formatFixed(row.rounds, 1)}</div>
-          <div className="overview__cell overview__cell--attack-survives">
+          <div
+            className={`overview__cell overview__cell--attack-survives${highProbabilityClass(
+              row.attackSurvives,
+              'positive',
+            )}`}
+          >
             {formatPercent(row.attackSurvives * 100, settings.probabilityDecimals)}
           </div>
-          <div className="overview__cell overview__cell--attack-conquers">
+          <div
+            className={`overview__cell overview__cell--attack-conquers${highProbabilityClass(
+              row.attackConquers,
+              'positive',
+            )}`}
+          >
             {formatPercent(row.attackConquers * 100, settings.probabilityDecimals)}
           </div>
-          <div className="overview__cell overview__cell--defense-survives">
+          <div
+            className={`overview__cell overview__cell--defense-survives${highProbabilityClass(
+              row.defenseSurvives,
+              'warning',
+            )}`}
+          >
             {formatPercent(row.defenseSurvives * 100, settings.probabilityDecimals)}
           </div>
           <div className="overview__cell overview__cell--attack-ipc">
             {formatFixed(row.attackIpc, settings.ipcDecimals)}
           </div>
-          <div className="overview__cell overview__cell--profit">
-            <span
-              className={`overview__profit-value overview__profit-value--${
-                row.profit < 0 ? 'negative' : 'positive'
-              }`}
-            >
-              {settings.ipcDiffDisplay === 'roi'
-                ? roiLabel(row.profit, Math.abs(row.attackIpc), settings.ipcDecimals)
-                : formatFixed(row.profit, settings.ipcDecimals)}
-            </span>
+          <div
+            className={`overview__cell overview__cell--profit${
+              row.profit < 0 ? ' overview__cell--warning' : ' overview__cell--positive'
+            }`}
+          >
+            {settings.ipcDiffDisplay === 'roi'
+              ? roiLabel(row.profit, Math.abs(row.attackIpc), settings.ipcDecimals)
+              : formatFixed(row.profit, settings.ipcDecimals)}
           </div>
           <div className="overview__cell overview__cell--defense-ipc">
             {formatFixed(row.defenseIpc, settings.ipcDecimals)}

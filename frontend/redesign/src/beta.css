@@ -1794,6 +1794,16 @@ button {
   color: var(--beta-text);
 }
 
+.overview__cell--positive {
+  background: var(--beta-success);
+  color: #fff;
+}
+
+.overview__cell--warning {
+  background: #ef6c00;
+  color: #fff;
+}
+
 .casualty-card {
   margin-top: 12px;
   border: 1px solid var(--beta-divider);
@@ -3235,24 +3245,6 @@ button {
 
   .overview--advanced .overview__cell--defense-ipc {
     display: none;
-  }
-
-  .overview--advanced .overview__cell--profit .overview__profit-value {
-    display: inline-block;
-    padding: 3px 9px;
-    border-radius: 11px;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.2;
-  }
-
-  .overview--advanced .overview__profit-value--negative {
-    background: #ef6c00;
-  }
-
-  .overview--advanced .overview__profit-value--positive {
-    background: #2e7d32;
   }
 
   .overview__cell {
