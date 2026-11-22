@@ -320,7 +320,11 @@ export function ProfitDistributionTable({
       {rows.length ? (
         <div role="table" aria-label="Profit distribution">
           {rows.map((row) => (
-            <div className="profit-row" role="row" key={`profit-row-${row.ipc}`}>
+            <div
+              className={`profit-row${row.percentile ? ' profit-row--percentile' : ''}`}
+              role="row"
+              key={`profit-row-${row.ipc}`}
+            >
               <div className="profit-row__badge" role="cell">
                 {row.percentile ? (
                   <span
