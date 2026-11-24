@@ -210,7 +210,8 @@ export type SolveType =
   | 'exhaust'
   | 'linearSearch'
   | 'gridSearch'
-  | 'fuzzyBinarySearch';
+  | 'fuzzyBinarySearch'
+  | 'branchAndBound';
 
 export interface ArmyRecommendInput extends MultiwaveInput {
   attDefType: AttDefType;
@@ -219,6 +220,9 @@ export interface ArmyRecommendInput extends MultiwaveInput {
   targetPercentage: number; // target percentage for attacker to win or defender to hold.
   pwinMode?: PwinMode;
   solveType?: SolveType;
+  minArmy?: Army; // minimum counts to commit (branchAndBound and others)
+  minScoreThreshold?: number; // branchAndBound only; 0 disables (default)
+  maxGroundHP?: number; // branchAndBound only; cap on committed ground HP
 }
 ```
 
@@ -262,6 +266,77 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
     		input.numRecommendations = 3		// number of recommendations to return.
     		// only works for optimizing attacker army
 			// done... added max IPC support for other solveTypes -- gridSearch and linearSearch
+
+    		branch and bound (solveType = 'branchAndBound'):
+
+    		Subset search over integer unit counts.  Unlike exhaust and
+    		fuzzyBinarySearch it does not materialize all sub-armies: it walks the
+    		count space depth-first and only calls the exact evaluator on leaves
+    		that survive the bounds.
+
+    		- optimizeMode = 'targetWinPercentage': minimizes total IPC cost.  A
+    		  partial army's cost is a lower bound on any extension, so once a
+    		  feasible army of cost C is found, every partial army costing >= C is
+    		  pruned.  This is the case where the strategy pays off most.  As in
+    		  fuzzyBinarySearch, the EV profit and pwin retreat thresholds are
+    		  ignored while evaluating candidates, so a cheap army cannot "win" by
+    		  retreating.  If the target is unreachable, returns the evaluated army
+    		  with the highest win percentage (lowest cost on ties); because no cost
+    		  bound can prune in that case, this falls back to exhaustive
+    		  enumeration, so keep targets reachable for large pools.
+    		- Land target-win searches add a Lanchester score floor automatically.
+    		  Unless minScoreThreshold is supplied, the floor is
+    		  factor(targetPercentage) x the fixed opponent's score, where
+
+    		    factor(t) = 1.6 * t                         for t <= 0.5
+    		              = 0.8 + (t - 0.5) / 0.4 * 0.3    for 0.5 < t < 0.9
+    		              = 1.1                           for t >= 0.9
+
+    		  (0.8 at 50%, 0.95 at 70%, 1.1 at 90%).  The floor is capped at the
+    		  full max army's score, so an unreachable target still evaluates a
+    		  best-effort army instead of pruning the whole tree.  The floor is a
+    		  model assumption, not a mathematical bound: it can prune the true
+    		  optimum in unusual compositions.  Set minScoreThreshold: 0 to force an
+    		  exact search.  Sea battles never auto-set it (first strike and air
+    		  invulnerability make the score unreliable: 4 fighters vs 6 subs/3
+    		  destroyers has an optimum score ratio of 0.36).  Measured land
+    		  examples: at 90% the cheapest winning army scored 1.21-1.47x the
+    		  opponent, so 1.1 leaves about a 9% margin; the floor cuts evaluations
+    		  from 4,602 to 92 on the medium pool and from 5,522 to 223 on the
+    		  60/60/60/20 pool.
+    		- optimizeMode = 'maxProfit': returns the top numRecommendations armies
+    		  by profit.  Profit is bounded by defenderTUV + max(0, territory_value);
+    		  that ceiling is exact but weak, so without minScoreThreshold this is
+    		  effectively exhaustive enumeration (like 'exhaust').  Intended for
+    		  small pools or for callers that supply a score floor.
+    		- minScoreThreshold: explicit Lanchester square-law floor in
+    		  (effective pips x total HP) units.  Effective pips include artillery
+    		  pairing for attackers and the 1.25x submarine bonus.  Subtrees whose
+    		  maximum possible score is below the floor are pruned.  Supplying this
+    		  value overrides (and disables) the automatic land floor; 0 means exact.
+    		- maxGroundHP: optional cap on the total HP of committed ground units.
+    		- minArmy: minimum counts per unit; candidates are always supersets.
+
+    		Guidance compared with the existing solve types:
+
+    		- For targetWinPercentage, fuzzyBinarySearch uses fewer exact
+    		  evaluations and is slightly faster on small pools.  With the
+    		  automatic floor, branchAndBound is comparable on small pools and often
+    		  faster on medium/large pools because it avoids getSubArmies() and
+    		  evaluates small armies; on the 60/60/60/20 pool it was about 20x
+    		  faster in wall time (0.55s vs 6-12s) for the same 86 IPC army.  All
+    		  compared land cases found the same army.  Use minScoreThreshold: 0
+    		  when an exact answer or feasibility guarantee is required; otherwise
+    		  the land floor is a heuristic that can miss the optimum.
+    		- gridSearch does not strip the EV/pwin retreat thresholds.  With an EV
+    		  retreat threshold set it can recommend a cheap army that survives by
+    		  retreating, whereas fuzzyBinarySearch and branchAndBound ignore those
+    		  thresholds for the win objective and recommend an army that actually
+    		  wins.
+    		- For maxProfit, gridSearch and linearSearch are much faster and matched
+    		  branchAndBound's top-N in comparisons; branchAndBound top-N is
+    		  exhaustive by default, so reserve it for small pools or exhaustive
+    		  verification.
 
 
 ### use attackers from previous wave

@@ -309,6 +309,8 @@ the state is either 0 or the final probability that we end in this state.
 	- fuzzy binary search		(currently used for target percentage)
 	- grid search 
 	- linear search
+	- branch and bound (branchandbound.ts)	exact subset search with cost/profit bounds
+	- solver comparison harness: src/regressions/optimizecompare.ts
 
 - multiwave.ts -- multi-wave 
 

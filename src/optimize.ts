@@ -9,17 +9,23 @@ import {
   multiEvalExternal,
   multiwaveExternal,
   getArmyCost,
+  getUnitStatsMap,
   type UnitIdentifier,
   getIntegersInRange,
   getCombinations,
 } from './external.js';
+import {
+  optimizeSubArmy as optimizeSubArmyBranchAndBound,
+  lanchesterScore,
+  type BnbUnitSpec,
+} from './branchandbound.js';
 
 import { type PwinMode } from './solve.js';
 
 export type AttDefType = 'attacker' | 'defender';
 
 export type SolveType =
-  'multiEval' | 'exhaust' | 'linearSearch' | 'gridSearch' | 'fuzzyBinarySearch';
+  'multiEval' | 'exhaust' | 'linearSearch' | 'gridSearch' | 'fuzzyBinarySearch' | 'branchAndBound';
 
 // maxProfit only works with SolveTyep exhaust
 export type OptimizeMode = 'targetWinPercentage' | 'maxProfit';
@@ -34,6 +40,15 @@ export interface ArmyRecommendInput extends MultiwaveInput {
   beamWidth?: number; // number of beams for gridSearch beam search (default 3)
   granularity?: number; // grid divisions per dim for gridSearch (default 3)
   minArmy?: Army; // minimum army to use (defaults to all zeros)
+  // branchAndBound only: explicit Lanchester score floor in (effective pips x
+  // total HP) units. Effective pips include artillery pairing for attackers and
+  // the 1.25x submarine bonus. If omitted, land target-win searches use
+  // scoreFloorFactor(targetPercentage) x the fixed opponent's score (0.8 at 50%
+  // up to 1.1 at 90%); sea battles and maxProfit use no floor. Pass 0 to force
+  // an exact search.
+  minScoreThreshold?: number;
+  // branchAndBound only: optional cap on the total HP of committed ground units.
+  maxGroundHP?: number;
 }
 
 export interface Recommendation {
@@ -77,8 +92,10 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     minArmy = input.minArmy ?? initArmy(maxArmy, 0);
     stepArmy = initArmy(maxArmy, 1);
   }
-  const armies = getSubArmies(maxArmy, minArmy, stepArmy);
-  if (input.verbose_level && input.verbose_level > 0) {
+  // branchAndBound enumerates the count space lazily; do not materialize every
+  // sub-army up front for it.
+  const armies = solveType == 'branchAndBound' ? [] : getSubArmies(maxArmy, minArmy, stepArmy);
+  if (solveType != 'branchAndBound' && input.verbose_level && input.verbose_level > 0) {
     console.log(armies.length, 'armies length');
     console.log(maxArmy, minArmy, stepArmy);
   }
@@ -105,6 +122,18 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     case 'fuzzyBinarySearch':
       return {
         recommendations: solveFuzzyBinarySearch(input, attDefType, armies, surviveThreshold),
+      };
+    case 'branchAndBound':
+      return {
+        recommendations: solveBranchAndBound(
+          input,
+          attDefType,
+          maxArmy,
+          minArmy,
+          surviveThreshold,
+          optimizeMode,
+          numRecommendations,
+        ),
       };
     case 'linearSearch':
     case 'gridSearch':
@@ -408,6 +437,171 @@ function solveFuzzyBinarySearch(
   }
 
   return [{ army: bestArmy[0], cost: bestArmy[1] }];
+}
+
+// Fraction of the fixed opponent's Lanchester score used as the automatic
+// branch-and-bound floor for land target-win searches.  Tuned against the
+// cheapest winning army measured on land scenarios:
+//   50% target -> 0.8;  70% -> 0.95;  90% -> 1.1.
+// Below 50% the line runs to 0 at 0% (a weaker target needs less strength).
+// Above 90% it is capped at 1.1.
+export function scoreFloorFactor(targetWinPct: number): number {
+  const target = Math.max(0, Math.min(1, targetWinPct));
+  if (target <= 0.5) {
+    return 1.6 * target; // 0 at 0%, 0.8 at 50%
+  }
+  if (target >= 0.9) {
+    return 1.1; // capped
+  }
+  return 0.8 + ((target - 0.5) / 0.4) * 0.3; // 0.8 at 50% -> 1.1 at 90%
+}
+
+// Branch and bound over integer unit counts.  Unlike exhaust/fuzzyBinarySearch
+// it does not materialize getSubArmies(): the exact evaluator is called only on
+// leaves that survive the bounds.
+function solveBranchAndBound(
+  input: ArmyRecommendInput,
+  attDefType: AttDefType,
+  maxArmy: Army,
+  minArmy: Army,
+  surviveThreshold: number,
+  optimizeMode: OptimizeMode,
+  numRecommendations: number,
+): Recommendation[] {
+  const stats = getUnitStatsMap();
+  const optimizingAttacker = attDefType == 'attacker';
+
+  function makeUnits(army: Army, isAttacker: boolean, minimums?: Army): BnbUnitSpec[] {
+    const result: BnbUnitSpec[] = [];
+    for (const [key, count] of Object.entries(army)) {
+      const uid = <UnitIdentifier>key;
+      if (count <= 0) {
+        continue;
+      }
+      const stat = stats[uid];
+      if (stat == undefined) {
+        continue;
+      }
+      result.push({
+        id: uid,
+        count,
+        min: minimums?.[uid] ?? 0,
+        ipc: stat.cost,
+        pips: isAttacker ? stat.att : stat.def,
+        hp: stat.hits,
+        isGround: stat.isLand,
+        isInf: uid == 'inf' || uid == 'inf_a',
+        isArt: uid == 'art' || uid == 'art_a',
+        isSub: stat.isSub,
+      });
+    }
+    return result;
+  }
+
+  const units = makeUnits(maxArmy, optimizingAttacker, minArmy);
+  if (units.length == 0 || units.some((unit) => (unit.min ?? 0) > unit.count)) {
+    return [{ army: {}, cost: 0 }];
+  }
+
+  const wave0 = input.wave_info[0];
+  const attack = wave0.attack;
+  const defense = wave0.defense;
+  // Match fuzzyBinarySearch: when optimizing for a win percentage, ignore the
+  // EV/pwin retreat thresholds so a cheap army cannot "win" by retreating.  The
+  // profit objective keeps them, like gridSearch/linearSearch/exhaust.
+  const stripRetreatEv = optimizeMode == 'targetWinPercentage';
+
+  // Land target-win searches default to a target-dependent Lanchester floor.
+  // Sea battles are excluded: first-strike and air-invulnerability make the
+  // score a poor win predictor there (e.g. 4 fighters vs 6 subs/3 destroyers has
+  // an optimum score ratio of 0.36).  maxProfit gets no automatic floor.  An
+  // explicit minScoreThreshold (including 0 to disable) always wins.
+  let minScoreThreshold = input.minScoreThreshold;
+  let autoScoreFloor = false;
+  if (minScoreThreshold === undefined && !input.is_naval && optimizeMode == 'targetWinPercentage') {
+    const opponentArmy = optimizingAttacker ? defense.units : attack.units;
+    const opponentIsAttacker = !optimizingAttacker;
+    const opponentUnits = makeUnits(opponentArmy, opponentIsAttacker);
+    const opponentScore = lanchesterScore(opponentUnits, opponentIsAttacker);
+    // Cap at the full max army's score so an unreachable target still evaluates
+    // a best-effort army instead of pruning the whole tree.
+    const maxArmyScore = lanchesterScore(units, optimizingAttacker);
+    minScoreThreshold = Math.min(scoreFloorFactor(surviveThreshold) * opponentScore, maxArmyScore);
+    autoScoreFloor = true;
+  }
+
+  const evaluateExact = (counts: number[]): { winPct: number; profit: number } => {
+    const army: Army = {};
+    for (let i = 0; i < units.length; i++) {
+      if (counts[i] > 0) {
+        army[<UnitIdentifier>units[i].id] = counts[i];
+      }
+    }
+    // Clone the wave and the changed unit group; do not mutate the caller's
+    // input (the existing solve paths do, but new code should not).
+    const wave = {
+      ...wave0,
+      retreat_expected_ipc_profit_threshold: stripRetreatEv
+        ? undefined
+        : wave0.retreat_expected_ipc_profit_threshold,
+      retreat_pwin_threshold: stripRetreatEv ? undefined : wave0.retreat_pwin_threshold,
+      attack: { ...attack, units: optimizingAttacker ? army : attack.units },
+      defense: { ...defense, units: optimizingAttacker ? defense.units : army },
+    };
+    const myinput: MultiwaveInput = {
+      ...input,
+      wave_info: [wave, ...input.wave_info.slice(1)],
+    };
+    const output = multiwaveExternal(myinput);
+    const winPct =
+      attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
+    // The engine already credits captured territory IPC and charges the
+    // dead-zone counterattack penalty inside this profit.
+    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
+    return { winPct, profit };
+  };
+
+  const result = optimizeSubArmyBranchAndBound(
+    units,
+    {
+      objective: optimizeMode == 'maxProfit' ? 'MAX_PROFIT' : 'MIN_WIN_PCT',
+      targetWinPct: surviveThreshold,
+      numRecommendations,
+      isAttacker: optimizingAttacker,
+      defenderTUV: getArmyCost(defense.units),
+      territoryIPC: input.territory_value ?? 0,
+      maxGroundHP: input.maxGroundHP,
+      minScoreThreshold,
+    },
+    evaluateExact,
+  );
+
+  if (input.verbose_level && input.verbose_level > 0) {
+    console.log(
+      'branchAndBound score floor',
+      minScoreThreshold ?? 0,
+      autoScoreFloor ? '(auto 0.8 x opponent)' : '(none/explicit)',
+    );
+    console.log('branchAndBound evaluations', result.evalsRun, 'feasible', result.feasible);
+  }
+
+  const recommendations: Recommendation[] = [];
+  for (const solution of result.solutions) {
+    const army: Army = {};
+    for (let i = 0; i < units.length; i++) {
+      if (solution.counts[i] > 0) {
+        army[<UnitIdentifier>units[i].id] = solution.counts[i];
+      }
+    }
+    recommendations.push({
+      army,
+      cost: optimizeMode == 'maxProfit' ? solution.profit : solution.tuv,
+    });
+  }
+  if (recommendations.length == 0) {
+    return [{ army: {}, cost: 0 }];
+  }
+  return recommendations;
 }
 
 function solveLinearOrGridSearch(

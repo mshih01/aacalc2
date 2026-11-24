@@ -236,6 +236,9 @@ export interface UnitStats {
   att: number;
   def: number;
   hits: number;
+  isLand: boolean;
+  isSub: boolean;
+  isAir: boolean;
 }
 
 export type UnitStatsMap = Record<UnitIdentifier, UnitStats>;
@@ -276,6 +279,9 @@ export function getUnitStatsMap(): UnitStatsMap {
           att: stat.att,
           def: stat.def,
           hits: stat.hits,
+          isLand: stat.isLand,
+          isSub: stat.isSub,
+          isAir: stat.isAir,
         };
       } catch {
         // Skip units that don't exist
