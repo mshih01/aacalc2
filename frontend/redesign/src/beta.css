@@ -46,6 +46,7 @@
   --beta-defense-icon: #7aa7c7;
   --beta-muted-bg: #f5f5f5;
   --beta-table-alt: #fafafa;
+  --beta-row-selected: rgba(25, 118, 210, 0.08);
   --beta-confidence-better: #1b5e20;
   --beta-confidence-worse: #b71c1c;
   --beta-shadow:
@@ -76,6 +77,7 @@
   --beta-defense-icon: #90c2dd;
   --beta-muted-bg: #1e1e1e;
   --beta-table-alt: #1a1a1a;
+  --beta-row-selected: rgba(144, 202, 249, 0.08);
   --beta-confidence-better: #81c784;
   --beta-confidence-worse: #ef9a9a;
   --beta-shadow:
@@ -1674,7 +1676,7 @@ button {
 .profit-row {
   display: grid;
   grid-template-columns: var(--profit-columns);
-  align-items: stretch;
+  align-items: center;
   border-bottom: 1px solid var(--beta-divider);
   font-size: 12px;
   line-height: 1.35;
@@ -1683,6 +1685,12 @@ button {
 
 .profit-row:nth-child(even) {
   background: var(--beta-table-alt);
+}
+
+/* A row that carries a percentile badge is highlighted as a whole with the
+   same primary-tinted selected row treatment as the casualty tables. */
+.profit-row.profit-row--percentile {
+  background: var(--beta-row-selected);
 }
 
 .profit-row:last-child {
@@ -1896,7 +1904,7 @@ button {
 .casualty-row {
   display: grid;
   grid-template-columns: var(--casualty-columns);
-  align-items: stretch;
+  align-items: center;
   border-bottom: 1px solid var(--beta-divider);
   font-size: 12px;
   line-height: 1.35;
@@ -1905,6 +1913,12 @@ button {
 
 .casualty-row:nth-child(even) {
   background: var(--beta-table-alt);
+}
+
+/* A row that carries a percentile badge is highlighted as a whole with the
+   reference's primary-tinted selected row treatment. */
+.casualty-row.casualty-row--percentile {
+  background: var(--beta-row-selected);
 }
 
 .casualty-row:last-child {
