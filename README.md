@@ -97,8 +97,9 @@ the same defender-loss-minus-attacker-loss profit shown in the results, so it
 includes captured territory value and the dead-zone counterattack charge. EV
 retreat thresholds are honored. Feasibility is not monotonic in army cost (a
 larger army can cause an earlier retreat and a *better* attacker profit), so
-this mode uses grid search by default; exhaustive search is available for small
-pools and is exact.
+small count spaces are enumerated exhaustively and larger pools use grid search
+plus a downward refinement that removes unnecessary units while the target is
+still met.
 
 [army-optimization]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygdgDTgE4BcoAmbMHAWygGZsUEBzIgX2wEZ5mRD3tL2OATeCDjRwESC2zI0kShzbQOXRTz4kA9kJEBtENJAl8B3BRr1jAI3UUAugM2ide1MbARDBQ6ZC0G2K7Yc5FpQIACmAB4ADmEAxnhh-ACSUbEACjjqtARBYSGQMBwAbgA2UDDYUQQSYQC0LBUgOFFQLHUN2ADOFJB6qQD6seqdniB4RUTY-ABeUHg4AK5h2GEy80uMQA/blacktide_3i%2C_aa
 

@@ -286,9 +286,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
 		with EV retreat (a larger army can cause an earlier retreat and a
 		better attacker profit) and in a dead zone (a tiny defender can
 		already impose the counterattack charge).  fuzzyBinarySearch is
-		therefore rejected for this mode; gridSearch is the default.  exhaust
-		is exact for small pools.  branchAndBound support is not implemented
-		yet (planned as a follow-up).
+		therefore rejected for this mode.  Small count spaces (up to 20,000
+		sub-armies) are enumerated exactly with exhaust even when the caller
+		requests gridSearch.  Larger pools use gridSearch/linearSearch plus a
+		downward refinement that removes units while the target is still met.
+		branchAndBound support is not implemented yet (planned as a follow-up).
 
 		Unlike targetWinPercentage, target profit keeps the EV/pwin retreat
 		thresholds active.  The empty army is excluded from candidates.  The

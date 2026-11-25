@@ -75,6 +75,12 @@ export interface ArmyRecommendOutput {
   feasible?: boolean;
 }
 
+// targetProfit minimizes a hard threshold, and grid search is only a heuristic
+// for that.  Small count spaces are cheap enough to enumerate exactly, so use
+// exhaust for them even when the caller asked for gridSearch.  Larger pools use
+// grid search plus the downward refinement in solveLinearOrGridSearch.
+const TARGET_PROFIT_EXHAUST_LIMIT = 20_000;
+
 function initArmy(army: Army, value: number): Army {
   let result = { ...army };
 
@@ -150,6 +156,23 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     console.log(input);
   }
 
+  // targetProfit is a hard threshold, so grid search is only a heuristic.  A
+  // small count space can be enumerated exactly without noticeable cost.
+  const effectiveSolveType =
+    optimizeMode == 'targetProfit' &&
+    solveType == 'gridSearch' &&
+    armies.length > 0 &&
+    armies.length <= TARGET_PROFIT_EXHAUST_LIMIT
+      ? 'exhaust'
+      : solveType;
+  if (effectiveSolveType != solveType && input.verbose_level && input.verbose_level > 0) {
+    console.log(
+      'targetProfit: using exact exhaust for',
+      armies.length,
+      'sub-armies instead of gridSearch',
+    );
+  }
+
   const finish = (recommendations: Recommendation[]): ArmyRecommendOutput => {
     if (optimizeMode != 'targetProfit') {
       return { recommendations };
@@ -161,7 +184,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     return { recommendations, feasible };
   };
 
-  switch (solveType) {
+  switch (effectiveSolveType) {
     case 'multiEval':
       solveMultiEval(input, armies, surviveThreshold, maxArmy);
       return finish([{ army: {}, cost: 0 }]);
@@ -194,7 +217,7 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           surviveThreshold,
           optimizeMode,
           numRecommendations,
-          solveType,
+          effectiveSolveType,
         ),
       );
     default:
@@ -840,6 +863,54 @@ function solveLinearOrGridSearch(
     return evaluation;
   }
 
+  function varsForArmy(army: Army): number[] {
+    return unitOrder.map((uid) => army[uid] ?? 0);
+  }
+
+  function isBetterTargetProfit(candidate: Evaluation, current: Evaluation): boolean {
+    if (candidate.cost != current.cost) {
+      return candidate.cost < current.cost;
+    }
+    const candidateProfit = attDefType == 'defender' ? candidate.profit : -candidate.profit;
+    const currentProfit = attDefType == 'defender' ? current.profit : -current.profit;
+    return candidateProfit < currentProfit;
+  }
+
+  // Grid/linear search is a local-search heuristic and can stop at a larger
+  // feasible army even when a smaller one meets the target.  Walk each unit
+  // count downward from the best evaluated army and keep any cheaper feasible
+  // candidate.  This makes a one-unit-type search exact and substantially
+  // improves mixed pools.  The budget keeps the refinement cheap.
+  function refineTargetProfit(start: Evaluation): Evaluation {
+    let best = start;
+    let budget = 2000;
+    for (let pass = 0; pass < 4 && budget > 0; pass++) {
+      let improved = false;
+      for (const uid of armyKeys) {
+        if (budget <= 0) break;
+        const currentCount = best.army[uid] ?? 0;
+        const min = minUnits[uid] ?? 0;
+        let bestForUnit = best;
+        for (let count = currentCount - 1; count >= min && budget > 0; count--) {
+          budget--;
+          const candidate = evaluationFor(varsForArmy({ ...best.army, [uid]: count }));
+          if (
+            targetProfitFeasible(attDefType, candidate.profit, targetProfit) &&
+            isBetterTargetProfit(candidate, bestForUnit)
+          ) {
+            bestForUnit = candidate;
+          }
+        }
+        if (bestForUnit !== best) {
+          best = bestForUnit;
+          improved = true;
+        }
+      }
+      if (!improved) break;
+    }
+    return best;
+  }
+
   function objectiveFor(evaluation: Evaluation): number {
     const { cost, survive, profit, overflow } = evaluation;
     if (overflow > 0) {
@@ -927,7 +998,7 @@ function solveLinearOrGridSearch(
     if (evaluated.length == 0) {
       return [];
     }
-    const best = evaluated[0].evaluation;
+    const best = refineTargetProfit(evaluated[0].evaluation);
     return [{ army: best.army, cost: best.cost, profit: best.profit, winPct: best.survive }];
   }
 
