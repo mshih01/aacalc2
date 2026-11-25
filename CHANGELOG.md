@@ -1,5 +1,75 @@
 # aacalc2
 
+## 2.3.0
+
+### Minor Changes
+
+- 45193aa: Add a `branchAndBound` army-recommendation solve type. It searches integer
+  unit counts depth-first without materializing `getSubArmies()`, and calls the
+  exact evaluator only on leaves that survive its bounds.
+
+  - `optimizeMode: 'targetWinPercentage'` minimizes total IPC cost. Partial cost
+    is a lower bound on any extension, so partial armies at least as expensive as
+    the best feasible army are pruned. Land searches also use a target-dependent
+    Lanchester floor of `factor(target) x opponent score`, where factor is 1.6*t
+    up to 0.5 (0.8 at 50%), 0.8 + (t-0.5)/0.4*0.3 from 0.5 to 0.9 (1.1 at 90%),
+    and 1.1 above. Sea battles use no automatic floor. On the large benchmark
+    (60 inf / 60 art / 60 arm / 20 fig vs 15 inf / 4 art / 1 arm / 2 aa, dead
+    zone, target 0.9) the floor cuts about 5.5k evaluations to about 223 while
+    finding the same 86 IPC army; pass `minScoreThreshold: 0` for the exact
+    search.
+  - `optimizeMode: 'maxProfit'` returns the top `numRecommendations` armies by
+    profit using an exact ceiling of defender TUV + max(0, territory value). That
+    ceiling is weak, so unless a score floor is supplied this mode is effectively
+    exhaustive.
+  - New optional inputs: `minScoreThreshold` (explicit Lanchester score floor;
+    set 0 to disable the automatic land floor and search exactly) and
+    `maxGroundHP` (cap on committed ground HP). Existing solve types and their
+    defaults are unchanged.
+
+  This is an opt-in alternative, not a faster default. `fuzzyBinarySearch`
+  usually needs fewer exact evaluations and is slightly faster on small pools;
+  with the automatic land floor, `branchAndBound` is comparable on small pools and
+  often faster on medium/large pools because it avoids `getSubArmies()`. For
+  max-profit, `gridSearch`/`linearSearch` remain the faster choice. The new mode
+  is for pools too large for `getSubArmies()`, exactness (with
+  `minScoreThreshold: 0`), feasibility guarantees, and land target searches.
+
+- 31ef096: Add a `targetProfit` army-recommendation objective: find the minimum-TUV army
+  whose expected attacker IPC profit meets a target. For a defender the
+  constraint is `profit <= targetProfit`; for an attacker it is
+  `profit >= targetProfit`.
+
+  - Profit is the engine's `defense.ipcLoss - attack.ipcLoss`, so it includes
+    captured territory value and the dead-zone counterattack charge. EV retreat
+    thresholds remain active; unlike `targetWinPercentage`, this mode does not
+    strip them.
+  - Supported by `gridSearch`, `linearSearch`, and `exhaust`. `fuzzyBinarySearch`
+    and `branchAndBound` are rejected for this mode because target-profit
+    feasibility is not monotonic in army cost (especially with EV retreat), so
+    the cost-ordered search does not apply.
+  - `Recommendation` gains optional `profit` and `winPct` fields for this mode,
+    and `ArmyRecommendOutput` gains optional `feasible` (false when no evaluated
+    army met the target and the closest fallback was returned).
+  - `targetPercentage` and `numRecommendations` are now optional inputs; existing
+    modes and their results are unchanged.
+
+### Patch Changes
+
+- c5fa09c: Faster and more accurate naval battles: solve a no-naval subs + aircraft battle
+  as two independent battles (subs vs. subs and aircraft vs. aircraft), and combine
+  them with exact expected-round bookkeeping. A battle that starts with surface
+  ships also decomposes once the last ship is gone. This avoids the joint solver's
+  compounding pruning error (at 30v30, default prune 1e-12: ~1e-6 IPC error vs
+  ~1e-2 for the old path). A checked factorized-boundary shortcut keeps 100 subs +
+  100 fighters + 1 cruiser at ~80 s instead of ~6.5 min. The new path is on by
+  default and can be disabled with `decomposeNaval: false`.
+
+  EV and pwin retreat computations, and `multieval`'s pwin path, are unchanged:
+  they carry a retreat threshold, so the decomposition stays off for them.
+
+- 37468fc: add experimental branch and bound army optimization
+
 ## 2.2.4
 
 ### Patch Changes
