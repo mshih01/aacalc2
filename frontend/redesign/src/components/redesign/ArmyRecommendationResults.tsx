@@ -1,9 +1,6 @@
-import type { Army, Recommendation } from 'aacalc2';
+import type { Army, OptimizeMode, Recommendation } from 'aacalc2';
 import { formatFixed } from '../../utils/display.ts';
-import {
-  positiveUnitKeys,
-  type ArmyOptimizeSide,
-} from '../../utils/armyOptimizer.ts';
+import { positiveUnitKeys, type ArmyOptimizeSide } from '../../utils/armyOptimizer.ts';
 import { UnitIcon } from './UnitIcon.tsx';
 import { unitLabel, unitShortLabel } from './unitCatalog.ts';
 
@@ -19,6 +16,8 @@ export function ArmyRecommendationResults({
   optimizeMode,
   side,
   targetPercentage,
+  targetProfit,
+  feasible,
   ipcDecimals,
   onUseArmy,
   onCancel,
@@ -26,9 +25,11 @@ export function ArmyRecommendationResults({
   loading: boolean;
   error: string | null;
   recommendations: Recommendation[];
-  optimizeMode: 'targetWinPercentage' | 'maxProfit';
+  optimizeMode: OptimizeMode;
   side: ArmyOptimizeSide;
   targetPercentage: number;
+  targetProfit: number;
+  feasible: boolean | null;
   ipcDecimals: number;
   onUseArmy: (army: Army) => void;
   onCancel: () => void;
@@ -54,9 +55,7 @@ export function ArmyRecommendationResults({
     );
   }
 
-  const usable = recommendations.filter((rec) =>
-    positiveUnitKeys(rec.army).length > 0,
-  );
+  const usable = recommendations.filter((rec) => positiveUnitKeys(rec.army).length > 0);
   if (!usable.length) {
     if (recommendations.length === 0) return null;
     return (
@@ -73,7 +72,9 @@ export function ArmyRecommendationResults({
   const meta =
     optimizeMode === 'maxProfit'
       ? `Max profit · ${sideName} · wave 1`
-      : `Target ${Math.round(targetPercentage * 100)}% · ${sideName} · wave 1`;
+      : optimizeMode === 'targetProfit'
+        ? `Target attacker profit ${formatFixed(targetProfit, ipcDecimals)} IPC · ${sideName} · wave 1`
+        : `Target ${Math.round(targetPercentage * 100)}% · ${sideName} · wave 1`;
   const costLabel = optimizeMode === 'maxProfit' ? 'Profit' : 'Cost';
 
   return (
@@ -82,6 +83,11 @@ export function ArmyRecommendationResults({
         <h3 className="army-results__title">Recommended armies</h3>
         <span className="army-results__meta">{meta}</span>
       </header>
+      {optimizeMode === 'targetProfit' && feasible === false ? (
+        <div className="army-results__warning" role="status">
+          No evaluated army met the target; showing the closest result.
+        </div>
+      ) : null}
       {usable.map((rec, index) => {
         const army = rec.army as Record<string, number>;
         const units = positiveUnitKeys(army);
@@ -98,10 +104,19 @@ export function ArmyRecommendationResults({
               ))}
             </div>
             <div className="army-rec__footer">
-              <span className="army-rec__cost">
-                {costLabel}:{' '}
-                <strong>{formatFixed(rec.cost, ipcDecimals)}</strong> IPC
-              </span>
+              <div className="army-rec__stats">
+                <span className="army-rec__cost">
+                  {costLabel}: <strong>{formatFixed(rec.cost, ipcDecimals)}</strong> IPC
+                </span>
+                {optimizeMode === 'targetProfit' && rec.profit !== undefined ? (
+                  <span className="army-rec__cost">
+                    Attacker profit: <strong>{formatFixed(rec.profit, ipcDecimals)}</strong> IPC
+                    {rec.winPct !== undefined
+                      ? ` · ${sideName} survives ${(rec.winPct * 100).toFixed(1)}%`
+                      : ''}
+                  </span>
+                ) : null}
+              </div>
               <button
                 type="button"
                 className="beta-text-button"

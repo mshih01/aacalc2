@@ -98,8 +98,12 @@ npm run preview -- --port 5175
 - **Army optimization** — a **Battle results / Army optimization** task switch
   sits below the unit grid (hidden in SBR mode). The optimizer reuses the wave-1
   setup: the selected side is the maximum army and the other side is the
-  opponent. It supports target-win and max-profit modes, takes/destroys win
-  conditions, an optional minimum army, and one or more recommendations. It runs
+  opponent. It supports target-win, max-profit, and target-profit modes;
+  takes/destroys win conditions (win modes only); an optional minimum army; and
+  one or more recommendations (max-profit only). Target-profit mode minimizes
+  the army’s IPC cost subject to the expected attacker IPC profit, keeps EV
+  retreat active, enumerates small count spaces exactly, refines larger grid
+  searches downward, and reports the achieved profit and survival odds. It runs
   in a Web Worker and can be cancelled; **Use as attacker/defender** applies a
   recommendation to wave 1 and returns to the battle results. Optimizer
   parameters persist in `aacalc2BetaSettings`; recommendations are transient.

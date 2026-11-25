@@ -308,6 +308,13 @@ button {
   font-size: 12px;
 }
 
+.army-results__warning {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--beta-divider);
+  color: var(--beta-warning);
+  font-size: 12px;
+}
+
 .army-rec {
   padding: 12px;
   border-bottom: 1px solid var(--beta-divider);
@@ -359,6 +366,12 @@ button {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
+}
+
+.army-rec__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .army-rec__cost {

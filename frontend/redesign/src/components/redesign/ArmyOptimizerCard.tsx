@@ -62,75 +62,98 @@ export function ArmyOptimizerCard({
           options={[
             { value: 'targetWinPercentage', label: 'Target win %' },
             { value: 'maxProfit', label: 'Max profit (IPC)' },
+            { value: 'targetProfit', label: 'Target profit (IPC)' },
           ]}
-          onChange={(value) =>
-            onChange({ ...params, optimizeMode: value as OptimizeMode })
-          }
+          onChange={(value) => onChange({ ...params, optimizeMode: value as OptimizeMode })}
         />
+
+        {params.optimizeMode !== 'maxProfit' ? (
+          <SelectField
+            label="Optimize for"
+            value={params.optimizeFor}
+            options={[
+              { value: 'attacker', label: 'Attacker' },
+              { value: 'defender', label: 'Defender' },
+            ]}
+            onChange={(value) => onChange({ ...params, optimizeFor: value as ArmyOptimizeSide })}
+          />
+        ) : null}
 
         {params.optimizeMode === 'targetWinPercentage' ? (
-          <>
-            <SelectField
-              label="Optimize for"
-              value={params.optimizeFor}
-              options={[
-                { value: 'attacker', label: 'Attacker' },
-                { value: 'defender', label: 'Defender' },
-              ]}
-              onChange={(value) =>
-                onChange({ ...params, optimizeFor: value as ArmyOptimizeSide })
-              }
-            />
-            <TextField
-              label="Target win probability (0–1)"
-              type="number"
-              min={0}
-              max={1}
-              step={0.01}
-              value={String(params.targetPercentage)}
-              onChange={(value) => {
-                const parsed = Number(value);
-                if (!Number.isFinite(parsed)) return;
-                onChange({
-                  ...params,
-                  targetPercentage: Math.max(0, Math.min(1, parsed)),
-                });
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <TextField
-              label="Recommendations"
-              type="number"
-              min={1}
-              max={10}
-              step={1}
-              value={String(params.numRecommendations)}
-              onChange={(value) => {
-                const parsed = Number(value);
-                if (!Number.isFinite(parsed)) return;
-                onChange({
-                  ...params,
-                  numRecommendations: Math.max(1, Math.min(10, Math.round(parsed))),
-                });
-              }}
-            />
-            <div className="army-optimizer__note">
-              Max profit optimizes the attacker&apos;s army.
-            </div>
-          </>
-        )}
+          <TextField
+            label="Target win probability (0–1)"
+            type="number"
+            min={0}
+            max={1}
+            step={0.01}
+            value={String(params.targetPercentage)}
+            onChange={(value) => {
+              const parsed = Number(value);
+              if (!Number.isFinite(parsed)) return;
+              onChange({
+                ...params,
+                targetPercentage: Math.max(0, Math.min(1, parsed)),
+              });
+            }}
+          />
+        ) : null}
 
-        <SelectField
-          label="Win condition"
-          value={params.pwinMode}
-          options={[
-            { value: 'takes', label: 'Takes territory' },
-            { value: 'destroys', label: 'Destroys' },
-          ]}
-          onChange={(value) => onChange({ ...params, pwinMode: value as ArmyPwinMode })}
-        />
+        {params.optimizeMode === 'maxProfit' ? (
+          <TextField
+            label="Recommendations"
+            type="number"
+            min={1}
+            max={10}
+            step={1}
+            value={String(params.numRecommendations)}
+            onChange={(value) => {
+              const parsed = Number(value);
+              if (!Number.isFinite(parsed)) return;
+              onChange({
+                ...params,
+                numRecommendations: Math.max(1, Math.min(10, Math.round(parsed))),
+              });
+            }}
+          />
+        ) : null}
+
+        {params.optimizeMode === 'targetProfit' ? (
+          <TextField
+            label="Target attacker profit (IPC)"
+            type="number"
+            step={0.5}
+            value={String(params.targetProfit)}
+            onChange={(value) => {
+              const parsed = Number(value);
+              if (!Number.isFinite(parsed)) return;
+              onChange({ ...params, targetProfit: parsed });
+            }}
+          />
+        ) : null}
+
+        {params.optimizeMode !== 'targetProfit' ? (
+          <SelectField
+            label="Win condition"
+            value={params.pwinMode}
+            options={[
+              { value: 'takes', label: 'Takes territory' },
+              { value: 'destroys', label: 'Destroys' },
+            ]}
+            onChange={(value) => onChange({ ...params, pwinMode: value as ArmyPwinMode })}
+          />
+        ) : null}
+
+        {params.optimizeMode === 'maxProfit' ? (
+          <div className="army-optimizer__note">Max profit optimizes the attacker&apos;s army.</div>
+        ) : null}
+
+        {params.optimizeMode === 'targetProfit' ? (
+          <div className="army-optimizer__note">
+            Attacker profit is the engine&apos;s expected IPC swing, including territory value and
+            the dead-zone charge. Defender targets require profit at or below the target; attacker
+            targets require profit at or above it.
+          </div>
+        ) : null}
       </div>
 
       <div className="army-optimizer__min-toggle">
@@ -163,9 +186,7 @@ export function ArmyOptimizerCard({
                     const parsed = Number(raw);
                     onMinArmyChange(
                       unit,
-                      Number.isFinite(parsed)
-                        ? Math.max(0, Math.min(max, Math.floor(parsed)))
-                        : 0,
+                      Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0,
                     );
                   }}
                 />
