@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BetaApp from './BetaApp.tsx';
 import type { BattleInput } from './types.ts';
@@ -36,6 +36,111 @@ describe('beta-style calculator', () => {
     expect(screen.getByText('Profit')).toBeInTheDocument();
     // No units retreat when retreating is disabled.
     expect(screen.queryByText('Retreating')).not.toBeInTheDocument();
+  });
+
+  it('records each calculation in browser history and restores it on Back', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '10' } });
+    fireEvent.change(infantry[1], { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Attacker survives')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    const firstHash = window.location.hash;
+    expect(firstHash).toMatch(/^#\//);
+
+    fireEvent.change(screen.getAllByLabelText('Infantry')[0], { target: { value: '12' } });
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+    await waitFor(
+      () => {
+        expect(window.location.hash).not.toBe(firstHash);
+      },
+      { timeout: 10000 },
+    );
+    expect(screen.getAllByLabelText('Infantry')[0]).toHaveValue(12);
+
+    await act(async () => {
+      window.history.back();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe(firstHash);
+    });
+    expect(screen.getAllByLabelText('Infantry')[0]).toHaveValue(10);
+    expect(screen.getByText('Attacker survives')).toBeInTheDocument();
+  });
+
+  it('keeps the calculated entry when editing afterwards', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '10' } });
+    fireEvent.change(infantry[1], { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Attacker survives')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    const calculatedHash = window.location.hash;
+
+    fireEvent.change(screen.getAllByLabelText('Infantry')[0], { target: { value: '12' } });
+    // Wait for the debounced hash sync, which must push a new entry instead
+    // of replacing the calculated one.
+    await waitFor(
+      () => {
+        expect(window.location.hash).not.toBe(calculatedHash);
+      },
+      { timeout: 2000 },
+    );
+
+    await act(async () => {
+      window.history.back();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe(calculatedHash);
+    });
+    expect(screen.getAllByLabelText('Infantry')[0]).toHaveValue(10);
+    expect(screen.getByText('Attacker survives')).toBeInTheDocument();
+  });
+
+  it('returns to the empty calculator when Back reaches the page-opened entry', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '10' } });
+    fireEvent.change(infantry[1], { target: { value: '8' } });
+    fireEvent.click(screen.getByRole('button', { name: /calculate/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Attacker survives')).toBeInTheDocument();
+      },
+      { timeout: 10000 },
+    );
+    expect(window.location.hash).toMatch(/^#\//);
+
+    await act(async () => {
+      window.history.back();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    await waitFor(() => {
+      expect(window.location.hash).toBe('');
+    });
+    expect(screen.getAllByLabelText('Infantry')[0]).toHaveValue(null);
+    expect(screen.queryByText('Attacker survives')).not.toBeInTheDocument();
   });
 
   it('renders profit percentile badges in the leftmost column', async () => {

@@ -148,6 +148,15 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
 - Settings/history use isolated keys (`aacalc2BetaSettings`,
   `aacalc2BetaHistory`, `aacalc2BetaHistoryGroupsCollapsed`), and sharing uses
   `#/<lz-state>/<title>`.
+- **Browser history** mirrors the reference: each Calculate pushes the encoded
+  state entry (`history.state.__aacalcCalculated` marks it) so Back/Forward
+  restore and re-evaluate the target battle; the page-opened entry (plain
+  calculator or share link) is never overwritten by the first calculation.
+  Editing after a calculation pushes one new entry (later edits replace it),
+  so Back returns to the previous result rather than a duplicate. Back to the
+  empty URL resets the calculator; the legacy `?state=` query is restored when
+  the page was opened with one. Hash writes stay debounced via replaceState
+  until a new entry is needed.
 - Reference screenshots are in `docs/screenshots/`.
 
 ## Share URL encoding

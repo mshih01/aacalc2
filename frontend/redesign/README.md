@@ -109,6 +109,11 @@ npm run preview -- --port 5175
   restore the full battle state and title, including the three experimental
   engine switches (they change the computed results). Display and tuning
   settings such as width, dark mode and decimal places stay per viewer.
+- **Browser history** — each **Calculate** pushes a `#/<state>/<title>` entry,
+  so Back/Forward step through calculations and re-evaluate the encoded battle.
+  Editing after a calculation starts a new entry instead of overwriting the
+  calculated one, and going back to the page-opened entry resets the
+  calculator (or restores the share link it was opened with).
 - **Responsive/dark** — mobile header/unit-grid layout and dark palette. On
   mobile the results overview keeps Attacker Profit and drops Defender IPC, and
   casualty tables show all outcome rows with the green/red confidence intervals

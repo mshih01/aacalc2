@@ -396,6 +396,26 @@ export default function BetaApp() {
   const lastInputRef = useRef<BattleInput | null>(null);
   const batchCancelRef = useRef(false);
 
+  // Browser history bookkeeping, mirroring the reference calculator where a
+  // calculation creates a history entry. The state object marks entries that
+  // must not be overwritten by edits (calculations, and the share link the
+  // page was opened with) and how deep the app's own entries are (the first
+  // calculation pushes because the page-opened entry must be kept).
+  const initialHistoryState = window.history.state as {
+    __aacalcDepth?: number;
+    __aacalcCalculated?: boolean;
+  } | null;
+  // The entry the page was opened with should stay behind the first
+  // calculation, but its URL may already carry the live-edited units thanks
+  // to the debounced hash sync. Remember whether it was a share link so we
+  // only blank it when it started out as the plain calculator page.
+  const openedWithShareState = Boolean(window.location.hash || window.location.search);
+  const openedWithShareStateRef = useRef(openedWithShareState);
+  const historyDepthRef = useRef(initialHistoryState?.__aacalcDepth ?? 0);
+  const historyEntryIsCalculationRef = useRef(
+    initialHistoryState?.__aacalcCalculated === true || openedWithShareState,
+  );
+
   const wavePresets = useCallback(
     (forMode: BattleMode, amphibiousMode: boolean) =>
       amphibiousMode && forMode === 'land' ? attackerAmphibOolPresets : attackerOolPresets,
@@ -525,15 +545,52 @@ export default function BetaApp() {
     if (mode === 'sbr' && task === 'optimize') setTask('battle');
   }, [mode, task]);
 
-  const updateHash = useCallback((input: BattleInput, nextTitle: string) => {
-    try {
-      const hash = encodeStateToHash(input, nextTitle);
-      window.history.replaceState(null, '', hash);
-      lastInputRef.current = input;
-    } catch (err) {
-      console.warn('Failed to update share URL', err);
-    }
+  const writeHistoryEntry = useCallback((url: string, calculated: boolean, push: boolean) => {
+    const depth = push ? historyDepthRef.current + 1 : historyDepthRef.current;
+    const state = { __aacalcDepth: depth, __aacalcCalculated: calculated };
+    if (push) window.history.pushState(state, '', url);
+    else window.history.replaceState(state, '', url);
+    historyDepthRef.current = depth;
+    historyEntryIsCalculationRef.current = calculated;
   }, []);
+
+  const updateHash = useCallback(
+    (input: BattleInput, nextTitle: string, calculated = false) => {
+      try {
+        const hash = encodeStateToHash(input, nextTitle);
+        lastInputRef.current = input;
+
+        if (!calculated) {
+          if (window.location.hash === hash) return;
+          writeHistoryEntry(hash, historyEntryIsCalculationRef.current, false);
+          return;
+        }
+
+        // A calculation becomes a browser history entry. When the current
+        // entry is an edited (not yet calculated) one, promote it in place so
+        // Back returns to the previous calculation. The entry the page was
+        // opened with is never overwritten, so even the first calculation can
+        // be undone with Back.
+        if (window.location.hash === hash) {
+          if (!historyEntryIsCalculationRef.current) {
+            writeHistoryEntry(hash, true, false);
+          }
+          return;
+        }
+        const push = historyEntryIsCalculationRef.current || historyDepthRef.current === 0;
+        if (push && historyDepthRef.current === 0 && !openedWithShareStateRef.current) {
+          // Plain page start: leave an empty calculator behind the first
+          // calculation instead of the live-edited units, matching Back on
+          // the reference site.
+          writeHistoryEntry(window.location.pathname + window.location.search, false, false);
+        }
+        writeHistoryEntry(hash, true, push);
+      } catch (err) {
+        console.warn('Failed to update share URL', err);
+      }
+    },
+    [writeHistoryEntry],
+  );
 
   const saveHistoryEntry = useCallback(
     (input: BattleInput, nextTitle: string) => {
@@ -551,7 +608,7 @@ export default function BetaApp() {
   );
 
   const runBattle = useCallback(
-    (options?: { saveToHistory?: boolean }) => {
+    (options?: { saveToHistory?: boolean; pushHistory?: boolean }) => {
       setError(null);
       setComplexityWarning(null);
       try {
@@ -581,7 +638,7 @@ export default function BetaApp() {
           });
         }
         lastInputRef.current = input;
-        updateHash(input, title);
+        updateHash(input, title, options?.pushHistory === true);
         if (options?.saveToHistory !== false) {
           saveHistoryEntry(input, title);
         }
@@ -842,17 +899,23 @@ export default function BetaApp() {
           Boolean(input.territoryValue) ||
           Boolean(input.isDeadzone) ||
           Boolean(input.inProgress);
-        if (!meaningful) {
-          window.history.replaceState(null, '', window.location.pathname + window.location.search);
-          return;
+        const blankUrl = window.location.pathname + window.location.search;
+        const nextUrl = meaningful ? encodeStateToHash(input, title) : blankUrl;
+        const currentUrl = window.location.hash || blankUrl;
+        if (nextUrl === currentUrl) return;
+        if (historyEntryIsCalculationRef.current) {
+          // Editing after a calculation keeps the calculated state in history,
+          // so Back returns to the previous result.
+          writeHistoryEntry(nextUrl, false, true);
+        } else {
+          writeHistoryEntry(nextUrl, false, false);
         }
-        window.history.replaceState(null, '', encodeStateToHash(input, title));
       } catch (err) {
         console.warn('Failed to update share URL', err);
       }
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [buildCurrentInput, title]);
+  }, [buildCurrentInput, title, writeHistoryEntry]);
 
   useEffect(() => {
     if (mode === 'sbr' && numWaves !== 1) setNumWaves(1);
@@ -998,31 +1061,81 @@ export default function BetaApp() {
     setToast('Unit counts reset');
   }, [emptyWaves]);
 
-  const resetAll = useCallback(() => {
-    setAttack(emptyWaves());
-    setDefense(emptyWaves());
-    setMode('land');
-    setNumWaves(1);
-    setDiceMode('standard');
-    setAmphibious(false);
-    setTerritoryValue(0);
-    setIsDeadzone(false);
-    setInProgress(false);
-    setResult(null);
-    setError(null);
-    setComplexityWarning(null);
-    setTitle('');
-    setHistoryGroup(DEFAULT_GROUP);
-    setTask('battle');
-    for (let wave = 0; wave < MAX_WAVES; wave++) {
-      updateWave(wave, {
-        ...DEFAULT_WAVE_CONFIG,
-        attackOol: undefined,
-        defenseOol: undefined,
-      });
-    }
-    setToast('Calculator reset');
-  }, [emptyWaves, updateWave]);
+  const resetAll = useCallback(
+    (options?: { silent?: boolean }) => {
+      setAttack(emptyWaves());
+      setDefense(emptyWaves());
+      setMode('land');
+      setNumWaves(1);
+      setDiceMode('standard');
+      setAmphibious(false);
+      setTerritoryValue(0);
+      setIsDeadzone(false);
+      setInProgress(false);
+      setResult(null);
+      setError(null);
+      setComplexityWarning(null);
+      setTitle('');
+      setHistoryGroup(DEFAULT_GROUP);
+      setTask('battle');
+      for (let wave = 0; wave < MAX_WAVES; wave++) {
+        updateWave(wave, {
+          ...DEFAULT_WAVE_CONFIG,
+          attackOol: undefined,
+          defenseOol: undefined,
+        });
+      }
+      if (!options?.silent) setToast('Calculator reset');
+    },
+    [emptyWaves, updateWave],
+  );
+
+  // Browser Back/Forward walks the calculation history entries: restore the
+  // battle encoded in the target hash and re-evaluate it. The page-opened
+  // entry has no hash, which resets to the empty calculator like the
+  // reference does.
+  useEffect(() => {
+    const onPopState = (event: PopStateEvent) => {
+      const state = event.state as {
+        __aacalcDepth?: number;
+        __aacalcCalculated?: boolean;
+      } | null;
+      historyDepthRef.current = state?.__aacalcDepth ?? 0;
+      historyEntryIsCalculationRef.current = state?.__aacalcCalculated === true;
+
+      setResult(null);
+      setError(null);
+      setComplexityWarning(null);
+
+      const raw = window.location.hash.replace(/^#\/?/, '');
+      const fromHash = raw ? decodeStateFromHash() : null;
+      if (fromHash) {
+        setTitle(fromHash.title);
+        loadFromHistoryInput(fromHash.input);
+        shouldRunBattleRef.current = validateArmySizes(
+          fromHash.input.attack,
+          fromHash.input.defense,
+          fromHash.input.numWaves ?? 1,
+        ).valid;
+        return;
+      }
+      // Legacy ?state= links keep their query string, so a Back to such an
+      // entry restores it the same way the initial load does.
+      const fromQuery = raw ? null : decodeStateFromUrl();
+      if (fromQuery) {
+        loadFromHistoryInput(fromQuery);
+        shouldRunBattleRef.current = validateArmySizes(
+          fromQuery.attack,
+          fromQuery.defense,
+          fromQuery.numWaves ?? 1,
+        ).valid;
+        return;
+      }
+      resetAll({ silent: true });
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [loadFromHistoryInput, resetAll]);
 
   const applyRetreatPopover = useCallback(
     (nextType: RetreatType, threshold: number) => {
@@ -1322,8 +1435,7 @@ export default function BetaApp() {
     const input = buildCurrentInput();
     const hash = encodeStateToHash(input, title);
     const url = window.location.origin + window.location.pathname + hash;
-    window.history.replaceState(null, '', hash);
-    lastInputRef.current = input;
+    updateHash(input, title);
     const write = navigator.clipboard?.writeText(url);
     if (write) {
       write
@@ -1504,7 +1616,7 @@ export default function BetaApp() {
                 <button
                   type="button"
                   className="reset-action"
-                  onClick={resetAll}
+                  onClick={() => resetAll()}
                   aria-label="Reset all"
                   title="Reset all"
                 >
@@ -1662,7 +1774,7 @@ export default function BetaApp() {
                   disabled={!canCalculate}
                   onClick={() => {
                     setRetreatPopover(null);
-                    runBattle({ saveToHistory: true });
+                    runBattle({ saveToHistory: true, pushHistory: true });
                   }}
                 >
                   Calculate
