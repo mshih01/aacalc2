@@ -99,12 +99,20 @@ The app is served at **http://127.0.0.1:5174/aacalc2/redesign/**.
   `Army optimization` / `Batch run` for land and sea), shown for land and sea
   only. It optimizes wave 1 with the selected side’s current units as the
   maximum army and the other side as the opponent. The parameters (mode, side,
-  target, recommendation count, pwin mode) persist in `aacalc2BetaSettings`; the
-  minimal army is transient. `armyRecommend` runs in
-  `armyRecommend.worker.ts` through `useArmyRecommendation` (tests use the
-  in-process fallback); changing any battle input or optimizer parameter
-  cancels the run and clears the results. “Use as attacker/defender” replaces
-  wave 1’s units and returns to Battle results.
+  target win %, target attacker profit, recommendation count, pwin mode) persist
+  in `aacalc2BetaSettings`; the minimal army is transient. Target-profit mode
+  minimizes the army’s IPC cost subject to the engine’s expected attacker profit
+  (defender: `profit <= target`; attacker: `profit >= target`), keeps EV retreat
+  thresholds active, and uses grid search because feasibility is not monotonic
+  in army cost. Small count spaces are enumerated exhaustively inside the
+  library and larger searches refine downward from the best feasible army. Its
+  results also show the achieved attacker profit and the optimized side’s
+  survival probability, and warn when the target was not met.
+  `armyRecommend` runs in `armyRecommend.worker.ts` through
+  `useArmyRecommendation` (tests use the in-process fallback); changing any
+  battle input or optimizer parameter cancels the run and clears the results.
+  “Use as attacker/defender” replaces wave 1’s units and returns to Battle
+  results.
 - History entries are keyed by `group / name`. The **Group** field beside the
   title chooses the destination for new saves; the title is the entry name, and
   loading an entry restores its group. The History drawer groups entries into

@@ -359,6 +359,33 @@ describe('beta-style calculator', () => {
     expect(screen.getByRole('button', { name: 'Calculate' })).toBeInTheDocument();
   });
 
+  it('runs target-profit army optimization', async () => {
+    render(<BetaApp />);
+
+    const infantry = screen.getAllByLabelText('Infantry');
+    fireEvent.change(infantry[0], { target: { value: '4' } });
+    fireEvent.change(infantry[1], { target: { value: '2' } });
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Army optimization' }));
+    fireEvent.change(screen.getByLabelText('Optimize mode'), {
+      target: { value: 'targetProfit' },
+    });
+    fireEvent.change(screen.getByLabelText('Target attacker profit (IPC)'), {
+      target: { value: '-20' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Recommend army' }));
+
+    await waitFor(
+      () => {
+        expect(screen.getByText('Recommended armies')).toBeInTheDocument();
+      },
+      { timeout: 20000 },
+    );
+    expect(screen.getByText(/Target attacker profit -20\.00 IPC/)).toBeInTheDocument();
+    expect(screen.getByText(/Attacker profit:/)).toBeInTheDocument();
+    expect(screen.queryByText(/No evaluated army met the target/)).not.toBeInTheDocument();
+  }, 20000);
+
   it('requires both armies before recommending', () => {
     render(<BetaApp />);
     fireEvent.click(screen.getByRole('tab', { name: 'Army optimization' }));

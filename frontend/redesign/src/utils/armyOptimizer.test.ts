@@ -78,6 +78,21 @@ describe('buildArmyRecommendInput', () => {
     expect(input.numRecommendations).toBe(7);
   });
 
+  it('uses grid search and the selected side for target-profit mode', () => {
+    const input = buildArmyRecommendInput(battleInput(), {
+      ...params,
+      optimizeMode: 'targetProfit',
+      optimizeFor: 'defender',
+      targetProfit: -20,
+    });
+
+    expect(input.attDefType).toBe('defender');
+    expect(input.optimizeMode).toBe('targetProfit');
+    expect(input.solveType).toBe('gridSearch');
+    expect(input.targetProfit).toBe(-20);
+    expect(input.numRecommendations).toBe(1);
+  });
+
   it('uses only wave 1 even when the battle has multiple waves', () => {
     const input = buildArmyRecommendInput(
       battleInput({

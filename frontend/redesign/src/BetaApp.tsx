@@ -1,6 +1,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { multiwaveComplexityFastV2, type Army, type MultiwaveOutput } from 'aacalc2';
+import {
+  multiwaveComplexityFastV2,
+  type Army,
+  type MultiwaveOutput,
+  type OptimizeMode,
+} from 'aacalc2';
 import ReactGA from 'react-ga4';
 import './beta.css';
 import {
@@ -107,9 +112,10 @@ interface BetaSettings {
   hideUnlikely: 'off' | '0.01' | '0.1' | '1' | '5';
   probabilityDecimals: number;
   ipcDecimals: number;
-  armyOptimizeMode: 'targetWinPercentage' | 'maxProfit';
+  armyOptimizeMode: OptimizeMode;
   armyOptimizeFor: 'attacker' | 'defender';
   armyTargetPercentage: number;
+  armyTargetProfit: number;
   armyNumRecommendations: number;
   armyPwinMode: 'takes' | 'destroys';
   verboseLevel: number;
@@ -136,6 +142,7 @@ const DEFAULT_SETTINGS: BetaSettings = {
   armyOptimizeMode: DEFAULT_ARMY_OPTIMIZER_PARAMS.optimizeMode,
   armyOptimizeFor: DEFAULT_ARMY_OPTIMIZER_PARAMS.optimizeFor,
   armyTargetPercentage: DEFAULT_ARMY_OPTIMIZER_PARAMS.targetPercentage,
+  armyTargetProfit: DEFAULT_ARMY_OPTIMIZER_PARAMS.targetProfit,
   armyNumRecommendations: DEFAULT_ARMY_OPTIMIZER_PARAMS.numRecommendations,
   armyPwinMode: DEFAULT_ARMY_OPTIMIZER_PARAMS.pwinMode,
   verboseLevel: 0,
@@ -354,6 +361,7 @@ export default function BetaApp() {
   const {
     loading: armyLoading,
     recommendations: armyRecommendations,
+    feasible: armyFeasible,
     error: armyError,
     run: runArmyRecommendation,
     cancel: cancelArmyRecommendation,
@@ -375,6 +383,7 @@ export default function BetaApp() {
       optimizeMode: settings.armyOptimizeMode,
       optimizeFor: settings.armyOptimizeFor,
       targetPercentage: settings.armyTargetPercentage,
+      targetProfit: settings.armyTargetProfit,
       numRecommendations: settings.armyNumRecommendations,
       pwinMode: settings.armyPwinMode,
     }),
@@ -382,6 +391,7 @@ export default function BetaApp() {
       settings.armyOptimizeMode,
       settings.armyOptimizeFor,
       settings.armyTargetPercentage,
+      settings.armyTargetProfit,
       settings.armyNumRecommendations,
       settings.armyPwinMode,
     ],
@@ -1704,6 +1714,7 @@ export default function BetaApp() {
                       armyOptimizeMode: next.optimizeMode,
                       armyOptimizeFor: next.optimizeFor,
                       armyTargetPercentage: next.targetPercentage,
+                      armyTargetProfit: next.targetProfit,
                       armyNumRecommendations: next.numRecommendations,
                       armyPwinMode: next.pwinMode,
                     }))
@@ -1734,6 +1745,8 @@ export default function BetaApp() {
                   optimizeMode={armyParams.optimizeMode}
                   side={armySide}
                   targetPercentage={armyParams.targetPercentage}
+                  targetProfit={armyParams.targetProfit}
+                  feasible={armyFeasible}
                   ipcDecimals={settings.ipcDecimals}
                   onUseArmy={applyArmyRecommendation}
                   onCancel={cancelArmyRecommendation}

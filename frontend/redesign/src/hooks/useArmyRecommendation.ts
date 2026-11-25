@@ -5,12 +5,16 @@ import type { ArmyRecommendWorkerResponse } from '../armyRecommend.worker.ts';
 interface ArmyRecommendationState {
   loading: boolean;
   recommendations: Recommendation[];
+  // targetProfit only: false when the optimizer had to fall back to an army
+  // that does not meet the target.  null means "not applicable/unknown".
+  feasible: boolean | null;
   error: string | null;
 }
 
 const EMPTY_STATE: ArmyRecommendationState = {
   loading: false,
   recommendations: [],
+  feasible: null,
   error: null,
 };
 
@@ -52,17 +56,32 @@ export function useArmyRecommendation() {
         try {
           const result = armyRecommend(input);
           if (runIdRef.current === runId) {
-            setState({ loading: false, recommendations: result.recommendations, error: null });
+            setState({
+              loading: false,
+              recommendations: result.recommendations,
+              feasible: result.feasible ?? true,
+              error: null,
+            });
           }
         } catch (error) {
           if (runIdRef.current === runId) {
-            setState({ loading: false, recommendations: [], error: errorMessage(error) });
+            setState({
+              loading: false,
+              recommendations: [],
+              feasible: null,
+              error: errorMessage(error),
+            });
           }
         }
       })
       .catch((error) => {
         if (runIdRef.current === runId) {
-          setState({ loading: false, recommendations: [], error: errorMessage(error) });
+          setState({
+            loading: false,
+            recommendations: [],
+            feasible: null,
+            error: errorMessage(error),
+          });
         }
       });
   }, []);
@@ -71,7 +90,7 @@ export function useArmyRecommendation() {
     (input: ArmyRecommendInput) => {
       stopWorker();
       const runId = ++runIdRef.current;
-      setState({ loading: true, recommendations: [], error: null });
+      setState({ loading: true, recommendations: [], feasible: null, error: null });
 
       const canUseWorker = import.meta.env.MODE !== 'test' && typeof Worker !== 'undefined';
       if (!canUseWorker) {
@@ -95,9 +114,14 @@ export function useArmyRecommendation() {
         stopWorker();
         const data = event.data;
         if (data.ok) {
-          setState({ loading: false, recommendations: data.result.recommendations, error: null });
+          setState({
+            loading: false,
+            recommendations: data.result.recommendations,
+            feasible: data.result.feasible ?? true,
+            error: null,
+          });
         } else {
-          setState({ loading: false, recommendations: [], error: data.error });
+          setState({ loading: false, recommendations: [], feasible: null, error: data.error });
         }
       };
       worker.onerror = (event) => {
@@ -106,6 +130,7 @@ export function useArmyRecommendation() {
         setState({
           loading: false,
           recommendations: [],
+          feasible: null,
           error: event.message || 'Army recommendation failed.',
         });
       };
