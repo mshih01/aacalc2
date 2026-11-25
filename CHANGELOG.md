@@ -1,5 +1,11 @@
 # aacalc2
 
+## 2.3.1
+
+### Patch Changes
+
+- 603bf89: fix bug in target ipc profit optimization
+
 ## 2.3.0
 
 ### Minor Changes
