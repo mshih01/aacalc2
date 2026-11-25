@@ -27,14 +27,22 @@ export type AttDefType = 'attacker' | 'defender';
 export type SolveType =
   'multiEval' | 'exhaust' | 'linearSearch' | 'gridSearch' | 'fuzzyBinarySearch' | 'branchAndBound';
 
-// maxProfit only works with SolveTyep exhaust
-export type OptimizeMode = 'targetWinPercentage' | 'maxProfit';
+// maxProfit is attacker-focused.  targetProfit keeps the EV retreat thresholds
+// and supports gridSearch/linearSearch/exhaust; fuzzyBinarySearch and
+// branchAndBound are rejected for it.
+export type OptimizeMode = 'targetWinPercentage' | 'maxProfit' | 'targetProfit';
 
 export interface ArmyRecommendInput extends MultiwaveInput {
   attDefType: AttDefType;
   optimizeMode: OptimizeMode;
-  numRecommendations: number; // only with optimizeMode maxProfit.  >=1
-  targetPercentage: number; // target percentage for attacker to win or defender to hold.
+  numRecommendations?: number; // only with optimizeMode maxProfit.  >=1
+  targetPercentage?: number; // target percentage for attacker to win or defender to hold.
+  // Target expected attacker IPC profit.  The engine profit is
+  // defense.ipcLoss - attack.ipcLoss and includes captured territory value and
+  // the dead-zone counterattack charge.  When optimizing the defender, a
+  // candidate is feasible when profit <= targetProfit; when optimizing the
+  // attacker, when profit >= targetProfit.
+  targetProfit?: number;
   pwinMode?: PwinMode;
   solveType?: SolveType;
   beamWidth?: number; // number of beams for gridSearch beam search (default 3)
@@ -54,9 +62,17 @@ export interface ArmyRecommendInput extends MultiwaveInput {
 export interface Recommendation {
   army: Army;
   cost: number; // either ipc_cost -- or the ipc profit.
+  // targetProfit only: the achieved expected attacker IPC profit and the
+  // optimized side's win probability, so callers can show both alongside the
+  // minimum army cost.
+  profit?: number;
+  winPct?: number;
 }
 export interface ArmyRecommendOutput {
   recommendations: Recommendation[];
+  // targetProfit only: false when no evaluated army met the target and the
+  // closest fallback is returned.  Undefined for the other optimize modes.
+  feasible?: boolean;
 }
 
 function initArmy(army: Army, value: number): Army {
@@ -68,16 +84,46 @@ function initArmy(army: Army, value: number): Army {
   return result;
 }
 
+// Profit is the attacker's expected IPC swing.  A defender meets a target when
+// the attacker's profit is at or below it; an attacker meets a target when its
+// profit is at or above it.
+function targetProfitFeasible(
+  attDefType: AttDefType,
+  profit: number,
+  targetProfit: number,
+): boolean {
+  return attDefType == 'defender' ? profit <= targetProfit : profit >= targetProfit;
+}
+
 export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
   const solveType = input.solveType;
   const attDefType = input.attDefType;
   const pwinMode = input.pwinMode ?? 'destroys';
   const optimizeMode = input.optimizeMode;
-  const numRecommendations = input.numRecommendations;
+  const numRecommendations = input.numRecommendations ?? 1;
 
   if (optimizeMode == 'maxProfit' && solveType == 'fuzzyBinarySearch') {
     console.error('maxProfit optimizeMode does not work with fuzzyBinarySearch solveType');
     return { recommendations: [{ army: {}, cost: 0 }] };
+  }
+  if (
+    optimizeMode == 'targetProfit' &&
+    (solveType == 'fuzzyBinarySearch' || solveType == 'branchAndBound' || solveType == 'multiEval')
+  ) {
+    console.error(
+      'targetProfit optimizeMode does not work with ' +
+        solveType +
+        ' solveType; use gridSearch, linearSearch, or exhaust',
+    );
+    return { recommendations: [], feasible: false };
+  }
+  if (optimizeMode == 'targetWinPercentage' && input.targetPercentage === undefined) {
+    console.error('targetWinPercentage optimizeMode requires targetPercentage');
+    return { recommendations: [{ army: {}, cost: 0 }] };
+  }
+  if (optimizeMode == 'targetProfit' && input.targetProfit === undefined) {
+    console.error('targetProfit optimizeMode requires targetProfit');
+    return { recommendations: [], feasible: false };
   }
 
   let maxArmy: Army;
@@ -99,33 +145,35 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
     console.log(armies.length, 'armies length');
     console.log(maxArmy, minArmy, stepArmy);
   }
-  const surviveThreshold = input.targetPercentage;
+  const surviveThreshold = input.targetPercentage ?? 0;
   if (input.verbose_level && input.verbose_level > 0) {
     console.log(input);
   }
 
+  const finish = (recommendations: Recommendation[]): ArmyRecommendOutput => {
+    if (optimizeMode != 'targetProfit') {
+      return { recommendations };
+    }
+    const first = recommendations[0];
+    const feasible =
+      first?.profit !== undefined &&
+      targetProfitFeasible(attDefType, first.profit, input.targetProfit ?? 0);
+    return { recommendations, feasible };
+  };
+
   switch (solveType) {
     case 'multiEval':
       solveMultiEval(input, armies, surviveThreshold, maxArmy);
-      return { recommendations: [{ army: {}, cost: 0 }] };
+      return finish([{ army: {}, cost: 0 }]);
     case 'exhaust':
-      return {
-        recommendations: solveExhaust(
-          input,
-          attDefType,
-          armies,
-          surviveThreshold,
-          optimizeMode,
-          numRecommendations,
-        ),
-      };
+      return finish(
+        solveExhaust(input, attDefType, armies, surviveThreshold, optimizeMode, numRecommendations),
+      );
     case 'fuzzyBinarySearch':
-      return {
-        recommendations: solveFuzzyBinarySearch(input, attDefType, armies, surviveThreshold),
-      };
+      return finish(solveFuzzyBinarySearch(input, attDefType, armies, surviveThreshold));
     case 'branchAndBound':
-      return {
-        recommendations: solveBranchAndBound(
+      return finish(
+        solveBranchAndBound(
           input,
           attDefType,
           maxArmy,
@@ -134,11 +182,11 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           optimizeMode,
           numRecommendations,
         ),
-      };
+      );
     case 'linearSearch':
     case 'gridSearch':
-      return {
-        recommendations: solveLinearOrGridSearch(
+      return finish(
+        solveLinearOrGridSearch(
           input,
           attDefType,
           maxArmy,
@@ -148,9 +196,9 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput {
           numRecommendations,
           solveType,
         ),
-      };
+      );
     default:
-      return { recommendations: [{ army: {}, cost: 0 }] };
+      return finish([{ army: {}, cost: 0 }]);
   }
 }
 
@@ -232,6 +280,42 @@ function solveExhaust(
       );
     }
     out.push([army, survive, cost, profit]);
+  }
+  if (optimizeMode == 'targetProfit') {
+    const targetProfit = input.targetProfit ?? 0;
+    // An empty army has profit 0 and cost 0; it is not a useful defending or
+    // attacking recommendation, so exclude it from the candidate set.
+    const nonEmpty = out.filter(([army]) => Object.values(army).some((count) => (count ?? 0) > 0));
+    const feasible = nonEmpty.filter(([, , , profit]) =>
+      targetProfitFeasible(attDefType, profit, targetProfit),
+    );
+    const pool = feasible.length > 0 ? feasible : nonEmpty;
+    pool.sort((a, b) => {
+      if (feasible.length > 0) {
+        // Feasible: minimum TUV first, then the more favorable profit.
+        if (a[2] != b[2]) {
+          return a[2] - b[2];
+        }
+        const av = attDefType == 'defender' ? a[3] : -a[3];
+        const bv = attDefType == 'defender' ? b[3] : -b[3];
+        if (av != bv) {
+          return av - bv;
+        }
+        return b[1] - a[1];
+      }
+      // Infeasible: closest profit to the target, then minimum TUV.
+      const av = attDefType == 'defender' ? a[3] - targetProfit : targetProfit - a[3];
+      const bv = attDefType == 'defender' ? b[3] - targetProfit : targetProfit - b[3];
+      if (av != bv) {
+        return av - bv;
+      }
+      return a[2] - b[2];
+    });
+    if (pool.length == 0) {
+      return [];
+    }
+    const [army, survive, cost, profit] = pool[0];
+    return [{ army, cost, profit, winPct: survive }];
   }
   if (optimizeMode == 'targetWinPercentage') {
     out.sort((a: [Army, number, number, number], b: [Army, number, number, number]) => {
@@ -604,6 +688,62 @@ function solveBranchAndBound(
   return recommendations;
 }
 
+// Unit dimensions for grid/linear search.  The preferred order preserves the
+// historical land order (and therefore existing results); unit types present in
+// the pool but absent from the preferred list are appended.  Preferred types
+// with no units stay as [0, 0] dimensions, which cost nothing to enumerate.
+function gridUnitOrder(attDefType: AttDefType, maxArmy: Army): UnitIdentifier[] {
+  const preferred: UnitIdentifier[] =
+    attDefType == 'defender'
+      ? [
+          'inf',
+          'art',
+          'arm',
+          'fig',
+          'bom',
+          'aa',
+          'des',
+          'sub',
+          'acc',
+          'cru',
+          'bat',
+          'tra',
+          'dbat',
+          'ic',
+          'inf_a',
+          'art_a',
+          'arm_a',
+          'bat1',
+        ]
+      : [
+          'inf',
+          'art',
+          'arm',
+          'fig',
+          'bom',
+          'bat',
+          'cru',
+          'des',
+          'sub',
+          'acc',
+          'aa',
+          'tra',
+          'dbat',
+          'ic',
+          'inf_a',
+          'art_a',
+          'arm_a',
+          'bat1',
+        ];
+  const ordered = [...preferred];
+  for (const uid of Object.keys(maxArmy) as UnitIdentifier[]) {
+    if (!ordered.includes(uid)) {
+      ordered.push(uid);
+    }
+  }
+  return ordered;
+}
+
 function solveLinearOrGridSearch(
   input: ArmyRecommendInput,
   attDefType: AttDefType,
@@ -616,42 +756,68 @@ function solveLinearOrGridSearch(
 ): Recommendation[] {
   const maxUnits = maxArmy;
   const minUnits = minArmy;
+  const targetProfit = input.targetProfit ?? 0;
 
-  const mymap: Map<string, number> = new Map();
-  let callCount = 0;
+  const unitOrder = gridUnitOrder(attDefType, maxArmy);
+  for (const uid of unitOrder) {
+    if ((minUnits[uid] ?? 0) > (maxUnits[uid] ?? 0)) {
+      return [];
+    }
+  }
+
+  interface Evaluation {
+    army: Army;
+    cost: number;
+    survive: number;
+    profit: number;
+    overflow: number;
+  }
+
+  const evaluationCache = new Map<string, Evaluation>();
+  const objectiveCache = new Map<string, number>();
+
+  // Preserve the historical recommendation shape: the land unit keys for this
+  // side are always present (even at zero), while any other unit type that is
+  // actually available in the pool is added.  This keeps old snapshot/output
+  // shapes stable while allowing naval and other unit types to be searched.
+  const legacyKeys: UnitIdentifier[] =
+    attDefType == 'defender'
+      ? ['inf', 'art', 'arm', 'fig', 'bom', 'aa']
+      : ['inf', 'art', 'arm', 'fig', 'bom', 'bat', 'cru'];
+  const armyKeys = new Set<UnitIdentifier>(legacyKeys);
+  for (const uid of Object.keys(maxUnits) as UnitIdentifier[]) {
+    if ((maxUnits[uid] ?? 0) > 0) {
+      armyKeys.add(uid);
+    }
+  }
+
   function getArmy(vars: number[]): Army {
-    const army: Army =
-      attDefType == 'defender'
-        ? {
-            inf: Math.round(vars[0]),
-            art: Math.round(vars[1]),
-            arm: Math.round(vars[2]),
-            fig: Math.round(vars[3]),
-            bom: Math.round(vars[4]),
-            aa: Math.round(vars[5]),
-          }
-        : {
-            inf: Math.round(vars[0]),
-            art: Math.round(vars[1]),
-            arm: Math.round(vars[2]),
-            fig: Math.round(vars[3]),
-            bom: Math.round(vars[4]),
-            bat: Math.round(vars[5]),
-            cru: Math.round(vars[6]),
-          };
+    const army: Army = {};
+    for (let i = 0; i < unitOrder.length; i++) {
+      const uid = unitOrder[i];
+      if (armyKeys.has(uid)) {
+        army[uid] = Math.round(vars[i]);
+      }
+    }
     return army;
   }
-  function armyCostObjectiveHelper(vars: number[]): number {
-    const army: Army = getArmy(vars);
+
+  function evaluationFor(vars: number[]): Evaluation {
+    const key = JSON.stringify(vars);
+    const cached = evaluationCache.get(key);
+    if (cached != undefined) {
+      return cached;
+    }
+    const army = getArmy(vars);
     if (attDefType == 'defender') {
       input.wave_info[0].defense.units = army;
     } else {
       input.wave_info[0].attack.units = army;
     }
-
     const output = multiwaveExternal(input);
     const survive =
       attDefType == 'defender' ? output.defense.survives[0] : output.attack.survives[0];
+    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
     const cost = getArmyCost(army);
 
     let overflow = 0;
@@ -659,17 +825,52 @@ function solveLinearOrGridSearch(
       if (count < 0) {
         overflow += -count;
       }
-      let max = maxUnits[<UnitIdentifier>uid] ?? 0;
+      const max = maxUnits[<UnitIdentifier>uid] ?? 0;
       if (count > max) {
         overflow += count;
       }
-      let min = minUnits[<UnitIdentifier>uid] ?? 0;
+      const min = minUnits[<UnitIdentifier>uid] ?? 0;
       if (count < min) {
         overflow += min - count;
       }
     }
+
+    const evaluation: Evaluation = { army, cost, survive, profit, overflow };
+    evaluationCache.set(key, evaluation);
+    return evaluation;
+  }
+
+  function objectiveFor(evaluation: Evaluation): number {
+    const { cost, survive, profit, overflow } = evaluation;
     if (overflow > 0) {
+      if (optimizeMode == 'maxProfit') {
+        return 1000000 * overflow;
+      }
+      if (optimizeMode == 'targetProfit') {
+        return 1e15 + 1000000 * overflow;
+      }
       return cost + 500 * overflow;
+    }
+
+    if (optimizeMode == 'maxProfit') {
+      return -profit;
+    }
+
+    if (optimizeMode == 'targetProfit') {
+      // The empty army has profit 0 and cost 0, so it would otherwise win any
+      // non-negative target.  It is not a useful recommendation.
+      if (!Object.values(evaluation.army).some((count) => (count ?? 0) > 0)) {
+        return 1e15;
+      }
+      const feasible = targetProfitFeasible(attDefType, profit, targetProfit);
+      // Smaller is better.  For a defender a more negative profit is the more
+      // favorable outcome; for an attacker a larger profit is.
+      const favorable = attDefType == 'defender' ? profit : -profit;
+      if (feasible) {
+        return cost * 1000000 + favorable;
+      }
+      const violation = attDefType == 'defender' ? profit - targetProfit : targetProfit - profit;
+      return 1e12 + violation * 1000000 + cost * 1000 + favorable;
     }
 
     if (survive < surviveThreshold) {
@@ -677,108 +878,27 @@ function solveLinearOrGridSearch(
     }
     return cost;
   }
-  function armyCostObjective(vars: number[]): number {
-    let key = JSON.stringify(vars);
-    let retval = mymap.get(key);
-    if (retval != undefined) {
-      return retval;
+
+  function objectiveFn(vars: number[]): number {
+    const key = JSON.stringify(vars);
+    const cached = objectiveCache.get(key);
+    if (cached != undefined) {
+      return cached;
     }
-    callCount++;
-    retval = armyCostObjectiveHelper(vars);
-    mymap.set(key, retval);
-    return retval;
+    const value = objectiveFor(evaluationFor(vars));
+    objectiveCache.set(key, value);
+    return value;
   }
 
-  const profitMap: Map<string, number> = new Map();
-  function armyProfitObjectiveHelper(vars: number[]): number {
-    const army: Army = getArmy(vars);
-    if (attDefType == 'defender') {
-      input.wave_info[0].defense.units = army;
-    } else {
-      input.wave_info[0].attack.units = army;
-    }
-
-    const output = multiwaveExternal(input);
-    const profit = output.defense.ipcLoss[0] - output.attack.ipcLoss[0];
-    let overflow = 0;
-    for (const [uid, count] of Object.entries(army)) {
-      if (count < 0) {
-        overflow += -count;
-      }
-      let max = maxUnits[<UnitIdentifier>uid] ?? 0;
-      if (count > max) {
-        overflow += count;
-      }
-      let min = minUnits[<UnitIdentifier>uid] ?? 0;
-      if (count < min) {
-        overflow += min - count;
-      }
-    }
-    if (overflow > 0) {
-      return 1000000 * overflow;
-    }
-    return -profit;
-  }
-  function armyProfitObjective(vars: number[]): number {
-    let key = JSON.stringify(vars);
-    let retval = profitMap.get(key);
-    if (retval != undefined) {
-      return retval;
-    }
-    callCount++;
-    retval = armyProfitObjectiveHelper(vars);
-    profitMap.set(key, retval);
-    return retval;
-  }
-
-  const numInf: number = maxArmy['inf'] ?? 0;
-  const numArt: number = maxArmy['art'] ?? 0;
-  const numArm: number = maxArmy['arm'] ?? 0;
-  const numFig: number = maxArmy['fig'] ?? 0;
-  const numBom: number = maxArmy['bom'] ?? 0;
-  const numCru: number = maxArmy['cru'] ?? 0;
-  const numBat: number = maxArmy['bat'] ?? 0;
-  const numAA: number = maxArmy['aa'] ?? 0;
-
-  const minInf: number = minArmy['inf'] ?? 0;
-  const minArt: number = minArmy['art'] ?? 0;
-  const minArm: number = minArmy['arm'] ?? 0;
-  const minFig: number = minArmy['fig'] ?? 0;
-  const minBom: number = minArmy['bom'] ?? 0;
-  const minCru: number = minArmy['cru'] ?? 0;
-  const minBat: number = minArmy['bat'] ?? 0;
-  const minAA: number = minArmy['aa'] ?? 0;
-
-  const initial: number[] =
-    attDefType == 'defender'
-      ? [numInf, numArt, numArm, numFig, numBom, numAA]
-      : [numInf, numArt, numArm, numFig, numBom, numBat, numCru];
-  const bounds: [number, number][] =
-    attDefType == 'defender'
-      ? [
-          [minInf, numInf],
-          [minArt, numArt],
-          [minArm, numArm],
-          [minFig, numFig],
-          [minBom, numBom],
-          [minAA, numAA],
-        ]
-      : [
-          [minInf, numInf],
-          [minArt, numArt],
-          [minArm, numArm],
-          [minFig, numFig],
-          [minBom, numBom],
-          [minBat, numBat],
-          [minCru, numCru],
-        ];
-
-  const objectiveFn = optimizeMode == 'maxProfit' ? armyProfitObjective : armyCostObjective;
+  const initial: number[] = unitOrder.map((uid) => maxUnits[uid] ?? 0);
+  const bounds: [number, number][] = unitOrder.map((uid) => [
+    minUnits[uid] ?? 0,
+    maxUnits[uid] ?? 0,
+  ]);
 
   const verbose = !!(input.verbose_level && input.verbose_level > 0);
 
-  const initialGuess = initial;
-  if (verbose) console.log(initialGuess, 'initialGuess');
+  if (verbose) console.log(initial, 'initialGuess');
   if (verbose) console.log(bounds, 'bounds');
   const beamWidth = input.beamWidth ?? 3;
   const granularity = input.granularity ?? 3;
@@ -787,25 +907,38 @@ function solveLinearOrGridSearch(
     if (verbose)
       console.log('Optimized Integer Parameters:', gridResults.length > 0 ? gridResults[0] : 'N/A');
   } else {
-    const lineResult = lineSearch(objectiveFn, initialGuess, bounds, 20, verbose);
+    const lineResult = lineSearch(objectiveFn, initial, bounds, 20, verbose);
     if (verbose) console.log('Optimized Integer Parameters:', lineResult);
   }
-  const relevantMap = optimizeMode == 'maxProfit' ? profitMap : mymap;
-  const sortedEntries = Array.from(relevantMap.entries())
-    .map(([key, value]) => ({ vars: JSON.parse(key) as number[], value }))
+
+  const evaluated = Array.from(evaluationCache.entries())
+    .map(([key, evaluation]) => ({
+      vars: JSON.parse(key) as number[],
+      evaluation,
+      value: objectiveFor(evaluation),
+    }))
     .sort((a, b) => a.value - b.value);
 
   if (verbose) {
-    console.log(relevantMap.size, 'map size');
+    console.log(evaluationCache.size, 'map size');
   }
 
-  let recommendations: Recommendation[] = [];
-  const n = Math.min(numRecommendations, sortedEntries.length);
+  if (optimizeMode == 'targetProfit') {
+    if (evaluated.length == 0) {
+      return [];
+    }
+    const best = evaluated[0].evaluation;
+    return [{ army: best.army, cost: best.cost, profit: best.profit, winPct: best.survive }];
+  }
+
+  const recommendations: Recommendation[] = [];
+  const n = Math.min(numRecommendations, evaluated.length);
   for (let i = 0; i < n; i++) {
-    const vars = sortedEntries[i].vars;
-    const army = getArmy(vars);
-    const cost = optimizeMode == 'maxProfit' ? -sortedEntries[i].value : getArmyCost(army);
-    recommendations.push({ army, cost });
+    const { army, cost, profit } = evaluated[i].evaluation;
+    recommendations.push({
+      army,
+      cost: optimizeMode == 'maxProfit' ? profit : cost,
+    });
   }
 
   return recommendations;

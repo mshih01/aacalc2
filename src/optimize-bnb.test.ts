@@ -155,7 +155,7 @@ test('branchAndBound target win % matches exhaustive search', () => {
       targetPercentage: 0.35,
     });
     const results = exhaustive(input);
-    const feasible = results.filter((result) => result.winPct >= input.targetPercentage);
+    const feasible = results.filter((result) => result.winPct >= input.targetPercentage!);
     expect(feasible.length).toBeGreaterThan(0);
     const bestTUV = Math.min(...feasible.map((result) => result.tuv));
 
@@ -166,7 +166,7 @@ test('branchAndBound target win % matches exhaustive search', () => {
 
     const match = results.find((result) => sameArmy(result.army, recommendations[0].army));
     expect(match).toBeDefined();
-    expect(match!.winPct).toBeGreaterThanOrEqual(input.targetPercentage);
+    expect(match!.winPct).toBeGreaterThanOrEqual(input.targetPercentage!);
   }
 });
 
@@ -232,7 +232,7 @@ test('branchAndBound ignores EV retreat thresholds for the win objective', () =>
     ],
   };
   const results = exhaustive(stripped);
-  const feasible = results.filter((result) => result.winPct >= input.targetPercentage);
+  const feasible = results.filter((result) => result.winPct >= input.targetPercentage!);
   expect(feasible.length).toBeGreaterThan(0);
   const bestTUV = Math.min(...feasible.map((result) => result.tuv));
 
@@ -240,7 +240,7 @@ test('branchAndBound ignores EV retreat thresholds for the win objective', () =>
   expect(rec.cost).toBeCloseTo(bestTUV, 10);
   const match = results.find((result) => sameArmy(result.army, rec.army));
   expect(match).toBeDefined();
-  expect(match!.winPct).toBeGreaterThanOrEqual(input.targetPercentage);
+  expect(match!.winPct).toBeGreaterThanOrEqual(input.targetPercentage!);
 });
 
 test('branchAndBound max profit matches exhaustive top-N', () => {
@@ -276,7 +276,7 @@ test('branchAndBound respects minArmy', () => {
     minArmy,
   });
   const results = exhaustive(input);
-  const feasible = results.filter((result) => result.winPct >= input.targetPercentage);
+  const feasible = results.filter((result) => result.winPct >= input.targetPercentage!);
   expect(feasible.length).toBeGreaterThan(0);
   const bestTUV = Math.min(...feasible.map((result) => result.tuv));
 
@@ -297,7 +297,7 @@ test('branchAndBound respects maxGroundHP', () => {
   );
   const results = exhaustive(input).filter((result) => groundHP(result.army) <= 2);
   expect(results.length).toBeGreaterThan(0);
-  const feasible = results.filter((result) => result.winPct >= input.targetPercentage);
+  const feasible = results.filter((result) => result.winPct >= input.targetPercentage!);
   expect(feasible.length).toBeGreaterThan(0);
   const bestTUV = Math.min(...feasible.map((result) => result.tuv));
 

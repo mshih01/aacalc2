@@ -267,6 +267,35 @@ export function armyRecommend(input: ArmyRecommendInput): ArmyRecommendOutput
     		// only works for optimizing attacker army
 			// done... added max IPC support for other solveTypes -- gridSearch and linearSearch
 
+		target ipc profit optimization:
+		input.optimizeMode = 'targetProfit'
+		input.targetProfit = -20
+		input.solveType = 'gridSearch' | 'linearSearch' | 'exhaust'
+		input.attDefType = 'attacker' | 'defender'
+
+		Returns the minimum-IPC-cost army whose expected attacker IPC profit
+		meets the target.  Profit is the engine's
+		defense.ipcLoss - attack.ipcLoss, so it includes captured territory
+		value and the dead-zone counterattack charge.  A defender meets a
+		target when profit <= targetProfit; an attacker meets it when
+		profit >= targetProfit.  Example: a defender target of -20 means "the
+		smallest defending army that holds the attacker to at most -20 IPC
+		expected profit".
+
+		The target-profit objective is not monotonic in army cost, especially
+		with EV retreat (a larger army can cause an earlier retreat and a
+		better attacker profit) and in a dead zone (a tiny defender can
+		already impose the counterattack charge).  fuzzyBinarySearch is
+		therefore rejected for this mode; gridSearch is the default.  exhaust
+		is exact for small pools.  branchAndBound support is not implemented
+		yet (planned as a follow-up).
+
+		Unlike targetWinPercentage, target profit keeps the EV/pwin retreat
+		thresholds active.  The empty army is excluded from candidates.  The
+		recommendation reports the achieved profit and the optimized side's
+		win probability; ArmyRecommendOutput.feasible is false when no
+		evaluated army met the target and the closest fallback was returned.
+
     		branch and bound (solveType = 'branchAndBound'):
 
     		Subset search over integer unit counts.  Unlike exhaust and

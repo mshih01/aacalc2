@@ -88,6 +88,18 @@ optimization → Max profit (IPC)** with win condition **Destroys** and three
 recommendations. The link restores the battle, but the optimizer settings are
 not part of the share state.
 
+Target-profit optimization is the constrained version: it finds the smallest
+army (minimum total IPC value) whose **expected attacker IPC profit** meets a
+target. For a defender, target `-20` means "the smallest defending army that
+holds the attacker to at most -20 IPC expected profit"; for an attacker, target
+`+20` means "the smallest attacking army that earns at least +20". The metric is
+the same defender-loss-minus-attacker-loss profit shown in the results, so it
+includes captured territory value and the dead-zone counterattack charge. EV
+retreat thresholds are honored. Feasibility is not monotonic in army cost (a
+larger army can cause an earlier retreat and a *better* attacker profit), so
+this mode uses grid search by default; exhaustive search is available for small
+pools and is exact.
+
 [army-optimization]: https://mshih01.github.io/aacalc2/redesign/#/N4IghiBcoAxaBLAdgMygdgDTgE4BcoAmbMHAWygGZsUEBzIgX2wEZ5mRD3tL2OATeCDjRwESC2zI0kShzbQOXRTz4kA9kJEBtENJAl8B3BRr1jAI3UUAugM2ide1MbARDBQ6ZC0G2K7Yc5FpQIACmAB4ADmEAxnhh-ACSUbEACjjqtARBYSGQMBwAbgA2UDDYUQQSYQC0LBUgOFFQLHUN2ADOFJB6qQD6seqdniB4RUTY-ABeUHg4AK5h2GEy80uMQA/blacktide_3i%2C_aa
 
 ### Batch run: sweeping two history groups
@@ -133,6 +145,11 @@ Axis and Allies odds calculator with advanced features.
 		- maximum ipc profit.
 			- Given an attacking army and defending army, set the retreat mode to expected profit mode and the territory to is_deadzone.
 				- recommend the army that maximizes expected profit.  With EV retreat, and is_deadzone, army smaller than maximum army size may be optimal
+		- target ipc profit.
+			- Given an attacking army, defending army, target expected attacker profit, and a side to optimize.
+				- recommend the smallest (minimum IPC) defending army that holds the attacker to profit <= target.
+				- recommend the smallest attacking army that earns profit >= target.
+			- uses the engine profit (territory value and dead-zone charge included) and honors EV retreat.
 
 - Take-and-hold analysis: switch sides between waves in multiwave to model taking and holding a territory.
 - ev_future_wave -- if ev_retreat is enabled in a multiwave battle -- the retreat condition can optimized overall global profit -- instead of current-wave profit.
@@ -304,10 +321,10 @@ the state is either 0 or the final probability that we end in this state.
     - The graph nodes are ordered in the node array so that all parent nodes are earlier than all child nodes.
 
 - optimize.ts  -- army recommendation engine...
-	- exhaustive search			(currently used for max profit)
+	- exhaustive search			(exact for small pools; also supports max and target profit)
 	- multi-eval accelerated exhaustive search
 	- fuzzy binary search		(currently used for target percentage)
-	- grid search 
+	- grid search 			(currently used for max profit and target profit)
 	- linear search
 	- branch and bound (branchandbound.ts)	exact subset search with cost/profit bounds
 	- solver comparison harness: src/regressions/optimizecompare.ts
