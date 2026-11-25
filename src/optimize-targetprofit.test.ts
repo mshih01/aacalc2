@@ -361,6 +361,55 @@ test('grid search matches the exhaustive target-profit optimum on a small pool',
   expect(rec.profit!).toBeGreaterThanOrEqual(1);
 });
 
+test('grid target profit finds the smallest feasible army for a 50-inf defender', () => {
+  // The coarse grid alone first finds a larger feasible army (25 inf), but 20
+  // inf also meets the target.  A 50-inf pool is small enough to enumerate
+  // exactly, so the result must be 20.
+  const input = makeRecommendInput(
+    'defender',
+    'gridSearch',
+    -20,
+    {},
+    makeInput(
+      { inf: 5, art: 5, fig: 4, bom: 1 },
+      { inf: 50 },
+      {
+        retreat_expected_ipc_profit_threshold: -38,
+      },
+    ),
+  );
+  const output = armyRecommend(input);
+  expect(output.feasible).toBe(true);
+  const rec = output.recommendations[0];
+  expect(rec.army.inf).toBe(20);
+  expect(rec.cost).toBeCloseTo(60, 10);
+  expect(rec.profit).toBeLessThanOrEqual(-20);
+});
+
+test('linear target profit refines down to the smallest feasible army', () => {
+  // Linear search must also refine downward; this pool is small enough for an
+  // exact scan, but linearSearch bypasses the grid-only auto-exhaust path.
+  const input = makeRecommendInput(
+    'defender',
+    'linearSearch',
+    -20,
+    {},
+    makeInput(
+      { inf: 5, art: 5, fig: 4, bom: 1 },
+      { inf: 50 },
+      {
+        retreat_expected_ipc_profit_threshold: -38,
+      },
+    ),
+  );
+  const output = armyRecommend(input);
+  expect(output.feasible).toBe(true);
+  const rec = output.recommendations[0];
+  expect(rec.army.inf).toBe(20);
+  expect(rec.cost).toBeCloseTo(60, 10);
+  expect(rec.profit).toBeLessThanOrEqual(-20);
+});
+
 test('linear search returns a target-profit recommendation with profit and win odds', () => {
   const input = makeRecommendInput(
     'attacker',
