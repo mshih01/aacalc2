@@ -79,7 +79,7 @@ export interface ArmyRecommendOutput {
 // for that.  Small count spaces are cheap enough to enumerate exactly, so use
 // exhaust for them even when the caller asked for gridSearch.  Larger pools use
 // grid search plus the downward refinement in solveLinearOrGridSearch.
-const TARGET_PROFIT_EXHAUST_LIMIT = 20_000;
+const TARGET_PROFIT_EXHAUST_LIMIT = 4_000;
 
 function initArmy(army: Army, value: number): Army {
   let result = { ...army };
